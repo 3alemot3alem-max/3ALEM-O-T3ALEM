@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, OAuthProvider } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
+import firebaseConfig from '../../firebase-applet-config.json';
 import { motion, AnimatePresence } from 'motion/react';
 import { LogIn, UserPlus, GraduationCap, School, Camera, Loader2 } from 'lucide-react';
 
@@ -43,7 +44,10 @@ export const AuthModal: React.FC = () => {
     setLoading(true);
     setError('');
     try {
+      if (!auth) throw new Error("Auth non initialisée");
       const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
@@ -63,7 +67,54 @@ export const AuthModal: React.FC = () => {
           });
         }
     } catch (err: any) {
-      setError(err.message);
+      console.error("Auth Error:", err.code, err.message);
+      if (err.code === 'auth/operation-not-allowed') {
+        setError(`La connexion Google n'est pas activée. Allez dans Console Firebase > Authentication > Sign-in method > Ajouter un fournisseur > Google (Activer).`);
+      } else if (err.code === 'auth/argument-error') {
+        setError("Une erreur technique est survenue (Argument Error). Veuillez rafraîchir la page ou vérifier la configuration.");
+      } else if (err.code === 'auth/popup-closed-by-user') {
+        setError("La fenêtre de connexion a été fermée avant la fin.");
+      } else {
+        setError("Impossible de se connecter via Google pour le moment.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      if (!auth) throw new Error("Auth non initialisée");
+      const provider = new OAuthProvider('apple.com');
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (!userDoc.exists()) {
+        await setDoc(doc(db, 'users', user.uid), {
+          uid: user.uid,
+          displayName: user.displayName || 'Utilisateur Apple',
+          firstName: user.displayName?.split(' ')[0] || 'Apple',
+          lastName: user.displayName?.split(' ').slice(1).join(' ') || 'User',
+          email: user.email || '',
+          photoURL: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
+          bannerURL: '',
+          role: 'student',
+          level: 'Non spécifié',
+          createdAt: new Date().toISOString(),
+        });
+      }
+    } catch (err: any) {
+      console.error("Apple Auth Error:", err.code);
+      if (err.code === 'auth/operation-not-allowed') {
+        setError("La connexion Apple n'est pas activée dans la console Firebase.");
+      } else if (err.code === 'auth/popup-closed-by-user') {
+        setError("La fenêtre Apple a été fermée.");
+      } else {
+        setError("Erreur technique lors de la connexion Apple.");
+      }
     } finally {
       setLoading(false);
     }
@@ -101,7 +152,22 @@ export const AuthModal: React.FC = () => {
         });
       }
     } catch (err: any) {
-      setError(err.message);
+      console.error("Submit Error:", err.code, err.message);
+      if (err.code === 'auth/operation-not-allowed') {
+        setError(`La connexion E-mail n'est pas activée. Allez dans Console Firebase > Authentication > Sign-in method > Ajouter un fournisseur > E-mail/Mot de passe (Activer).`);
+      } else if (err.code === 'auth/email-already-in-use') {
+        setError("Cet e-mail est déjà utilisé par un autre compte.");
+      } else if (err.code === 'auth/invalid-email') {
+        setError("L'adresse e-mail n'est pas valide.");
+      } else if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+        setError("Email ou mot de passe incorrect.");
+      } else if (err.code === 'auth/weak-password') {
+        setError("Le mot de passe doit contenir au moins 6 caractères.");
+      } else if (err.code === 'auth/argument-error') {
+        setError("Une erreur est survenue dans les informations envoyées (Argument Error).");
+      } else {
+        setError("Une erreur s'est produite. Veuillez réessayer.");
+      }
     } finally {
       setLoading(false);
     }
@@ -304,14 +370,25 @@ export const AuthModal: React.FC = () => {
               <div className="relative flex justify-center text-[10px] uppercase font-black tracking-widest"><span className="bg-white px-4 text-gray-400">Ou</span></div>
             </div>
 
-            <button 
-              onClick={handleGoogleLogin}
-              disabled={loading}
-              className="w-full border-2 border-gray-100 py-3 rounded-2xl font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-3 text-gray-700"
-            >
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
-              Continuer avec Google
-            </button>
+            <div className="space-y-3">
+              <button 
+                onClick={handleGoogleLogin}
+                disabled={loading}
+                className="w-full border-2 border-gray-100 py-3 rounded-2xl font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-3 text-gray-700 disabled:opacity-50"
+              >
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
+                Continuer avec Google
+              </button>
+
+              <button 
+                onClick={handleAppleLogin}
+                disabled={loading}
+                className="w-full bg-black text-white py-3 rounded-2xl font-bold hover:bg-gray-900 transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-lg shadow-gray-200"
+              >
+                <svg className="w-5 h-5 fill-current" viewBox="0 0 384 512"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 21.8-88.5 21.8-11.4 0-51.1-22.2-81.9-22.2C64.2 139.1 10 183.1 10 263.1c0 52.3 19.3 103.5 54.4 153.6 22.3 32.1 49.3 64.9 83.1 64.9 14.6 0 21.9-8.7 51.9-8.7 30.6 0 36.4 8.7 52.8 8.7 34.6 0 57.5-29.4 80.5-62.8 28.5-41.2 36.3-80.1 36.6-82.3-.6-.2-71.2-27.5-70.5-107.8zM286 110.1c16.3-19.4 27.6-46.7 24.3-73.6-22.1 1.1-49.8 15.3-64.9 33.7-13.6 15.5-25.9 43.1-22.3 69.1 24.6 1.8 50.1-13.5 62.9-29.2z"/></svg>
+                Continuer avec Apple
+              </button>
+            </div>
           </div>
         </div>
       </motion.div>

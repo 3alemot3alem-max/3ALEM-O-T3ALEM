@@ -6,31 +6,85 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Camera, MapPin, BookOpen, Building2, Save, LogOut, GraduationCap, Image as ImageIcon, Mail } from 'lucide-react';
 import { auth } from '../firebase';
 
-export const Profile: React.FC = () => {
-  const { user, profile } = useAuth();
+import { UserProfile } from '../types';
+import { getDoc } from 'firebase/firestore';
+
+interface ProfileProps {
+  targetUserId?: string | null;
+  onMessage?: (uid: string) => void;
+}
+
+export const Profile: React.FC<ProfileProps> = ({ targetUserId, onMessage }) => {
+  const { user, profile: myProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [targetProfile, setTargetProfile] = useState<UserProfile | null>(null);
   const [stats, setStats] = useState({ posts: 0, impact: 'Normal' });
   const [formData, setFormData] = useState({
-    displayName: profile?.displayName || '',
-    firstName: profile?.firstName || '',
-    lastName: profile?.lastName || '',
-    bio: profile?.bio || '',
-    institution: profile?.institution || '',
-    major: profile?.major || '',
-    level: profile?.level || '',
-    city: profile?.city || '',
-    photoURL: profile?.photoURL || '',
-    bannerURL: profile?.bannerURL || ''
+    displayName: '',
+    firstName: '',
+    lastName: '',
+    bio: '',
+    institution: '',
+    major: '',
+    level: '',
+    city: '',
+    photoURL: '',
+    bannerURL: ''
   });
+
+  const isOwnProfile = !targetUserId || targetUserId === user?.uid;
+  const profile = isOwnProfile ? myProfile : targetProfile;
+
+  useEffect(() => {
+    if (myProfile && isOwnProfile) {
+      setFormData({
+        displayName: myProfile.displayName || '',
+        firstName: myProfile.firstName || '',
+        lastName: myProfile.lastName || '',
+        bio: myProfile.bio || '',
+        institution: myProfile.institution || '',
+        major: myProfile.major || '',
+        level: myProfile.level || '',
+        city: myProfile.city || '',
+        photoURL: myProfile.photoURL || '',
+        bannerURL: myProfile.bannerURL || ''
+      });
+    }
+  }, [myProfile, isOwnProfile]);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (targetUserId && targetUserId !== user?.uid) {
+        setLoading(true);
+        setTargetProfile(null); // Clear previous profile while loading
+        try {
+          const docRef = doc(db, 'users', targetUserId);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            setTargetProfile(docSnap.data() as UserProfile);
+          }
+        } catch (error) {
+          console.error("Error fetching target profile:", error);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setTargetProfile(null);
+      }
+    };
+    fetchProfile();
+  }, [targetUserId, user?.uid]);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const bannerInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (user) {
-      const fetchStats = async () => {
+    const fetchStats = async () => {
+      const uid = targetUserId || user?.uid;
+      if (uid) {
         try {
-          const q = query(collection(db, 'posts'), where('authorUid', '==', user.uid));
+          const q = query(collection(db, 'posts'), where('authorUid', '==', uid));
           const snapshot = await getCountFromServer(q);
           const count = snapshot.data().count;
           setStats({ 
@@ -40,10 +94,10 @@ export const Profile: React.FC = () => {
         } catch (error) {
           console.error("Error fetching stats:", error);
         }
-      };
-      fetchStats();
-    }
-  }, [user]);
+      }
+    };
+    fetchStats();
+  }, [user, targetUserId]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'photo' | 'banner') => {
     const file = e.target.files?.[0];
@@ -64,7 +118,19 @@ export const Profile: React.FC = () => {
     }
   };
 
-  if (!user || !profile) return null;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (!user || !profile) return (
+    <div className="p-8 text-center text-gray-500 font-medium">
+      Profil introuvable
+    </div>
+  );
 
   const handleSave = async () => {
     try {
@@ -85,7 +151,7 @@ export const Profile: React.FC = () => {
         {/* Banner */}
         <div 
           className="h-48 relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-700"
-          style={formData.bannerURL ? { backgroundImage: `url(${formData.bannerURL})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+          style={profile.bannerURL ? { backgroundImage: `url(${profile.bannerURL})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
         >
           <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/zellige.png")' }}></div>
           {isEditing && (
@@ -113,7 +179,7 @@ export const Profile: React.FC = () => {
           <div className="flex flex-col md:flex-row md:items-end gap-6 -mt-16 mb-8">
             <div className="relative group">
               <img 
-                src={formData.photoURL || user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`} 
+                src={isEditing ? formData.photoURL : (profile?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${targetUserId || user.uid}`)} 
                 className="w-32 h-32 rounded-3xl border-4 border-white shadow-lg object-cover bg-white"
                 alt="Profile"
               />
@@ -145,28 +211,40 @@ export const Profile: React.FC = () => {
               <p className="text-gray-500 font-medium">{profile.email} • {profile.level}</p>
             </div>
             <div className="flex gap-3">
-              {isEditing ? (
-                <button 
-                  onClick={handleSave}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition-all flex items-center gap-2"
-                >
-                  <Save size={18} />
-                  Enregistrer
-                </button>
+              {isOwnProfile ? (
+                 <>
+                  {isEditing ? (
+                    <button 
+                      onClick={handleSave}
+                      className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition-all flex items-center gap-2"
+                    >
+                      <Save size={18} />
+                      Enregistrer
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={() => setIsEditing(true)}
+                      className="bg-gray-100 text-gray-700 px-6 py-2 rounded-xl font-bold hover:bg-gray-200 transition-all"
+                    >
+                      Modifier le profil
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => auth.signOut()}
+                    className="bg-red-50 text-red-600 p-2 rounded-xl hover:bg-red-100 transition-all"
+                  >
+                    <LogOut size={20} />
+                  </button>
+                </>
               ) : (
                 <button 
-                  onClick={() => setIsEditing(true)}
-                  className="bg-gray-100 text-gray-700 px-6 py-2 rounded-xl font-bold hover:bg-gray-200 transition-all"
+                  onClick={() => onMessage?.(profile.uid)}
+                  className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg shadow-blue-200"
                 >
-                  Modifier le profil
+                  <Mail size={18} />
+                  Contacter
                 </button>
               )}
-              <button 
-                onClick={() => auth.signOut()}
-                className="bg-red-50 text-red-600 p-2 rounded-xl hover:bg-red-100 transition-all"
-              >
-                <LogOut size={20} />
-              </button>
             </div>
           </div>
 

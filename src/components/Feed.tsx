@@ -1,16 +1,61 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, updateDoc, doc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, updateDoc, doc, arrayUnion, arrayRemove, increment, getDoc, getDocs, where, deleteDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { useAuth } from '../AuthContext';
-import { Post } from '../types';
+import { Post, UserProfile } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
-import { MessageSquare, Heart, Share2, Send, Image as ImageIcon, Search, BookOpen, GraduationCap } from 'lucide-react';
+import { MessageSquare, Heart, Share2, Send, Image as ImageIcon, Search, BookOpen, GraduationCap, MoreHorizontal, Trash2, Edit2, Check, X } from 'lucide-react';
 import { formatDate } from '../lib/utils';
 
-export const Feed: React.FC<{ onStartChat?: () => void }> = ({ onStartChat }) => {
+// Helper component to display up-to-date user info
+const UserDisplay: React.FC<{ uid: string, fallbackName?: string, fallbackPhoto?: string, size?: 'sm' | 'md' | 'lg', onClick?: () => void }> = ({ uid, fallbackName, fallbackPhoto, size = 'md', onClick }) => {
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    if (!uid) return;
+    const unsubscribe = onSnapshot(doc(db, 'users', uid), (snapshot) => {
+      if (snapshot.exists()) {
+        setProfile(snapshot.data() as UserProfile);
+      }
+    });
+    return () => unsubscribe();
+  }, [uid]);
+
+  const name = profile?.displayName || `${profile?.firstName || ''} ${profile?.lastName || ''}`.trim() || fallbackName || 'Utilisateur';
+  const photo = profile?.photoURL || fallbackPhoto || `https://api.dicebear.com/7.x/avataaars/svg?seed=${uid}`;
+  
+  const sizeClasses = {
+    sm: 'w-8 h-8',
+    md: 'w-10 h-10',
+    lg: 'w-12 h-12'
+  };
+
+  return (
+    <div className="flex items-center gap-3">
+      <img 
+        src={photo} 
+        className={`${sizeClasses[size]} rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-blue-100 transition-all`} 
+        alt={name}
+        onClick={onClick}
+      />
+      <div>
+        <h3 
+          className={`font-bold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors ${size === 'sm' ? 'text-xs' : 'text-sm'}`}
+          onClick={onClick}
+        >
+          {name}
+        </h3>
+      </div>
+    </div>
+  );
+};
+
+export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfile?: (uid: string) => void }> = ({ onStartChat, onViewProfile }) => {
   const { user, profile } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPostContent, setNewPostContent] = useState('');
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState('');
   const [newPostImage, setNewPostImage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isPosting, setIsPosting] = useState(false);
@@ -101,6 +146,33 @@ export const Feed: React.FC<{ onStartChat?: () => void }> = ({ onStartChat }) =>
       }
     } catch (error) {
       console.error("Error sharing:", error);
+    }
+  };
+
+  const handleUpdatePost = async (postId: string) => {
+    if (!editingContent.trim()) return;
+    try {
+      await updateDoc(doc(db, 'posts', postId), {
+        content: editingContent,
+        updatedAt: serverTimestamp()
+      });
+      setEditingPostId(null);
+      setEditingContent('');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `posts/${postId}`);
+    }
+  };
+
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDeletePost = async (postId: string) => {
+    setDeletingId(postId);
+    try {
+      await deleteDoc(doc(db, 'posts', postId));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `posts/${postId}`);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -222,14 +294,69 @@ export const Feed: React.FC<{ onStartChat?: () => void }> = ({ onStartChat }) =>
             className="bg-white rounded-3xl shadow-sm overflow-hidden"
           >
             <div className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <img src={post.authorPhoto} className="w-10 h-10 rounded-full object-cover" alt={post.authorName} />
-                <div>
-                  <h3 className="font-bold text-gray-900">{post.authorName}</h3>
-                  <p className="text-xs text-gray-500">{formatDate(post.createdAt)}</p>
+              <div className="flex items-center justify-between mb-4">
+                <UserDisplay 
+                  uid={post.authorUid} 
+                  fallbackName={post.authorName} 
+                  fallbackPhoto={post.authorPhoto}
+                  onClick={() => onViewProfile?.(post.authorUid)}
+                />
+                <div className="flex items-center gap-3">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{formatDate(post.createdAt)}</p>
+                  {user?.uid === post.authorUid && (
+                    <div className="flex items-center gap-1">
+                      <button 
+                        onClick={() => {
+                          setEditingPostId(post.id);
+                          setEditingContent(post.content);
+                        }}
+                        className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
+                      >
+                        <Edit2 size={14} />
+                      </button>
+                      <button 
+                        onClick={() => handleDeletePost(post.id)}
+                        disabled={deletingId === post.id}
+                        className={`p-1.5 transition-colors ${deletingId === post.id ? 'text-gray-300' : 'text-gray-400 hover:text-red-500'}`}
+                      >
+                        {deletingId === post.id ? (
+                          <div className="w-3.5 h-3.5 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Trash2 size={14} />
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
-              <p className="text-gray-800 whitespace-pre-wrap mb-4">{post.content}</p>
+              
+              {editingPostId === post.id ? (
+                <div className="mb-4 space-y-2">
+                  <textarea
+                    value={editingContent}
+                    onChange={(e) => setEditingContent(e.target.value)}
+                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/10 min-h-[100px]"
+                    autoFocus
+                  />
+                  <div className="flex justify-end gap-2">
+                    <button 
+                      onClick={() => setEditingPostId(null)}
+                      className="px-4 py-2 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 transition-all"
+                    >
+                      Annuler
+                    </button>
+                    <button 
+                      onClick={() => handleUpdatePost(post.id)}
+                      className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all flex items-center gap-2"
+                    >
+                      <Check size={14} />
+                      Mettre à jour
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-800 whitespace-pre-wrap mb-4">{post.content}</p>
+              )}
               {post.imageUrl && (
                 <img src={post.imageUrl} className="w-full rounded-2xl mb-4 object-cover max-h-96" alt="Post content" />
               )}
@@ -352,6 +479,8 @@ const CommentSection: React.FC<{ postId: string }> = ({ postId }) => {
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setComments(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, `posts/${postId}/comments`);
     });
     return () => unsubscribe();
   }, [postId]);
@@ -404,13 +533,17 @@ const CommentSection: React.FC<{ postId: string }> = ({ postId }) => {
       <div className="space-y-3">
         {comments.map((comment) => (
           <div key={comment.id} className="flex gap-3">
-            <img src={comment.authorPhoto} className="w-8 h-8 rounded-full object-cover" alt="" />
+            <UserDisplay 
+              uid={comment.authorUid} 
+              fallbackName={comment.authorName} 
+              fallbackPhoto={comment.authorPhoto}
+              size="sm"
+            />
             <div className="flex-1 bg-white p-3 rounded-2xl shadow-sm">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-xs font-bold text-gray-900">{comment.authorName}</span>
-                <span className="text-[10px] text-gray-400">{formatDate(comment.createdAt)}</span>
-              </div>
               <p className="text-xs text-gray-700">{comment.content}</p>
+              <div className="mt-1 flex justify-end">
+                <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">{formatDate(comment.createdAt)}</span>
+              </div>
             </div>
           </div>
         ))}

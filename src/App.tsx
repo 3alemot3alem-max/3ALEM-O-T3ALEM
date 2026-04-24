@@ -13,10 +13,16 @@ export default function App() {
   const { user, loading } = useAuth();
   const [activeTab, setActiveTab] = useState<'feed' | 'schools' | 'profile' | 'messaging'>('feed');
   const [chatTargetEmail, setChatTargetEmail] = useState<string | null>(null);
+  const [viewingUserId, setViewingUserId] = useState<string | null>(null);
 
   const activateChat = (email: string) => {
     setChatTargetEmail(email);
     setActiveTab('messaging');
+  };
+
+  const viewUserProfile = (userId: string) => {
+    setViewingUserId(userId);
+    setActiveTab('profile');
   };
 
   if (loading) {
@@ -72,7 +78,10 @@ export default function App() {
               Écoles
             </button>
             <button 
-              onClick={() => setActiveTab('profile')}
+              onClick={() => {
+                setViewingUserId(null);
+                setActiveTab('profile');
+              }}
               className={`px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'profile' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
             >
               <User size={18} />
@@ -105,10 +114,12 @@ export default function App() {
 
         {/* Main Content */}
         <main className="container mx-auto">
-          {activeTab === 'feed' && <Feed onStartChat={() => activateChat('3alemot3alem@gmail.com')} />}
+          {activeTab === 'feed' && <Feed onStartChat={(email) => activateChat(email)} onViewProfile={viewUserProfile} />}
           {activeTab === 'schools' && <SchoolDirectory />}
-          {activeTab === 'profile' && <Profile />}
-          {activeTab === 'messaging' && <Messaging targetEmail={chatTargetEmail} onClearTarget={() => setChatTargetEmail(null)} />}
+          {activeTab === 'profile' && <Profile targetUserId={viewingUserId} onMessage={(uid) => {
+            setActiveTab('messaging');
+          }} />}
+          {activeTab === 'messaging' && <Messaging targetEmail={chatTargetEmail} onClearTarget={() => setChatTargetEmail(null)} onViewProfile={viewUserProfile} />}
         </main>
 
         {/* Mobile Navigation */}
@@ -128,7 +139,10 @@ export default function App() {
             <span className="text-[10px] font-bold uppercase tracking-widest">Écoles</span>
           </button>
           <button 
-            onClick={() => setActiveTab('profile')}
+            onClick={() => {
+              setViewingUserId(null);
+              setActiveTab('profile');
+            }}
             className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'profile' ? 'text-blue-600' : 'text-gray-400'}`}
           >
             <User size={24} />
