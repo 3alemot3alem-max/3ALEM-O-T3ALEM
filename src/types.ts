@@ -58,7 +58,18 @@ export interface School {
   name: string;
   type: string;
   city: string;
-  description: string;
+  description?: string;
   logoUrl: string;
-  whatsappNumber: string;
+  duration?: string;
+  diploma?: string;
+  thresholds?: {
+    sm: string | number;
+    pc: string | number;
+    svt: string | number;
+    eco: string | number;
+  };
+  entrance?: string;
+  specialties?: string;
+  sector?: string;
+  whatsappNumber?: string;
 }

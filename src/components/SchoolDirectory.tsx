@@ -2,138 +2,250 @@ import React, { useState, useEffect } from 'react';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import { db } from '../firebase';
 import { School } from '../types';
-import { motion } from 'motion/react';
-import { MapPin, ExternalLink } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { MapPin, ExternalLink, X, Info, GraduationCap, Clock, Award, Users, Search } from 'lucide-react';
+import { SCHOOLS_DATA } from '../data/schools';
 
 export const SchoolDirectory: React.FC = () => {
   const [schools, setSchools] = useState<School[]>([]);
-  const [filterCity, setFilterCity] = useState('');
+  const [filterQuery, setFilterQuery] = useState('');
+  const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
 
   useEffect(() => {
-    // Basic initialization if schools collection is empty could be done here, 
-    // but we'll focus on the data for this demo.
-    const initialSchools = [
-      {
-        id: 'ensa',
-        name: 'ENSA (École Nationale des Sciences Appliquées)',
-        type: 'Ingénierie',
-        city: 'Agadir, Al Hoceima, El Jadida...',
-        description: 'Réseau d\'écoles d\'ingénieurs au Maroc offrant des formations spécialisées en génie informatique, civil, industriel, etc.',
-        logoUrl: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=400',
-        whatsappNumber: '212709793474'
-      },
-      {
-        id: 'ensam',
-        name: 'ENSAM (École Nationale Supérieure d\'Arts et Métiers)',
-        type: 'Ingénierie',
-        city: 'Meknès, Casablanca, Rabat',
-        description: 'Grande école d\'ingénieurs spécialisée dans les métiers de l\'industrie et de la technologie au Maroc.',
-        logoUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=400',
-        whatsappNumber: '212709793474'
-      },
-      {
-        id: 'ensias',
-        name: 'ENSIAS (École Nationale Supérieure d\'Informatique)',
-        type: 'Informatique',
-        city: 'Rabat',
-        description: 'Référence au Maroc pour la formation d\'ingénieurs en informatique et analyse des systèmes.',
-        logoUrl: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=400',
-        whatsappNumber: '212709793474'
-      },
-      {
-        id: 'emi',
-        name: 'EMI (École Mohammadia d\'Ingénieurs)',
-        type: 'Ingénierie',
-        city: 'Rabat',
-        description: 'La plus ancienne école d\'ingénieurs au Maroc, formation militaire et civile de haut niveau.',
-        logoUrl: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=400',
-        whatsappNumber: '212709793474'
-      },
-      {
-        id: 'bts',
-        name: 'BTS (Brevet de Technicien Supérieur)',
-        type: 'Technique',
-        city: 'Plusieurs villes',
-        description: 'Formation de deux ans après le baccalauréat pour devenir technicien supérieur dans divers domaines.',
-        logoUrl: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=400',
-        whatsappNumber: '212709793474'
-      },
-      {
-        id: 'cpge',
-        name: 'CPGE (Classes Préparatoires aux Grandes Écoles)',
-        type: 'Préparatoire',
-        city: 'Plusieurs villes',
-        description: 'Filière d\'excellence préparant aux concours des grandes écoles d\'ingénieurs et de commerce.',
-        logoUrl: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&q=80&w=400',
-        whatsappNumber: '212709793474'
-      }
-    ];
-
+    // Merge remote and local for now, prioritizing current request's rich data
     const q = query(collection(db, 'schools'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      if (snapshot.empty) {
-        setSchools(initialSchools as School[]);
-      } else {
-        setSchools(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as School)));
-      }
+      // For this applet, the local SCHOOLS_DATA is the source of truth for the list
+      setSchools(SCHOOLS_DATA as School[]);
     });
     return () => unsubscribe();
   }, []);
 
   const filteredSchools = schools.filter(s => 
-    s.city.toLowerCase().includes(filterCity.toLowerCase()) ||
-    s.name.toLowerCase().includes(filterCity.toLowerCase())
+    s.city.toLowerCase().includes(filterQuery.toLowerCase()) ||
+    s.name.toLowerCase().includes(filterQuery.toLowerCase()) ||
+    s.type.toLowerCase().includes(filterQuery.toLowerCase()) ||
+    s.specialties?.toLowerCase().includes(filterQuery.toLowerCase())
   );
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4">
-      <div className="mb-12 text-center">
-        <h2 className="text-4xl font-black text-gray-900 mb-4 tracking-tight">Annuaire des Écoles</h2>
-        <p className="text-gray-500 max-w-xl mx-auto">Consultez les informations sur les meilleures institutions et écoles au Maroc.</p>
+    <div className="max-w-7xl mx-auto py-12 px-6">
+      <div className="mb-16 text-center relative">
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-24 h-24 zellij-pattern opacity-10 rounded-full"></div>
+        <h2 className="text-5xl font-serif italic font-bold text-slate-900 mb-6 tracking-tight relative z-10">L&apos;Espace &Eacute;coles</h2>
+        <div className="w-20 h-1 bg-moroccan-red mx-auto mb-6 rounded-full"></div>
+        <p className="text-slate-500 max-w-2xl mx-auto font-serif italic text-lg leading-relaxed">
+          Explorez les corridors de l&apos;excellence acad&eacute;mique au Maroc. D&eacute;couvrez les seuils 2024, les concours et les sp&eacute;cialit&eacute;s de chaque institution.
+        </p>
       </div>
 
-      <div className="mb-8 flex justify-center">
-        <div className="bg-white p-2 rounded-2xl shadow-sm flex gap-2 w-full max-w-md">
-          <input 
-            type="text"
-            placeholder="Filtrer par ville ou nom..."
-            value={filterCity}
-            onChange={(e) => setFilterCity(e.target.value)}
-            className="flex-1 px-4 py-2 outline-none"
-          />
+      <div className="mb-12 flex justify-center">
+        <div className="maroccan-card p-2 flex gap-3 w-full max-w-xl group">
+          <div className="flex-1 relative">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
+            <input 
+              type="text"
+              placeholder="Ecole, ville, seuil, informatique..."
+              value={filterQuery}
+              onChange={(e) => setFilterQuery(e.target.value)}
+              className="w-full pl-14 pr-6 py-4 outline-none font-serif italic text-lg text-slate-700 bg-transparent"
+            />
+          </div>
+          <div className="bg-moroccan-green p-4 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-moroccan-green/20">
+            <MapPin size={24} />
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
         {filteredSchools.length === 0 ? (
-          <div className="col-span-full text-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-100">
-            <p className="text-gray-400 italic">Aucune école trouvée pour le moment.</p>
+          <div className="col-span-full py-32 text-center maroccan-card bg-ivory/50 border-dashed">
+            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-300">
+              <MapPin size={32} />
+            </div>
+            <p className="text-slate-400 font-serif italic text-xl">Aucune institution ne correspond &agrave; votre recherche.</p>
           </div>
         ) : (
           filteredSchools.map((school) => (
             <motion.div 
               key={school.id}
-              whileHover={{ y: -5 }}
-              className="bg-white rounded-3xl shadow-sm overflow-hidden flex flex-col"
+              whileHover={{ y: -10 }}
+              onClick={() => setSelectedSchool(school)}
+              className="maroccan-card overflow-hidden flex flex-col group transition-all duration-500 cursor-pointer"
             >
-              <div className="h-48 bg-gray-100 relative">
-                <img src={school.logoUrl} className="w-full h-full object-cover" alt={school.name} />
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-blue-600 shadow-sm">
+              <div className="h-48 relative overflow-hidden">
+                <img src={school.logoUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={school.name} />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent"></div>
+                <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-md px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-moroccan-green shadow-xl">
                   {school.type}
                 </div>
-              </div>
-              <div className="p-6 flex-1 flex flex-col">
-                <div className="flex items-center gap-2 text-gray-400 text-xs font-semibold uppercase tracking-widest mb-2">
-                  <MapPin size={14} />
+                <div className="absolute bottom-6 left-6 flex items-center gap-2 text-white text-[10px] font-black uppercase tracking-[0.3em]">
+                  <MapPin size={14} className="text-moroccan-red" />
                   {school.city}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{school.name}</h3>
-                <p className="text-gray-600 text-sm line-clamp-3 mb-6 flex-1">{school.description}</p>
+                {school.sector && (
+                  <div className="absolute bottom-6 right-6 text-[10px] bg-moroccan-red text-white p-2 rounded-xl font-black uppercase tracking-widest">
+                    {school.sector}
+                  </div>
+                )}
+              </div>
+              <div className="p-8 flex-1 flex flex-col">
+                <h3 className="text-xl font-serif italic font-bold text-slate-900 mb-3 leading-tight group-hover:text-moroccan-green transition-colors line-clamp-2">{school.name}</h3>
+                
+                {school.thresholds && (
+                  <div className="grid grid-cols-2 gap-2 mb-6">
+                    <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                      <p className="text-[8px] font-black uppercase text-slate-400 mb-0.5 whitespace-nowrap">Seuil SM</p>
+                      <p className="text-sm font-bold text-moroccan-green">{school.thresholds.sm}</p>
+                    </div>
+                    <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                      <p className="text-[8px] font-black uppercase text-slate-400 mb-0.5 whitespace-nowrap">Seuil PC</p>
+                      <p className="text-sm font-bold text-moroccan-green">{school.thresholds.pc}</p>
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-slate-500 font-serif italic text-sm leading-relaxed mb-6 line-clamp-2 flex-1">
+                  {school.specialties || school.description}
+                </p>
+                
+                <button className="w-full py-4 rounded-2xl bg-slate-50 text-slate-400 font-black uppercase text-[10px] tracking-[0.3em] group-hover:bg-moroccan-green group-hover:text-white transition-all duration-300 flex items-center justify-center gap-3 active:scale-95">
+                  D&eacute;tails & Seuils
+                  <Info size={14} />
+                </button>
               </div>
             </motion.div>
           ))
         )}
       </div>
+
+      {/* School Detail Modal */}
+      <AnimatePresence>
+        {selectedSchool && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedSchool(null)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            ></motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="maroccan-card w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white"
+            >
+              <div className="h-72 relative">
+                <img src={selectedSchool.logoUrl} className="w-full h-full object-cover" alt="" />
+                <div className="absolute inset-0 bg-gradient-to-t from-white via-white/10 to-transparent"></div>
+                <button 
+                  onClick={() => setSelectedSchool(null)}
+                  className="absolute top-6 right-6 p-4 bg-white/80 backdrop-blur-md rounded-2xl text-slate-900 hover:text-moroccan-red transition-colors shadow-xl"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="px-6 sm:px-10 pb-12 -mt-20 relative z-10">
+                <div className="flex flex-col md:flex-row items-start justify-between gap-8 mb-12">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-4">
+                      <span className="bg-moroccan-green text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-moroccan-green/20">
+                        {selectedSchool.type}
+                      </span>
+                      <span className="bg-moroccan-red text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-moroccan-red/20">
+                        {selectedSchool.sector}
+                      </span>
+                    </div>
+                    <h2 className="text-4xl font-serif italic font-bold text-slate-900 leading-tight mb-4">{selectedSchool.name}</h2>
+                    <div className="flex items-center gap-2 text-slate-400 font-serif italic text-lg">
+                      <MapPin size={20} className="text-moroccan-red" />
+                      {selectedSchool.city}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                  <div className="space-y-10">
+                    <section>
+                      <h3 className="text-xs font-black text-slate-300 uppercase tracking-[0.3em] mb-6 flex items-center gap-3">
+                        <Award size={18} className="text-moroccan-green" />
+                        Seuils de Pr&eacute;s&eacute;lection 2024
+                      </h3>
+                      {selectedSchool.thresholds ? (
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="bg-slate-50 p-6 rounded-[24px] border border-slate-100">
+                            <p className="text-[10px] font-black uppercase text-slate-400 mb-2">Sciences Maths</p>
+                            <p className="text-3xl font-serif italic font-bold text-moroccan-green">{selectedSchool.thresholds.sm}</p>
+                          </div>
+                          <div className="bg-slate-50 p-6 rounded-[24px] border border-slate-100">
+                            <p className="text-[10px] font-black uppercase text-slate-400 mb-2">Physique Chimie</p>
+                            <p className="text-3xl font-serif italic font-bold text-moroccan-green">{selectedSchool.thresholds.pc}</p>
+                          </div>
+                          <div className="bg-slate-50 p-6 rounded-[24px] border border-slate-100">
+                            <p className="text-[10px] font-black uppercase text-slate-400 mb-2">SVT</p>
+                            <p className="text-3xl font-serif italic font-bold text-moroccan-green">{selectedSchool.thresholds.svt}</p>
+                          </div>
+                          <div className="bg-slate-50 p-6 rounded-[24px] border border-slate-100">
+                            <p className="text-[10px] font-black uppercase text-slate-400 mb-2">Economie</p>
+                            <p className="text-3xl font-serif italic font-bold text-moroccan-green">{selectedSchool.thresholds.eco}</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-slate-400 italic">Donn&eacute;es de seuils non disponibles.</p>
+                      )}
+                    </section>
+
+                    <section>
+                      <h3 className="text-xs font-black text-slate-300 uppercase tracking-[0.3em] mb-6 flex items-center gap-3">
+                        <Users size={18} className="text-moroccan-green" />
+                        Concours & Admission
+                      </h3>
+                      <div className="bg-ivory/50 p-6 rounded-[24px] border border-moroccan-red/10">
+                        <p className="text-slate-700 font-serif italic text-lg leading-relaxed">
+                          {selectedSchool.entrance || "Admission sur concours national ou s&eacute;lection sur dossier."}
+                        </p>
+                      </div>
+                    </section>
+                  </div>
+
+                  <div className="space-y-10">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-6 bg-slate-50 rounded-[28px] border border-slate-100">
+                        <Clock className="text-moroccan-red mb-3" size={24} />
+                        <p className="text-[10px] font-black uppercase text-slate-400 mb-1">Dur&eacute;e</p>
+                        <p className="font-bold text-slate-900">{selectedSchool.duration || "N/A"}</p>
+                      </div>
+                      <div className="p-6 bg-slate-50 rounded-[28px] border border-slate-100">
+                        <GraduationCap className="text-moroccan-green mb-3" size={24} />
+                        <p className="text-[10px] font-black uppercase text-slate-400 mb-1">Dipl&ocirc;me</p>
+                        <p className="font-bold text-slate-900">{selectedSchool.diploma || "Ing&eacute;nieur d&apos;Etat"}</p>
+                      </div>
+                    </div>
+
+                    <section>
+                      <h3 className="text-xs font-black text-slate-300 uppercase tracking-[0.3em] mb-6 flex items-center gap-3">
+                        <Info size={18} className="text-moroccan-green" />
+                        Sp&eacute;cialit&eacute;s & Modules
+                      </h3>
+                      <div className="flex flex-wrap gap-3">
+                        {(selectedSchool.specialties || "").split(',').map((spec, i) => (
+                          <div key={i} className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-xl text-slate-700 font-medium text-sm">
+                            <div className="w-1.5 h-1.5 bg-moroccan-red rounded-full"></div>
+                            {spec.trim()}
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

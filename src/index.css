@@ -1,17 +1,57 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", serif;
+
+  --color-majorelle: #0038A8;
+  --color-saffron: #F4A460;
+  --color-terracotta: #D2691E;
+  --color-emerald: #006B3C;
+  --color-ivory: #F9F7F2;
+  --color-moroccan-red: #C1272D;
+  --color-moroccan-green: #006233;
 }
 
 body {
-  @apply font-sans bg-gray-50 text-gray-900;
+  @apply font-sans bg-ivory text-slate-800 antialiased;
+}
+
+/* Zellij Background Pattern */
+.zellij-pattern {
+  position: absolute;
+  inset: 0;
+  background-color: #f9f7f2;
+  background-image: 
+    radial-gradient(circle at 100% 150%, #f9f7f2 24%, #eee 25%, #eee 28%, #f9f7f2 29%, #f9f7f2 36%, #eee 36%, #eee 40%, transparent 40%, transparent),
+    radial-gradient(circle at 0    150%, #f9f7f2 24%, #eee 25%, #eee 28%, #f9f7f2 29%, #f9f7f2 36%, #eee 36%, #eee 40%, transparent 40%, transparent),
+    radial-gradient(circle at 50%  100%, #eee 10%, #f9f7f2 11%, #f9f7f2 23%, #eee 24%, #eee 30%, #f9f7f2 31%, #f9f7f2 43%, #eee 44%, #eee 50%, #f9f7f2 51%, #f9f7f2 63%, #eee 64%, #eee 71%, transparent 71%, transparent),
+    radial-gradient(circle at 100% 50%, #eee 5%, #f9f7f2 6%, #f9f7f2 15%, #eee 16%, #eee 20%, #f9f7f2 21%, #f9f7f2 30%, #eee 31%, #eee 35%, #f9f7f2 36%, #f9f7f2 45%, #eee 46%, #eee 49%, transparent 50%, transparent),
+    radial-gradient(circle at 0    50%, #eee 5%, #f9f7f2 6%, #f9f7f2 15%, #eee 16%, #eee 20%, #f9f7f2 21%, #f9f7f2 30%, #eee 31%, #eee 35%, #f9f7f2 36%, #f9f7f2 45%, #eee 46%, #eee 49%, transparent 50%, transparent);
+  background-size: 50px 25px;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+/* Moroccan Star Pattern Overlay */
+.star-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0l5 15h15l-12 9 5 16-13-10-13 10 5-16-12-9h15z' fill='%23006233' fill-opacity='0.05'/%3E%3C/svg%3E");
+}
+
+/* Custom Moroccan Card */
+.maroccan-card {
+  @apply bg-white border-b-4 border-r-4 border-moroccan-red/10 shadow-xl shadow-moroccan-red/5 rounded-[32px] relative overflow-hidden;
+}
+
+/* Arch Shape */
+.maroccan-arch-top {
+  clip-path: ellipse(110% 100% at 50% 100%);
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -19,10 +59,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #e2e8f0;
+  background: #0038A822;
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #cbd5e1;
+  background: #0038A844;
 }

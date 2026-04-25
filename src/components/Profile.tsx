@@ -144,16 +144,16 @@ export const Profile: React.FC<ProfileProps> = ({ targetUserId, onMessage }) => 
       handleFirestoreError(error, OperationType.UPDATE, `users/${user.uid}`);
     }
   };
-
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
-      <div className="bg-white rounded-[40px] shadow-sm overflow-hidden">
+      <div className="maroccan-card">
         {/* Banner */}
         <div 
-          className="h-48 relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-700"
+          className="h-64 relative overflow-hidden bg-moroccan-green"
           style={profile.bannerURL ? { backgroundImage: `url(${profile.bannerURL})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
         >
-          <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/zellige.png")' }}></div>
+          <div className="absolute inset-0 zellij-pattern opacity-20"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-moroccan-green/60 to-transparent"></div>
           {isEditing && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
               <input 
@@ -165,24 +165,26 @@ export const Profile: React.FC<ProfileProps> = ({ targetUserId, onMessage }) => 
               />
               <button 
                 onClick={() => bannerInputRef.current?.click()}
-                className="bg-white/90 p-3 rounded-full text-blue-600 shadow-lg flex items-center gap-2 font-bold"
+                className="bg-white/90 backdrop-blur-md p-4 rounded-2xl text-majorelle shadow-xl flex items-center gap-2 font-bold"
               >
                 <ImageIcon size={20} />
-                Changer la bannière
+                Changer la banni&egrave;re
               </button>
             </div>
           )}
         </div>
 
         {/* Profile Info */}
-        <div className="px-8 pb-8 relative">
-          <div className="flex flex-col md:flex-row md:items-end gap-6 -mt-16 mb-8">
+        <div className="px-10 pb-10 relative">
+          <div className="flex flex-col md:flex-row md:items-end gap-10 -mt-20 mb-12 relative z-10">
             <div className="relative group">
-              <img 
-                src={isEditing ? formData.photoURL : (profile?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${targetUserId || user.uid}`)} 
-                className="w-32 h-32 rounded-3xl border-4 border-white shadow-lg object-cover bg-white"
-                alt="Profile"
-              />
+              <div className="w-44 h-52 rounded-t-[100px] rounded-b-3xl border-8 border-white shadow-2xl overflow-hidden bg-slate-50 ring-4 ring-majorelle/5">
+                <img 
+                  src={isEditing ? formData.photoURL : (profile?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${targetUserId || user.uid}`)} 
+                  className="w-full h-full object-cover"
+                  alt="Profile"
+                />
+              </div>
               {isEditing && (
                 <>
                   <input 
@@ -194,176 +196,167 @@ export const Profile: React.FC<ProfileProps> = ({ targetUserId, onMessage }) => 
                   />
                   <button 
                     onClick={() => fileInputRef.current?.click()}
-                    className="absolute inset-0 bg-black/40 rounded-3xl flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute inset-0 bg-majorelle/40 rounded-t-[100px] rounded-b-3xl flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
                   >
-                    <Camera size={24} />
+                    <Camera size={32} />
                   </button>
                 </>
               )}
             </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-1">
-                <h2 className="text-3xl font-black text-gray-900">{profile.firstName} {profile.lastName}</h2>
-                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${profile.role === 'mentor' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
-                  {profile.role === 'mentor' ? 'Étudiant / Mentor' : 'Élève'}
+            <div className="flex-1 pb-2">
+              <div className="flex flex-wrap items-center gap-4 mb-2">
+                <h2 className="text-4xl font-serif italic font-bold text-slate-900 leading-tight">{profile.firstName} {profile.lastName}</h2>
+                <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-sm ${profile.role === 'mentor' ? 'bg-moroccan-red/20 text-moroccan-red' : 'bg-moroccan-green/10 text-moroccan-green'}`}>
+                  {profile.role === 'mentor' ? '&Eacute;tudiant / Mentor' : '&Eacute;l&egrave;ve'}
                 </span>
               </div>
-              <p className="text-gray-500 font-medium">{profile.email} • {profile.level}</p>
+              <div className="flex flex-wrap gap-4 items-center">
+                <p className="text-slate-400 font-bold text-sm tracking-tight">{profile.email}</p>
+                <div className="w-1 h-1 bg-slate-200 rounded-full"></div>
+                <p className="text-moroccan-green font-black uppercase text-[10px] tracking-[0.2em]">{profile.level}</p>
+              </div>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-4">
               {isOwnProfile ? (
                  <>
                   {isEditing ? (
                     <button 
                       onClick={handleSave}
-                      className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition-all flex items-center gap-2"
+                      className="bg-moroccan-green text-white px-8 py-3 rounded-full font-bold shadow-xl shadow-moroccan-green/20 hover:shadow-moroccan-green/40 transition-all flex items-center gap-2 group"
                     >
-                      <Save size={18} />
+                      <Save size={18} className="group-hover:scale-110 transition-transform" />
                       Enregistrer
                     </button>
                   ) : (
                     <button 
                       onClick={() => setIsEditing(true)}
-                      className="bg-gray-100 text-gray-700 px-6 py-2 rounded-xl font-bold hover:bg-gray-200 transition-all"
+                      className="bg-ivory border border-majorelle/10 text-slate-600 px-8 py-3 rounded-full font-bold hover:bg-majorelle/5 transition-all"
                     >
                       Modifier le profil
                     </button>
                   )}
                   <button 
                     onClick={() => auth.signOut()}
-                    className="bg-red-50 text-red-600 p-2 rounded-xl hover:bg-red-100 transition-all"
+                    className="bg-terracotta/5 text-terracotta p-3 rounded-2xl hover:bg-terracotta/10 transition-all shadow-md active:scale-95"
                   >
-                    <LogOut size={20} />
+                    <LogOut size={22} />
                   </button>
                 </>
               ) : (
                 <button 
                   onClick={() => onMessage?.(profile.uid)}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg shadow-blue-200"
+                  className="bg-majorelle text-white px-10 py-4 rounded-full font-bold shadow-2xl shadow-majorelle/20 hover:shadow-majorelle/40 hover:-translate-y-1 transition-all flex items-center gap-3 active:scale-95"
                 >
-                  <Mail size={18} />
+                  <Mail size={20} />
                   Contacter
                 </button>
               )}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="md:col-span-2 space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <div className="lg:col-span-2 space-y-12">
               {isEditing && (
-                <div className="grid grid-cols-2 gap-4 bg-gray-50 p-6 rounded-3xl">
-                  <div>
-                    <label className="text-xs font-bold text-gray-400 uppercase mb-2 block">Prénom</label>
+                <div className="grid grid-cols-2 gap-6 bg-slate-50/50 p-8 rounded-[32px] border border-slate-100">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pr&eacute;nom</label>
                     <input 
                       value={formData.firstName}
                       onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                      className="w-full bg-white rounded-xl px-4 py-2 outline-none border border-gray-100"
+                      className="w-full bg-white rounded-2xl px-5 py-3 outline-none border border-slate-100 focus:border-moroccan-green/20 transition-all"
                     />
                   </div>
-                  <div>
-                    <label className="text-xs font-bold text-gray-400 uppercase mb-2 block">Nom</label>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nom</label>
                     <input 
                       value={formData.lastName}
                       onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                      className="w-full bg-white rounded-xl px-4 py-2 outline-none border border-gray-100"
+                      className="w-full bg-white rounded-2xl px-5 py-3 outline-none border border-slate-100 focus:border-moroccan-green/20 transition-all"
                     />
                   </div>
                 </div>
               )}
 
-              <section>
-                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <BookOpen size={16} />
-                  À propos
+              <section className="relative">
+                <div className="absolute top-0 left-0 w-16 h-1 bg-gradient-to-r from-moroccan-green to-transparent rounded-full mb-6"></div>
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-6 pt-6 flex items-center gap-3">
+                  <BookOpen size={16} className="text-moroccan-green" />
+                  &Agrave; propos
                 </h3>
                 {isEditing ? (
                   <textarea 
                     value={formData.bio}
                     onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                    className="w-full bg-gray-50 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-blue-500/20 min-h-[120px]"
-                    placeholder="Parlez-nous de votre parcours..."
+                    className="w-full bg-slate-50/50 rounded-[32px] p-8 outline-none border-2 border-transparent focus:border-majorelle/10 min-h-[180px] text-lg font-serif italic text-slate-700"
+                    placeholder="Partagez votre histoire..."
                   />
                 ) : (
-                  <p className="text-gray-700 leading-relaxed bg-gray-50 p-6 rounded-3xl italic">
-                    {profile.bio || "Aucune biographie renseignée."}
-                  </p>
+                  <div className="relative group">
+                    <div className="absolute -inset-4 bg-majorelle/5 rounded-[40px] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <p className="relative text-slate-700 text-xl font-serif italic leading-relaxed">
+                      {profile.bio || "Ce membre n’a pas encore partag&eacute; sa biographie."}
+                    </p>
+                  </div>
                 )}
               </section>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="bg-white border border-gray-100 p-6 rounded-3xl shadow-sm">
-                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <Building2 size={14} />
-                    Établissement
-                  </h4>
-                  {isEditing ? (
-                    <input 
-                      value={formData.institution}
-                      onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
-                      className="w-full bg-gray-50 rounded-xl px-4 py-2 outline-none"
-                    />
-                  ) : (
-                    <p className="font-bold text-gray-900">{profile.institution || "Non renseigné"}</p>
-                  )}
-                </div>
-                <div className="bg-white border border-gray-100 p-6 rounded-3xl shadow-sm">
-                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <MapPin size={14} />
-                    Ville
-                  </h4>
-                  {isEditing ? (
-                    <input 
-                      value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      className="w-full bg-gray-50 rounded-xl px-4 py-2 outline-none"
-                    />
-                  ) : (
-                    <p className="font-bold text-gray-900">{profile.city || "Non renseigné"}</p>
-                  )}
-                </div>
-                <div className="bg-white border border-gray-100 p-6 rounded-3xl shadow-sm">
-                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <GraduationCap size={14} />
-                    Niveau & Filière
-                  </h4>
-                  {isEditing ? (
-                    <div className="space-y-2">
-                      <input 
-                        value={formData.level}
-                        onChange={(e) => setFormData({ ...formData, level: e.target.value })}
-                        className="w-full bg-gray-50 rounded-xl px-4 py-2 outline-none"
-                        placeholder="Niveau"
-                      />
-                      <input 
-                        value={formData.major}
-                        onChange={(e) => setFormData({ ...formData, major: e.target.value })}
-                        className="w-full bg-gray-50 rounded-xl px-4 py-2 outline-none"
-                        placeholder="Filière"
-                      />
-                    </div>
-                  ) : (
-                    <p className="font-bold text-gray-900">{profile.level} - {profile.major || "Non renseigné"}</p>
-                  )}
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
+                {[
+                  { icon: Building2, label: '&Eacute;tablissement', value: profile.institution, field: 'institution' },
+                  { icon: MapPin, label: 'Ville', value: profile.city, field: 'city' },
+                  { icon: GraduationCap, label: 'Niveau & Fili&egrave;re', value: `${profile.level} - ${profile.major || ''}`, field: ['level', 'major'] }
+                ].map((item, idx) => (
+                  <div key={idx} className="bg-ivory/50 border border-slate-100 p-8 rounded-[32px] group hover:bg-white hover:shadow-xl hover:shadow-majorelle/5 transition-all duration-500">
+                    <h4 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-4 flex items-center gap-3 group-hover:text-majorelle transition-colors">
+                      <item.icon size={16} />
+                      <span dangerouslySetInnerHTML={{ __html: item.label }}></span>
+                    </h4>
+                    {isEditing ? (
+                      Array.isArray(item.field) ? (
+                        <div className="space-y-3">
+                          <input 
+                            value={formData.level}
+                            onChange={(e) => setFormData({ ...formData, level: e.target.value })}
+                            className="w-full bg-white rounded-xl px-4 py-2 outline-none border border-slate-100 text-sm"
+                            placeholder="Niveau"
+                          />
+                          <input 
+                            value={formData.major}
+                            onChange={(e) => setFormData({ ...formData, major: e.target.value })}
+                            className="w-full bg-white rounded-xl px-4 py-2 outline-none border border-slate-100 text-sm"
+                            placeholder="Fili&egrave;re"
+                          />
+                        </div>
+                      ) : (
+                        <input 
+                          value={(formData as any)[item.field as string]}
+                          onChange={(e) => setFormData({ ...formData, [item.field as string]: e.target.value })}
+                          className="w-full bg-white rounded-xl px-4 py-2 outline-none border border-slate-100 text-sm"
+                        />
+                      )
+                    ) : (
+                      <p className="font-serif italic text-lg text-slate-800">{item.value || "Non renseign&eacute;"}</p>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
 
-            <div className="space-y-6">
-              <div className="bg-blue-600 rounded-3xl p-6 text-white">
-                <h3 className="font-bold mb-2">Statistiques</h3>
-                <div className="space-y-4 pt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="opacity-70 text-sm">Publications</span>
-                    <span className="font-bold">{stats.posts}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="opacity-70 text-sm">Mentorat</span>
-                    <span className="font-bold">{stats.posts * 2}h</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="opacity-70 text-sm">Impact</span>
-                    <span className="font-bold">{stats.impact}</span>
-                  </div>
+            <div className="space-y-8">
+              <div className="relative group overflow-hidden bg-moroccan-green rounded-[40px] p-10 text-white shadow-2xl shadow-moroccan-green/20">
+                <div className="absolute inset-0 zellij-pattern opacity-10 group-hover:scale-110 transition-transform duration-700"></div>
+                <h3 className="relative z-10 font-serif italic text-2xl font-bold mb-8">Statistiques</h3>
+                <div className="relative z-10 space-y-8">
+                  {[
+                    { label: 'Publications', value: stats.posts },
+                    { label: 'Impact Social', value: stats.impact },
+                    { label: 'Aide Mentors', value: `${stats.posts * 2}h` }
+                  ].map((stat, idx) => (
+                    <div key={idx} className="flex justify-between items-end border-b border-white/10 pb-4">
+                      <span className="opacity-60 text-xs font-black uppercase tracking-widest">{stat.label}</span>
+                      <span className="text-2xl font-serif italic font-bold">{stat.value}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

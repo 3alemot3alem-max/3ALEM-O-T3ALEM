@@ -39,81 +39,76 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gray-50 pb-24 pt-20 md:pb-0 md:pt-24">
+      <div className="min-h-screen bg-ivory pb-24 pt-20 md:pb-0 md:pt-28 selection:bg-majorelle selection:text-white">
+        <div className="fixed inset-0 zellij-pattern opacity-[0.03] pointer-events-none"></div>
+        
         {/* Mobile Top Header */}
-        <header className="md:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-40">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-black text-lg shadow-lg shadow-blue-200">3</div>
-            <h1 className="text-lg font-black text-gray-900 tracking-tight">3ALEM O T3ALEM</h1>
+        <header className="md:hidden fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-b border-moroccan-green/5 px-6 py-4 flex items-center justify-between z-40">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-moroccan-red rounded-xl flex items-center justify-center text-white font-serif italic font-bold text-xl shadow-lg shadow-moroccan-red/20">3</div>
+            <h1 className="text-lg font-serif italic font-bold text-slate-900 tracking-tight">3ALEM O T3ALEM</h1>
           </div>
           <button 
             onClick={() => auth.signOut()}
-            className="text-red-600 p-2 rounded-xl hover:bg-red-50 transition-all"
-            title="Déconnexion"
+            className="text-moroccan-red p-2 rounded-2xl hover:bg-moroccan-red/5 transition-all"
+            title="D&eacute;connexion"
           >
             <LogOut size={20} />
           </button>
         </header>
 
         {/* Desktop Header */}
-        <header className="hidden md:flex fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b border-gray-100 z-40 px-8 py-4 items-center justify-between shadow-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-200">3</div>
-            <h1 className="text-xl font-black text-gray-900 tracking-tight">3ALEM O T3ALEM</h1>
+        <header className="hidden md:flex fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl bg-white/70 backdrop-blur-xl border border-white/50 z-40 px-8 py-4 rounded-[32px] items-center justify-between shadow-2xl shadow-moroccan-green/5">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 bg-moroccan-red rounded-2xl flex items-center justify-center text-white font-serif italic font-bold text-2xl shadow-xl shadow-moroccan-red/20">3</div>
+            <div className="flex flex-col">
+              <h1 className="text-xl font-serif italic font-bold text-slate-900 tracking-tight leading-none">3ALEM O T3ALEM</h1>
+              <span className="text-[10px] uppercase font-black tracking-[0.3em] text-moroccan-green/60">Knowledge Community</span>
+            </div>
           </div>
           
-          <nav className="flex items-center gap-1 bg-gray-100 p-1 rounded-2xl">
-            <button 
-              onClick={() => setActiveTab('feed')}
-              className={`px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'feed' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-            >
-              <LayoutGrid size={18} />
-              Communauté
-            </button>
-            <button 
-              onClick={() => setActiveTab('schools')}
-              className={`px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'schools' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-            >
-              <GraduationCap size={18} />
-              Écoles
-            </button>
-            <button 
-              onClick={() => {
-                setViewingUserId(null);
-                setActiveTab('profile');
-              }}
-              className={`px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'profile' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-            >
-              <User size={18} />
-              Profil
-            </button>
-            <button 
-              onClick={() => setActiveTab('messaging')}
-              className={`px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'messaging' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-            >
-              <MessageSquare size={18} />
-              Messages
-            </button>
+          <nav className="flex items-center gap-2 bg-slate-50/50 p-1.5 rounded-[24px] border border-slate-100">
+            {[
+              { id: 'feed', icon: LayoutGrid, label: 'Communaut&eacute;' },
+              { id: 'schools', icon: GraduationCap, label: '&Eacute;coles' },
+              { id: 'profile', icon: User, label: 'Profil' },
+              { id: 'messaging', icon: MessageSquare, label: 'Messages' }
+            ].map((tab) => (
+              <button 
+                key={tab.id}
+                onClick={() => {
+                  if (tab.id === 'profile') setViewingUserId(null);
+                  setActiveTab(tab.id as any);
+                }}
+                className={`px-6 py-2.5 rounded-2xl text-sm font-bold transition-all duration-300 flex items-center gap-2.5 ${activeTab === tab.id ? 'bg-moroccan-green text-white shadow-xl shadow-moroccan-green/20 scale-105' : 'text-slate-400 hover:text-moroccan-green hover:bg-moroccan-green/5'}`}
+              >
+                <tab.icon size={18} className={activeTab === tab.id ? 'animate-pulse' : ''} />
+                <span dangerouslySetInnerHTML={{ __html: tab.label }} />
+              </button>
+            ))}
           </nav>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-5">
             <div className="text-right hidden lg:block">
-              <p className="text-sm font-bold text-gray-900">{user.displayName || 'Utilisateur'}</p>
-              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Connecté</p>
+              <p className="text-sm font-serif italic font-bold text-slate-900 leading-none">{user.displayName || 'Utilisateur'}</p>
+              <div className="flex items-center justify-end gap-1.5 mt-1">
+                <div className="w-1.5 h-1.5 bg-moroccan-green rounded-full"></div>
+                <span className="text-[9px] text-slate-400 font-black uppercase tracking-[0.1em]">En ligne</span>
+              </div>
             </div>
             <button 
               onClick={() => auth.signOut()}
-              className="bg-red-50 text-red-600 p-2.5 rounded-xl hover:bg-red-100 transition-all flex items-center gap-2 group"
-              title="Déconnexion"
+              className="bg-moroccan-red/5 text-moroccan-red p-3 rounded-2xl hover:bg-moroccan-red/10 transition-all flex items-center gap-2 group"
+              title="D&eacute;connexion"
             >
-              <LogOut size={20} className="group-hover:translate-x-0.5 transition-transform" />
-              <span className="hidden sm:block text-xs font-bold">Déconnexion</span>
+              <LogOut size={20} className="group-hover:translate-x-1 transition-transform duration-300" />
+              <span className="hidden lg:block text-xs font-black uppercase tracking-widest">Quitter</span>
             </button>
           </div>
         </header>
 
         {/* Main Content */}
-        <main className="container mx-auto">
+        <main className="container mx-auto relative z-10 transition-all duration-500">
           {activeTab === 'feed' && <Feed onStartChat={(email) => activateChat(email)} onViewProfile={viewUserProfile} />}
           {activeTab === 'schools' && <SchoolDirectory />}
           {activeTab === 'profile' && <Profile targetUserId={viewingUserId} onMessage={(uid) => {
@@ -123,38 +118,27 @@ export default function App() {
         </main>
 
         {/* Mobile Navigation */}
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-6 py-4 flex justify-between items-center z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-          <button 
-            onClick={() => setActiveTab('feed')}
-            className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'feed' ? 'text-blue-600' : 'text-gray-400'}`}
-          >
-            <LayoutGrid size={24} />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Feed</span>
-          </button>
-          <button 
-            onClick={() => setActiveTab('schools')}
-            className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'schools' ? 'text-blue-600' : 'text-gray-400'}`}
-          >
-            <GraduationCap size={24} />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Écoles</span>
-          </button>
-          <button 
-            onClick={() => {
-              setViewingUserId(null);
-              setActiveTab('profile');
-            }}
-            className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'profile' ? 'text-blue-600' : 'text-gray-400'}`}
-          >
-            <User size={24} />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Profil</span>
-          </button>
-          <button 
-            onClick={() => setActiveTab('messaging')}
-            className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'messaging' ? 'text-blue-600' : 'text-gray-400'}`}
-          >
-            <MessageSquare size={24} />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Chat</span>
-          </button>
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-2xl border-t border-moroccan-green/5 px-6 py-4 flex justify-between items-center z-40 shadow-[0_-10px_40px_rgba(193,39,45,0.1)] rounded-t-[32px]">
+          {[
+            { id: 'feed', icon: LayoutGrid, label: 'Feed' },
+            { id: 'schools', icon: GraduationCap, label: '&Eacute;coles' },
+            { id: 'profile', icon: User, label: 'Profil' },
+            { id: 'messaging', icon: MessageSquare, label: 'Chat' }
+          ].map((tab) => (
+            <button 
+              key={tab.id}
+              onClick={() => {
+                if (tab.id === 'profile') setViewingUserId(null);
+                setActiveTab(tab.id as any);
+              }}
+              className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${activeTab === tab.id ? 'text-moroccan-green scale-110' : 'text-slate-300'}`}
+            >
+              <div className={`p-2 rounded-xl transition-all ${activeTab === tab.id ? 'bg-moroccan-green/10' : ''}`}>
+                <tab.icon size={22} />
+              </div>
+              <span className="text-[9px] font-black uppercase tracking-[0.2em]" dangerouslySetInnerHTML={{ __html: tab.label }}></span>
+            </button>
+          ))}
         </nav>
       </div>
     </ErrorBoundary>

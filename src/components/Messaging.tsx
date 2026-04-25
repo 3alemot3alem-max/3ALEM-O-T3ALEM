@@ -170,62 +170,60 @@ export const Messaging: React.FC<{
   if (!user) return null;
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4 flex flex-col h-[600px]">
-      <div className="bg-white rounded-3xl shadow-sm overflow-hidden flex-1 flex flex-col md:flex-row">
+    <div className="max-w-5xl mx-auto py-8 px-4 flex flex-col h-[700px]">
+      <div className="maroccan-card overflow-hidden flex-1 flex flex-col md:flex-row bg-white">
         {/* Left column: Search and Conversations */}
-        <div className="w-full md:w-80 border-r border-gray-100 flex flex-col p-4 bg-gray-50/30">
-          <form onSubmit={handleSearch} className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <input 
-              type="text"
-              placeholder="Mentor ou étudiant..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-100 rounded-xl outline-none text-sm focus:ring-2 focus:ring-blue-500/10"
-            />
-          </form>
+        <div className="w-full md:w-96 border-r border-majorelle/5 flex flex-col p-6 bg-ivory/30">
+          <div className="mb-8">
+            <h2 className="text-2xl font-serif italic font-bold text-slate-900 mb-6">Messages</h2>
+            <form onSubmit={handleSearch} className="relative">
+              <div className="absolute inset-0 bg-moroccan-green/5 rounded-2xl blur-lg opacity-0 group-focus-within:opacity-100 transition-opacity"></div>
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input 
+                type="text"
+                placeholder="Chercher un mentor..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-4 bg-white border border-slate-100 rounded-2xl outline-none text-sm font-medium focus:ring-2 focus:ring-moroccan-green/10 transition-all relative z-10"
+              />
+            </form>
+          </div>
 
-          <div className="flex-1 overflow-y-auto space-y-2">
+          <div className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-hide">
             {isSearching && (
-              <div className="flex justify-center py-4">
-                <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              <div className="flex justify-center py-8">
+                <div className="w-8 h-8 border-4 border-majorelle border-t-transparent rounded-full animate-spin"></div>
               </div>
             )}
             
             {searchResults.length > 0 ? (
-              <div className="space-y-2">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">Résultats</p>
+              <div className="space-y-3">
+                <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] px-3">Explorateurs</p>
                 {searchResults.map(u => (
                   <button 
                     key={u.uid}
                     onClick={() => startChat(u)}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      onViewProfile?.(u.uid);
-                    }}
-                    className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-blue-50 transition-colors text-left group border border-transparent hover:border-blue-100"
+                    className="w-full flex items-center gap-4 p-4 rounded-[24px] hover:bg-majorelle/5 transition-all text-left group border border-transparent hover:border-majorelle/10"
                   >
                     <img 
                       src={u.photoURL} 
-                      className="w-10 h-10 rounded-full object-cover shadow-sm cursor-pointer" 
+                      className="w-12 h-12 rounded-2xl object-cover shadow-sm ring-2 ring-transparent group-hover:ring-majorelle/20 transition-all" 
                       alt="" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onViewProfile?.(u.uid);
-                      }}
                     />
                     <div className="overflow-hidden flex-1">
-                      <p className="text-sm font-bold text-gray-900 group-hover:text-blue-600 truncate">{u.displayName || `${u.firstName} ${u.lastName}`}</p>
-                      <p className="text-[10px] text-gray-400 uppercase font-bold truncate">{u.role} • {u.level}</p>
+                      <p className="text-sm font-serif italic font-bold text-slate-900 group-hover:text-majorelle truncate">{u.displayName || `${u.firstName} ${u.lastName}`}</p>
+                      <p className="text-[9px] text-slate-400 uppercase font-black tracking-widest truncate">{u.role} • {u.level}</p>
                     </div>
                   </button>
                 ))}
               </div>
             ) : searchQuery && !isSearching ? (
-              <p className="text-center text-xs text-gray-400 py-4 font-medium">Aucun membre trouvé</p>
+              <div className="text-center py-12">
+                <p className="text-sm font-serif italic text-slate-400">Aucun mentor trouv&eacute;.</p>
+              </div>
             ) : (
-              <div className="space-y-2">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">Messages</p>
+              <div className="space-y-4">
+                <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] px-3">Discussions</p>
                 {userChats.length > 0 ? (
                   userChats.map(chat => (
                     <button 
@@ -236,40 +234,35 @@ export const Messaging: React.FC<{
                           setActiveRecipient(chat.recipientProfile);
                         }
                       }}
-                      onContextMenu={(e) => {
-                        e.preventDefault();
-                        if (chat.recipientProfile) onViewProfile?.(chat.recipientProfile.uid);
-                      }}
-                      className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all text-left group border ${activeChat?.id === chat.id ? 'bg-blue-600 border-blue-600 shadow-lg shadow-blue-100 text-white' : 'bg-white border-gray-50 hover:border-blue-100 text-gray-900'}`}
+                      className={`w-full flex items-center gap-4 p-4 rounded-[32px] transition-all duration-500 text-left group relative overflow-hidden ${activeChat?.id === chat.id ? 'bg-moroccan-green text-white shadow-2xl shadow-moroccan-green/20 scale-105' : 'bg-white border border-slate-50 hover:border-moroccan-green/10 text-slate-900 hover:shadow-xl hover:shadow-moroccan-green/5'}`}
                     >
+                      {activeChat?.id === chat.id && <div className="absolute inset-0 zellij-pattern opacity-10 pointer-events-none"></div>}
                       <img 
                         src={chat.recipientProfile?.photoURL} 
-                        className="w-10 h-10 rounded-full object-cover shadow-sm bg-white cursor-pointer" 
+                        className={`w-14 h-14 rounded-[20px] object-cover shadow-sm bg-white shrink-0 ${activeChat?.id === chat.id ? 'ring-4 ring-white/20' : 'ring-4 ring-slate-50 group-hover:ring-moroccan-green/5'}`} 
                         alt="" 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (chat.recipientProfile) onViewProfile?.(chat.recipientProfile.uid);
-                        }}
                       />
-                      <div className="flex-1 overflow-hidden">
-                        <p className={`text-sm font-bold truncate ${activeChat?.id === chat.id ? 'text-white' : 'text-gray-900'}`}>
+                      <div className="flex-1 overflow-hidden relative z-10">
+                        <p className={`text-base font-serif italic font-bold truncate ${activeChat?.id === chat.id ? 'text-white' : 'text-slate-900'}`}>
                           {chat.recipientProfile?.displayName || `${chat.recipientProfile?.firstName} ${chat.recipientProfile?.lastName}`}
                         </p>
-                        <p className={`text-[11px] truncate opacity-80 ${activeChat?.id === chat.id ? 'text-blue-100' : 'text-gray-400 font-medium'}`}>
-                          {chat.lastMessage || "Ouvrir la discussion"}
+                        <p className={`text-xs truncate transition-opacity ${activeChat?.id === chat.id ? 'text-white/80' : 'text-slate-400 font-medium opacity-60 group-hover:opacity-100'}`}>
+                          {chat.lastMessage || "Lancer la conversation..."}
                         </p>
                       </div>
                       {chat.lastMessageAt && (
-                        <span className={`text-[9px] font-bold shrink-0 ${activeChat?.id === chat.id ? 'text-blue-200' : 'text-gray-300'}`}>
+                        <span className={`text-[9px] font-black uppercase tracking-tighter shrink-0 relative z-10 ${activeChat?.id === chat.id ? 'text-white/60' : 'text-slate-300'}`}>
                           {new Date(chat.lastMessageAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
                         </span>
                       )}
                     </button>
                   ))
                 ) : (
-                  <div className="py-12 text-center">
-                    <MessageCircle size={24} className="mx-auto mb-2 text-gray-200" />
-                    <p className="text-xs text-gray-400 font-medium">Pas encore de conversations</p>
+                  <div className="py-20 text-center space-y-4">
+                    <div className="w-16 h-16 bg-slate-50 rounded-[24px] flex items-center justify-center mx-auto text-slate-200">
+                      <MessageCircle size={32} />
+                    </div>
+                    <p className="text-sm font-serif italic text-slate-400">Le silence est d&apos;or, mais l&apos;&eacute;change est pr&eacute;cieux.</p>
                   </div>
                 )}
               </div>
@@ -278,70 +271,91 @@ export const Messaging: React.FC<{
         </div>
 
         {/* Right column: Messages */}
-        <div className="flex-1 flex flex-col bg-gray-50/50">
+        <div className="flex-1 flex flex-col bg-ivory/20 relative">
+          <div className="absolute inset-0 zellij-pattern opacity-[0.02] pointer-events-none"></div>
+          
           {activeChat && activeRecipient ? (
             <>
-              <div className="bg-white p-4 border-b border-gray-100 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <img src={activeRecipient.photoURL} className="w-8 h-8 rounded-full" alt="" />
-                  <h4 className="font-bold text-gray-900">{activeRecipient.firstName} {activeRecipient.lastName}</h4>
+              <div className="bg-white/80 backdrop-blur-md p-6 border-b border-majorelle/5 flex items-center justify-between relative z-10">
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <img src={activeRecipient.photoURL} className="w-12 h-12 rounded-2xl object-cover ring-4 ring-moroccan-green/5" alt="" />
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-moroccan-green border-2 border-white rounded-full"></div>
+                  </div>
+                  <div>
+                    <h4 className="font-serif italic text-xl font-bold text-slate-900">{activeRecipient.firstName} {activeRecipient.lastName}</h4>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-moroccan-green/60 italic">Mentor en ligne</p>
+                  </div>
                 </div>
-                <button onClick={() => { setActiveChat(null); setActiveRecipient(null); }} className="text-gray-400 hover:text-red-500">
-                  <X size={20} />
+                <button onClick={() => { setActiveChat(null); setActiveRecipient(null); }} className="p-3 bg-slate-50 rounded-2xl text-slate-300 hover:text-terracotta hover:bg-terracotta/5 transition-all">
+                  <X size={24} />
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.map(msg => (
-                  <div key={msg.id} className={`flex ${msg.senderUid === user.uid ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[70%] p-3 rounded-2xl text-sm shadow-sm ${msg.senderUid === user.uid ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-white text-gray-800 rounded-tl-none'}`}>
-                      <p>{msg.text}</p>
-                      <span className={`block text-[10px] mt-1 opacity-60 ${msg.senderUid === user.uid ? 'text-right' : 'text-left'}`}>
-                        {formatDate(msg.createdAt)}
-                      </span>
+              <div className="flex-1 overflow-y-auto p-8 space-y-8 relative z-10 scrollbar-hide">
+                {messages.map((msg, idx) => {
+                  const isMe = msg.senderUid === user.uid;
+                  return (
+                    <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} group animate-in fade-in slide-in-from-bottom-2 duration-500`} style={{ animationDelay: `${idx * 50}ms` }}>
+                      <div className={`max-w-[80%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                        <div className={`p-5 rounded-[32px] text-base font-medium shadow-xl shadow-moroccan-green/5 ${isMe ? 'bg-moroccan-green text-white rounded-tr-none' : 'bg-white text-slate-700 rounded-tl-none border border-slate-50'}`}>
+                          <p className="leading-relaxed">{msg.text}</p>
+                        </div>
+                        <span className="text-[9px] font-black uppercase tracking-tight text-slate-300 mt-2 px-2">
+                          {formatDate(msg.createdAt)}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
-              <form onSubmit={sendMessage} className="p-4 bg-white border-t border-gray-100 flex gap-2">
+              <form onSubmit={sendMessage} className="p-6 bg-white/80 backdrop-blur-md border-t border-majorelle/5 flex gap-4 relative z-10">
                 <input 
                   type="text"
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Votre message..."
-                  className="flex-1 bg-gray-50 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/10"
+                  placeholder="&Eacute;crivez votre message avec sagesse..."
+                  className="flex-1 bg-slate-50/50 rounded-[28px] px-8 py-5 text-base font-serif italic outline-none focus:bg-white focus:ring-4 focus:ring-moroccan-green/5 transition-all border border-transparent focus:border-moroccan-green/10"
                 />
                 <button 
                   disabled={!newMessage.trim()}
-                  className="bg-blue-600 text-white p-2 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-all"
+                  className="bg-moroccan-green text-white p-5 rounded-[24px] hover:bg-moroccan-green/90 disabled:opacity-50 transition-all shadow-2xl shadow-moroccan-green/20 active:scale-95 group"
                 >
-                  <Send size={18} />
+                  <Send size={24} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                 </button>
               </form>
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-4 animate-bounce">
-                <Mail size={32} />
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-12 relative z-10">
+              <div className="relative mb-10">
+                <div className="absolute inset-0 bg-majorelle/10 rounded-full blur-3xl animate-pulse"></div>
+                <div className="relative w-32 h-32 bg-majorelle rounded-[40px] flex items-center justify-center text-white shadow-2xl shadow-majorelle/30">
+                  <div className="absolute inset-0 zellij-pattern opacity-20"></div>
+                  <Mail size={56} className="relative z-10 animate-bounce" />
+                </div>
               </div>
-              <h3 className="text-xl font-black text-gray-900 mb-2">3ALEM Messagerie</h3>
-              <p className="text-sm text-gray-500 max-w-xs">
-                Contactez les mentors pour poser vos questions en privé et obtenir des réponses sur mesure.
+              <h3 className="text-4xl font-serif italic font-bold text-slate-900 mb-6 tracking-tight">Le Salon des Mentors</h3>
+              <div className="w-16 h-1 bg-saffron mx-auto mb-8 rounded-full"></div>
+              <p className="text-lg text-slate-500 max-w-sm font-serif italic leading-relaxed">
+                "Celui qui pose une question est un ignorant pour cinq minutes, celui qui n&apos;en pose pas le reste toute sa vie."
               </p>
+              <p className="mt-8 text-xs font-black uppercase tracking-[0.3em] text-majorelle/40">S&eacute;lectionnez une &acirc;me pour commencer</p>
             </div>
           )}
         </div>
       </div>
       
       {/* Contact Support Section */}
-      <div className="mt-6 flex justify-center">
+      <div className="mt-8 flex justify-center">
         <a 
           href="mailto:3alemot3alem@gmail.com" 
-          className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl transition-all"
+          className="group flex items-center gap-4 px-8 py-4 bg-white rounded-full shadow-xl shadow-majorelle/5 border border-slate-50 hover:bg-majorelle hover:text-white transition-all duration-500"
         >
-          <BookOpen size={16} />
-          Une question d'orientation ? Contactez-moi
+          <div className="p-2 bg-majorelle/5 rounded-xl group-hover:bg-white/20 transition-colors">
+            <BookOpen size={20} className="text-majorelle group-hover:text-white" />
+          </div>
+          <span className="text-sm font-serif italic font-bold">Un d&eacute;fi? Une question? Je suis &agrave; votre &eacute;coute</span>
         </a>
       </div>
     </div>
