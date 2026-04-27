@@ -196,7 +196,7 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
       {/* Quick Actions for Community */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-4">
         <button 
-          onClick={onStartChat}
+          onClick={() => onStartChat?.('')}
           className="group relative flex items-center gap-5 bg-majorelle text-white p-7 rounded-[40px] shadow-2xl shadow-majorelle/20 hover:-translate-y-1 transition-all duration-500 text-left overflow-hidden"
         >
           <div className="absolute inset-0 zellij-pattern opacity-10 group-hover:opacity-20 transition-opacity"></div>

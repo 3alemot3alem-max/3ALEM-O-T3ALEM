@@ -30,14 +30,37 @@ export const SchoolDirectory: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto py-12 px-6">
-      <div className="mb-16 text-center relative">
-        <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-24 h-24 zellij-pattern opacity-10 rounded-full"></div>
-        <h2 className="text-5xl font-serif italic font-bold text-slate-900 mb-6 tracking-tight relative z-10">L&apos;Espace &Eacute;coles</h2>
-        <div className="w-20 h-1 bg-moroccan-red mx-auto mb-6 rounded-full"></div>
-        <p className="text-slate-500 max-w-2xl mx-auto font-serif italic text-lg leading-relaxed">
-          Explorez les corridors de l&apos;excellence acad&eacute;mique au Maroc. D&eacute;couvrez les seuils 2024, les concours et les sp&eacute;cialit&eacute;s de chaque institution.
-        </p>
+      {/* Magnificent Header */}
+      <div className="relative h-80 rounded-[48px] overflow-hidden mb-16 group shadow-2xl shadow-moroccan-green/20">
+        <img 
+          src="https://images.unsplash.com/photo-1541339907198-e08756ebafe3?auto=format&fit=crop&q=80&w=2000" 
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110" 
+          alt="University" 
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-moroccan-green/90 via-moroccan-green/40 to-transparent"></div>
+        <div className="absolute inset-0 zellij-pattern opacity-10"></div>
+        
+        <div className="relative h-full flex flex-col justify-center px-12 md:px-20 max-w-3xl">
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="backdrop-blur-md bg-white/10 p-8 md:p-12 rounded-[32px] border border-white/20 shadow-2xl">
+              <span className="bg-moroccan-red text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.4em] shadow-xl mb-6 inline-block">
+                Annuaire 2024
+              </span>
+              <h1 className="text-7xl md:text-9xl font-black text-white uppercase tracking-tighter leading-none mb-6 drop-shadow-2xl">
+                &Eacute;COLE
+              </h1>
+              <p className="text-white/90 font-serif italic text-xl md:text-2xl leading-relaxed max-w-xl drop-shadow-lg">
+                D&eacute;couvrez les seuils de pr&eacute;s&eacute;lection, les sp&eacute;cialit&eacute;s et forgez votre avenir acad&eacute;mique.
+              </p>
+            </div>
+          </motion.div>
+        </div>
       </div>
+
 
       <div className="mb-12 flex justify-center">
         <div className="maroccan-card p-2 flex gap-3 w-full max-w-xl group">

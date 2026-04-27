@@ -4,22 +4,44 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { motion, AnimatePresence } from 'motion/react';
-import { LogIn, UserPlus, GraduationCap, School, Camera, Loader2 } from 'lucide-react';
-import { SCHOOLS_DATA } from '../data/schools';
+import { LogIn, UserPlus, GraduationCap, School, Camera, Loader2, Bot, Sparkles } from 'lucide-react';
+import { SCHOOLS_DATA, SCHOOL_ACRONYMS } from '../data/schools';
+import { AIAssistant } from './AIAssistant';
 
 export const AuthModal: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [institution, setInstitution] = useState('');
-  const [major, setMajor] = useState('');
-  const [level, setLevel] = useState('');
-  const [photoURL, setPhotoURL] = useState('');
   const [role, setRole] = useState<'student' | 'mentor'>('student');
+  const [photoURL, setPhotoURL] = useState('');
   const [error, setError] = useState('');
+  const [isAIOpen, setIsAIOpen] = useState(false);
+
+  const handleNextStep = () => {
+    if (step === 1 && (!firstName.trim() || !lastName.trim())) {
+      setError('Veuillez entrer votre nom et prénom.');
+      return;
+    }
+    if (step === 2 && role === 'mentor' && !institution.trim()) {
+      setError('Veuillez renseigner votre école.');
+      return;
+    }
+    // If pupil (student), step 2 is skipped or has nothing? 
+    // The user said "si eleleve tu suprime les chois des ecole".
+    // I will show a "Next" button in step 2 that does nothing if it's a pupil, or just skip it.
+    setError('');
+    setStep(prev => prev + 1);
+  };
+
+  const handlePrevStep = () => {
+    setError('');
+    setStep(prev => prev - 1);
+  };
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -42,6 +64,10 @@ export const AuthModal: React.FC = () => {
   const mentorLevels = ['1ère année', '2ème année', 'Licence', 'Master', 'Doctorat'];
 
   const handleGoogleLogin = async () => {
+    if (!isLogin && step < 3) {
+      setError('Veuillez d\'abord compléter les premières étapes du formulaire.');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
@@ -56,27 +82,26 @@ export const AuthModal: React.FC = () => {
         if (!userDoc.exists()) {
           await setDoc(doc(db, 'users', user.uid), {
             uid: user.uid,
-            displayName: user.displayName || '',
-            firstName: user.displayName?.split(' ')[0] || '',
-            lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+            displayName: isLogin ? (user.displayName || '') : `${firstName} ${lastName}`,
+            firstName: isLogin ? (user.displayName?.split(' ')[0] || '') : firstName,
+            lastName: isLogin ? (user.displayName?.split(' ').slice(1).join(' ') || '') : lastName,
             email: user.email || '',
-            photoURL: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
-            bannerURL: '',
-            role: 'student',
-            level: 'Non spécifié',
+            photoURL: user.photoURL || photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
+            role: role,
+            institution: isLogin ? '' : (role === 'mentor' ? institution : ''),
             createdAt: new Date().toISOString(),
           });
         }
     } catch (err: any) {
       console.error("Auth Error:", err.code, err.message);
       if (err.code === 'auth/operation-not-allowed') {
-        setError(`La connexion Google n'est pas activée. Allez dans Console Firebase > Authentication > Sign-in method > Ajouter un fournisseur > Google (Activer).`);
-      } else if (err.code === 'auth/argument-error') {
-        setError("Une erreur technique est survenue (Argument Error). Veuillez rafraîchir la page ou vérifier la configuration.");
-      } else if (err.code === 'auth/popup-closed-by-user') {
-        setError("La fenêtre de connexion a été fermée avant la fin.");
+        setError("La connexion Google n'est pas activée dans la console Firebase.\nAccédez à Console Firebase > Authentication > Sign-in method et activez Google.");
+      } else if (err.code === 'auth/popup-blocked') {
+        setError("La fenêtre contextuelle de connexion a été bloquée par votre navigateur.");
+      } else if (err.code === 'auth/unauthorized-domain') {
+        setError("Ce domaine n'est pas autorisé pour l'authentification Google dans la console Firebase.");
       } else {
-        setError("Impossible de se connecter via Google pour le moment.");
+        setError(err.message);
       }
     } finally {
       setLoading(false);
@@ -84,6 +109,10 @@ export const AuthModal: React.FC = () => {
   };
 
   const handleAppleLogin = async () => {
+    if (!isLogin && step < 3) {
+      setError('Veuillez d\'abord compléter les premières étapes du formulaire.');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
@@ -96,25 +125,26 @@ export const AuthModal: React.FC = () => {
       if (!userDoc.exists()) {
         await setDoc(doc(db, 'users', user.uid), {
           uid: user.uid,
-          displayName: user.displayName || 'Utilisateur Apple',
-          firstName: user.displayName?.split(' ')[0] || 'Apple',
-          lastName: user.displayName?.split(' ').slice(1).join(' ') || 'User',
+          displayName: isLogin ? (user.displayName || 'Utilisateur Apple') : `${firstName} ${lastName}`,
+          firstName: isLogin ? (user.displayName?.split(' ')[0] || 'Apple') : firstName,
+          lastName: isLogin ? (user.displayName?.split(' ').slice(1).join(' ') || 'User') : lastName,
           email: user.email || '',
-          photoURL: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
-          bannerURL: '',
-          role: 'student',
-          level: 'Non spécifié',
+          photoURL: user.photoURL || photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
+          role: role,
+          institution: isLogin ? '' : (role === 'mentor' ? institution : ''),
           createdAt: new Date().toISOString(),
         });
       }
     } catch (err: any) {
       console.error("Apple Auth Error:", err.code);
       if (err.code === 'auth/operation-not-allowed') {
-        setError("La connexion Apple n'est pas activée dans la console Firebase.");
-      } else if (err.code === 'auth/popup-closed-by-user') {
-        setError("La fenêtre Apple a été fermée.");
+        setError("La connexion Apple n'est pas activée dans la console Firebase.\nAccédez à Console Firebase > Authentication > Sign-in method et activez Apple.");
+      } else if (err.code === 'auth/popup-blocked') {
+        setError("La fenêtre de connexion a été bloquée par votre navigateur.");
+      } else if (err.code === 'auth/unauthorized-domain') {
+        setError("Ce domaine n'est pas autorisé pour l'authentification Apple.\nAjoutez l'URL dans Console Firebase > Authentication > Paramètres > Domaines autorisés.");
       } else {
-        setError("Erreur technique lors de la connexion Apple.");
+        setError(err.message);
       }
     } finally {
       setLoading(false);
@@ -123,6 +153,10 @@ export const AuthModal: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isLogin && step < 3) {
+      handleNextStep();
+      return;
+    }
     setError('');
     setLoading(true);
     if (!email.trim() || !password.trim()) {
@@ -134,8 +168,6 @@ export const AuthModal: React.FC = () => {
       if (isLogin) {
         await signInWithEmailAndPassword(auth, email.trim(), password.trim());
       } else {
-        if (!level) throw new Error('Veuillez choisir votre niveau');
-        
         const result = await createUserWithEmailAndPassword(auth, email.trim(), password.trim());
         await setDoc(doc(db, 'users', result.user.uid), {
           uid: result.user.uid,
@@ -144,31 +176,14 @@ export const AuthModal: React.FC = () => {
           lastName,
           email,
           photoURL: photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${result.user.uid}`,
-          bannerURL: '',
-          role,
-          level,
-          institution,
-          major,
+          role: role,
+          institution: role === 'mentor' ? institution : '',
           createdAt: new Date().toISOString(),
         });
       }
     } catch (err: any) {
       console.error("Submit Error:", err.code, err.message);
-      if (err.code === 'auth/operation-not-allowed') {
-        setError(`La connexion E-mail n'est pas activée. Allez dans Console Firebase > Authentication > Sign-in method > Ajouter un fournisseur > E-mail/Mot de passe (Activer).`);
-      } else if (err.code === 'auth/email-already-in-use') {
-        setError("Cet e-mail est déjà utilisé par un autre compte.");
-      } else if (err.code === 'auth/invalid-email') {
-        setError("L'adresse e-mail n'est pas valide.");
-      } else if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-        setError("Email ou mot de passe incorrect.");
-      } else if (err.code === 'auth/weak-password') {
-        setError("Le mot de passe doit contenir au moins 6 caractères.");
-      } else if (err.code === 'auth/argument-error') {
-        setError("Une erreur est survenue dans les informations envoyées (Argument Error).");
-      } else {
-        setError("Une erreur s'est produite. Veuillez réessayer.");
-      }
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -206,6 +221,16 @@ export const AuthModal: React.FC = () => {
                 <div className="w-11 h-11 rounded-2xl border-4 border-moroccan-green bg-moroccan-red flex items-center justify-center text-[10px] font-black tracking-tighter text-white">+2k</div>
               </div>
               <p className="text-xs font-black uppercase tracking-[0.2em] text-white/60">Communaut&eacute; Active</p>
+              
+              <button 
+                onClick={() => setIsAIOpen(true)}
+                className="mt-6 w-full bg-white/20 hover:bg-white/30 backdrop-blur-md text-white py-4 rounded-2xl border border-white/30 flex items-center justify-center gap-3 transition-all group overflow-hidden relative shadow-xl"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                <Bot size={20} className="animate-bounce" />
+                <span className="text-xs font-black uppercase tracking-widest relative z-10">Aide IA Académique</span>
+                <Sparkles size={14} className="text-moroccan-red absolute top-2 right-4 animate-pulse" />
+              </button>
             </div>
           </div>
 
@@ -228,150 +253,224 @@ export const AuthModal: React.FC = () => {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <AnimatePresence mode="wait">
-                {!isLogin ? (
+                {isLogin ? (
                   <motion.div 
-                    key="register-fields"
+                    key="login-fields"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="space-y-5"
+                    className="space-y-4"
                   >
-                    <div className="grid grid-cols-2 gap-4">
-                      <div 
-                           onClick={() => setRole('student')}
-                           className={`flex flex-col items-center justify-center p-5 rounded-[24px] border-2 cursor-pointer transition-all duration-300 ${role === 'student' ? 'border-moroccan-green bg-moroccan-green/5 shadow-inner' : 'border-slate-50 bg-slate-50/50 hover:border-slate-200'}`}>
-                        <GraduationCap className={role === 'student' ? 'text-moroccan-green' : 'text-slate-400'} size={28} />
-                        <span className={`text-[10px] mt-3 font-black uppercase tracking-widest ${role === 'student' ? 'text-moroccan-green' : 'text-slate-500'}`}>&Eacute;l&egrave;ve</span>
-                      </div>
-                      <div 
-                           onClick={() => setRole('mentor')}
-                           className={`flex flex-col items-center justify-center p-5 rounded-[24px] border-2 cursor-pointer transition-all duration-300 ${role === 'mentor' ? 'border-moroccan-green bg-moroccan-green/5 shadow-inner' : 'border-slate-50 bg-slate-50/50 hover:border-slate-200'}`}>
-                        <School className={role === 'mentor' ? 'text-moroccan-green' : 'text-slate-400'} size={28} />
-                        <span className={`text-[10px] mt-3 font-black uppercase tracking-widest ${role === 'mentor' ? 'text-moroccan-green' : 'text-slate-500'}`}>&Eacute;tudiant</span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <input 
-                        type="text" 
-                        placeholder="Pr&eacute;nom"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-transparent focus:bg-white focus:border-moroccan-green/20 outline-none transition-all font-medium"
-                        required
-                      />
-                      <input 
-                        type="text" 
-                        placeholder="Nom"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-transparent focus:bg-white focus:border-moroccan-green/20 outline-none transition-all font-medium"
-                        required
-                      />
-                    </div>
-
                     <input 
-                      type="text" 
-                      placeholder="&Eacute;cole / Universit&eacute;"
-                      value={institution}
-                      onChange={(e) => setInstitution(e.target.value)}
+                      type="email" 
+                      placeholder="Email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-transparent focus:bg-white focus:border-moroccan-green/20 outline-none transition-all font-medium"
-                      list="school-suggestions"
                       required
                     />
-                    <datalist id="school-suggestions">
-                      {SCHOOLS_DATA.map(school => (
-                        <option key={school.id} value={school.name} />
-                      ))}
-                    </datalist>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <select 
-                        value={level}
-                        onChange={(e) => setLevel(e.target.value)}
-                        className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-transparent focus:bg-white focus:border-moroccan-green/20 outline-none transition-all text-sm font-medium appearance-none"
-                        required
-                      >
-                        <option value="">Niveau</option>
-                        {(role === 'student' ? studentLevels : mentorLevels).map(l => (
-                          <option key={l} value={l}>{l}</option>
-                        ))}
-                      </select>
-                      <input 
-                        type="text" 
-                        placeholder="Fili&egrave;re"
-                        value={major}
-                        onChange={(e) => setMajor(e.target.value)}
-                        className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-transparent focus:bg-white focus:border-moroccan-green/20 outline-none transition-all font-medium"
-                        required
-                      />
-                    </div>
-
-                    <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200 hover:border-moroccan-green/30 transition-colors group cursor-pointer relative" onClick={() => fileInputRef.current?.click()}>
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        className="hidden" 
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                      />
-                      <div className="p-3 bg-white rounded-xl shadow-sm group-hover:text-moroccan-green transition-colors">
-                        <Camera size={20} />
-                      </div>
-                      <span className="text-xs font-bold text-slate-500 truncate flex-1">
-                        {photoURL ? "Photo s&eacute;lectionn&eacute;e \u2713" : "Choisir une photo de profil"}
-                      </span>
-                      {photoURL && (
-                        <img src={photoURL} className="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-md shadow-moroccan-green/5" alt="Aper&ccedil;u" />
-                      )}
-                    </div>
+                    <input 
+                      type="password" 
+                      placeholder="Mot de passe"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-transparent focus:bg-white focus:border-moroccan-green/20 outline-none transition-all font-medium"
+                      required
+                    />
                   </motion.div>
-                ) : null}
-              </AnimatePresence>
+                ) : (
+                  <motion.div 
+                    key={`step-${step}`}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-5"
+                  >
+                    {step === 1 && (
+                      <div className="space-y-5">
+                        <div className="text-center mb-4">
+                          <h3 className="text-lg font-serif italic text-moroccan-green font-bold">Parlons de vous</h3>
+                          <p className="text-xs text-slate-400">Étape 1 sur 3</p>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4 mb-2">
+                          <div 
+                               onClick={() => setRole('student')}
+                               className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 cursor-pointer transition-all duration-300 ${role === 'student' ? 'border-moroccan-green bg-moroccan-green/5' : 'border-slate-50 bg-slate-50 hover:border-slate-200'}`}>
+                            <GraduationCap className={role === 'student' ? 'text-moroccan-green' : 'text-slate-400'} size={24} />
+                            <span className={`text-[9px] mt-2 font-black uppercase tracking-widest ${role === 'student' ? 'text-moroccan-green' : 'text-slate-500'}`}>Élève</span>
+                          </div>
+                          <div 
+                               onClick={() => setRole('mentor')}
+                               className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 cursor-pointer transition-all duration-300 ${role === 'mentor' ? 'border-moroccan-green bg-moroccan-green/5' : 'border-slate-50 bg-slate-50 hover:border-slate-200'}`}>
+                            <School className={role === 'mentor' ? 'text-moroccan-green' : 'text-slate-400'} size={24} />
+                            <span className={`text-[9px] mt-2 font-black uppercase tracking-widest ${role === 'mentor' ? 'text-moroccan-green' : 'text-slate-500'}`}>Étudiant</span>
+                          </div>
+                        </div>
 
-              <div className="space-y-4">
-                <input 
-                  type="email" 
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-transparent focus:bg-white focus:border-moroccan-green/20 outline-none transition-all font-medium"
-                  required
-                />
-                <input 
-                  type="password" 
-                  placeholder="Mot de passe"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-transparent focus:bg-white focus:border-moroccan-green/20 outline-none transition-all font-medium"
-                  required
-                />
-              </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <input 
+                            type="text" 
+                            placeholder="Prénom"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-transparent focus:bg-white focus:border-moroccan-green/20 outline-none transition-all font-medium"
+                            required
+                          />
+                          <input 
+                            type="text" 
+                            placeholder="Nom"
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-transparent focus:bg-white focus:border-moroccan-green/20 outline-none transition-all font-medium"
+                            required
+                          />
+                        </div>
+                        <button 
+                          type="button"
+                          onClick={handleNextStep}
+                          className="w-full bg-moroccan-green/10 text-moroccan-green py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-moroccan-green/20 transition-all"
+                        >
+                          Suivant
+                        </button>
+                      </div>
+                    )}
+
+                    {step === 2 && (
+                      <div className="space-y-5">
+                        <div className="text-center mb-4">
+                          <h3 className="text-lg font-serif italic text-moroccan-green font-bold">
+                            {role === 'mentor' ? 'Votre établissement' : 'Prêt pour la suite?'}
+                          </h3>
+                          <p className="text-xs text-slate-400">Étape 2 sur 3</p>
+                        </div>
+                        
+                        {role === 'mentor' ? (
+                          <>
+                            <input 
+                              type="text" 
+                              placeholder="École / Université"
+                              value={institution}
+                              onChange={(e) => setInstitution(e.target.value)}
+                              className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-transparent focus:bg-white focus:border-moroccan-green/20 outline-none transition-all font-medium"
+                              list="school-suggestions"
+                              required
+                            />
+                            <datalist id="school-suggestions">
+                              {SCHOOL_ACRONYMS.map(name => (
+                                <option key={name} value={name} />
+                              ))}
+                            </datalist>
+                          </>
+                        ) : (
+                          <div className="p-8 bg-slate-50 rounded-3xl border border-dashed border-slate-200 text-center">
+                            <p className="text-slate-500 font-serif italic">En tant qu&apos;élève, nous personnaliserons votre expérience autour du Baccalauréat.</p>
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <button 
+                            type="button"
+                            onClick={handlePrevStep}
+                            className="bg-slate-100 text-slate-500 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all"
+                          >
+                            Retour
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={handleNextStep}
+                            className="bg-moroccan-green/10 text-moroccan-green py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-moroccan-green/20 transition-all"
+                          >
+                            Suivant
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {step === 3 && (
+                      <div className="space-y-5">
+                        <div className="text-center mb-4">
+                          <h3 className="text-lg font-serif italic text-moroccan-green font-bold">Sécurisez votre compte</h3>
+                          <p className="text-xs text-slate-400">Étape 3 sur 3</p>
+                        </div>
+                        
+                        <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200 hover:border-moroccan-green/30 transition-colors group cursor-pointer relative" onClick={() => fileInputRef.current?.click()}>
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            className="hidden" 
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                          />
+                          <div className="p-3 bg-white rounded-xl shadow-sm group-hover:text-moroccan-green transition-colors">
+                            <Camera size={20} />
+                          </div>
+                          <span className="text-xs font-bold text-slate-500 truncate flex-1">
+                            {photoURL ? "Photo sélectionnée ✓" : "Ajouter une photo (optionnel)"}
+                          </span>
+                          {photoURL && (
+                            <img src={photoURL} className="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-md shadow-moroccan-green/5" alt="Aperçu" />
+                          )}
+                        </div>
+
+                        <div className="space-y-4">
+                          <input 
+                            type="email" 
+                            placeholder="Email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-transparent focus:bg-white focus:border-moroccan-green/20 outline-none transition-all font-medium"
+                            required
+                          />
+                          <input 
+                            type="password" 
+                            placeholder="Mot de passe"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-transparent focus:bg-white focus:border-moroccan-green/20 outline-none transition-all font-medium"
+                            required
+                          />
+                        </div>
+
+                        <button 
+                          type="button"
+                          onClick={() => setStep(2)}
+                          className="w-full text-slate-400 py-2 text-[10px] font-black uppercase tracking-widest hover:text-slate-600 transition-all"
+                        >
+                          Retour à l&apos;étape précédente
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {error && (
                 <motion.p 
                   initial={{ opacity: 0 }} 
                   animate={{ opacity: 1 }} 
-                  className="text-moroccan-red text-xs font-black uppercase tracking-widest text-center bg-moroccan-red/10 p-4 rounded-2xl border border-moroccan-red/20"
+                  className="text-moroccan-red text-xs font-black uppercase tracking-widest text-center bg-moroccan-red/10 p-4 rounded-2xl border border-moroccan-red/20 whitespace-pre-wrap"
                 >
                   {error}
                 </motion.p>
               )}
 
-              <button 
-                type="submit"
-                disabled={loading}
-                className="w-full bg-moroccan-green text-white py-5 rounded-[24px] font-black uppercase tracking-[0.2em] hover:bg-moroccan-green/90 transition-all shadow-2xl shadow-moroccan-green/20 flex items-center justify-center gap-3 disabled:opacity-70 group active:scale-[0.98]"
-              >
-                {loading ? (
-                  <Loader2 className="animate-spin" size={20} />
-                ) : (
-                  <>
-                    {isLogin ? <LogIn size={20} className="group-hover:translate-x-1 transition-transform" /> : <UserPlus size={20} className="group-hover:scale-110 transition-transform" />}
-                    {isLogin ? 'Se connecter' : "Rejoindre l&apos;aventure"}
-                  </>
-                )}
-              </button>
+              {(isLogin || step === 3) && (
+                <button 
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-moroccan-green text-white py-5 rounded-[24px] font-black uppercase tracking-[0.2em] hover:bg-moroccan-green/90 transition-all shadow-2xl shadow-moroccan-green/20 flex items-center justify-center gap-3 disabled:opacity-70 group active:scale-[0.98]"
+                >
+                  {loading ? (
+                    <Loader2 className="animate-spin" size={20} />
+                  ) : (
+                    <>
+                      {isLogin ? <LogIn size={20} className="group-hover:translate-x-1 transition-transform" /> : <UserPlus size={20} className="group-hover:scale-110 transition-transform" />}
+                      {isLogin ? 'Se connecter' : "Créer mon compte"}
+                    </>
+                  )}
+                </button>
+              )}
             </form>
 
             <div className="relative my-10">
@@ -401,6 +500,7 @@ export const AuthModal: React.FC = () => {
           </div>
         </div>
       </motion.div>
+      <AIAssistant isOpen={isAIOpen} onClose={() => setIsAIOpen(false)} />
     </div>
   );
 };

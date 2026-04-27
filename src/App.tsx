@@ -6,14 +6,16 @@ import { SchoolDirectory } from './components/SchoolDirectory';
 import { Profile } from './components/Profile';
 import { Messaging } from './components/Messaging';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { LayoutGrid, GraduationCap, User, LogOut, MessageSquare } from 'lucide-react';
+import { LayoutGrid, GraduationCap, User, LogOut, MessageSquare, Bot } from 'lucide-react';
+import { AIAssistant } from './components/AIAssistant';
 import { auth } from './firebase';
 
 export default function App() {
   const { user, loading } = useAuth();
-  const [activeTab, setActiveTab] = useState<'feed' | 'schools' | 'profile' | 'messaging'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'schools' | 'profile' | 'messaging' | 'ai'>('feed');
   const [chatTargetEmail, setChatTargetEmail] = useState<string | null>(null);
   const [viewingUserId, setViewingUserId] = useState<string | null>(null);
+  const [isAIOpen, setIsAIOpen] = useState(false);
 
   const activateChat = (email: string) => {
     setChatTargetEmail(email);
@@ -69,8 +71,9 @@ export default function App() {
           
           <nav className="flex items-center gap-2 bg-slate-50/50 p-1.5 rounded-[24px] border border-slate-100">
             {[
-              { id: 'feed', icon: LayoutGrid, label: 'Communaut&eacute;' },
-              { id: 'schools', icon: GraduationCap, label: '&Eacute;coles' },
+              { id: 'feed', icon: LayoutGrid, label: 'Communauté' },
+              { id: 'schools', icon: GraduationCap, label: 'Écoles' },
+              { id: 'ai', icon: Bot, label: 'Assistant IA' },
               { id: 'profile', icon: User, label: 'Profil' },
               { id: 'messaging', icon: MessageSquare, label: 'Messages' }
             ].map((tab) => (
@@ -111,17 +114,30 @@ export default function App() {
         <main className="container mx-auto relative z-10 transition-all duration-500">
           {activeTab === 'feed' && <Feed onStartChat={(email) => activateChat(email)} onViewProfile={viewUserProfile} />}
           {activeTab === 'schools' && <SchoolDirectory />}
+          {activeTab === 'ai' && <AIAssistant mode="academic" isFullPage={true} isOpen={true} onClose={() => setActiveTab('feed')} />}
           {activeTab === 'profile' && <Profile targetUserId={viewingUserId} onMessage={(uid) => {
             setActiveTab('messaging');
           }} />}
           {activeTab === 'messaging' && <Messaging targetEmail={chatTargetEmail} onClearTarget={() => setChatTargetEmail(null)} onViewProfile={viewUserProfile} />}
         </main>
 
+        {/* Floating Support AI Button */}
+        <button 
+          onClick={() => setIsAIOpen(true)}
+          className="fixed bottom-24 right-6 md:bottom-8 md:right-8 w-16 h-16 bg-orange-500 text-white rounded-full shadow-2xl shadow-orange-500/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50 group border-4 border-white"
+        >
+          <Bot size={32} className="group-hover:animate-bounce" />
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white"></div>
+        </button>
+
+        <AIAssistant mode="service" isOpen={isAIOpen} onClose={() => setIsAIOpen(false)} />
+
         {/* Mobile Navigation */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-2xl border-t border-moroccan-green/5 px-6 py-4 flex justify-between items-center z-40 shadow-[0_-10px_40px_rgba(193,39,45,0.1)] rounded-t-[32px]">
           {[
             { id: 'feed', icon: LayoutGrid, label: 'Feed' },
-            { id: 'schools', icon: GraduationCap, label: '&Eacute;coles' },
+            { id: 'schools', icon: GraduationCap, label: 'Écoles' },
+            { id: 'ai', icon: Bot, label: 'IA' },
             { id: 'profile', icon: User, label: 'Profil' },
             { id: 'messaging', icon: MessageSquare, label: 'Chat' }
           ].map((tab) => (

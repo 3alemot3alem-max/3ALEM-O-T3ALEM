@@ -355,7 +355,7 @@ export const Messaging: React.FC<{
           <div className="p-2 bg-majorelle/5 rounded-xl group-hover:bg-white/20 transition-colors">
             <BookOpen size={20} className="text-majorelle group-hover:text-white" />
           </div>
-          <span className="text-sm font-serif italic font-bold">Un d&eacute;fi? Une question? Je suis &agrave; votre &eacute;coute</span>
+          <span className="text-sm font-serif italic font-bold">Un d&eacute;fi? Une question? Contactez-nous par mail: 3alemot3alem@gmail.com</span>
         </a>
       </div>
     </div>

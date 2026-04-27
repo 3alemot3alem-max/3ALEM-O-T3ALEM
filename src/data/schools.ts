@@ -18,14 +18,23 @@ export interface School {
 }
 
 const getPlaceholderImg = (type: string) => {
-  if (type.includes('Médecine') || type.includes('Santé') || type.includes('Infirmier')) 
-    return "https://images.unsplash.com/photo-1505751172107-573225a9405b?auto=format&fit=crop&q=80&w=600";
-  if (type.includes('Commerce') || type.includes('Business')) 
-    return "https://images.unsplash.com/photo-1454165833767-027ffea9e77b?auto=format&fit=crop&q=80&w=600";
-  if (type.includes('Art') || type.includes('Beaux-Arts') || type.includes('Artisanat')) 
+  const t = type.toLowerCase();
+  if (t.includes('médecine') || t.includes('santé') || t.includes('infirmier') || t.includes('dentaire')) 
+    return "https://images.unsplash.com/photo-1576091160550-217359f4ecf8?auto=format&fit=crop&q=80&w=600";
+  if (t.includes('commerce') || t.includes('business') || t.includes('iscae') || t.includes('encg')) 
+    return "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&q=80&w=600";
+  if (t.includes('ingénieur') || t.includes('ensi') || t.includes('ensa') || t.includes('emi') || t.includes('ehtp')) 
+    return "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=600";
+  if (t.includes('art') || t.includes('beaux-arts') || t.includes('artisanat')) 
     return "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=600";
-  if (type.includes('Militaire') || type.includes('Gendarmerie') || type.includes('Air')) 
+  if (t.includes('militaire') || t.includes('gendarmerie') || t.includes('air') || t.includes('navale')) 
     return "https://images.unsplash.com/photo-1508101413813-ac05267b140c?auto=format&fit=crop&q=80&w=600";
+  if (t.includes('aviation') || t.includes('aiac'))
+    return "https://images.unsplash.com/photo-1436491865332-7a61a109c0f3?auto=format&fit=crop&q=80&w=600";
+  if (t.includes('faculté') || t.includes('fst') || t.includes('université'))
+    return "https://images.unsplash.com/photo-1541339907198-e08756ebafe3?auto=format&fit=crop&q=80&w=600";
+  if (t.includes('bts') || t.includes('technique') || t.includes('est') || t.includes('ofppt'))
+    return "https://images.unsplash.com/photo-1581092918056-0c4c3acd378e?auto=format&fit=crop&q=80&w=600";
   return "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=600";
 };
 
@@ -420,4 +429,13 @@ export const SCHOOLS_DATA: School[] = [
     "sector": "Public",
     "logoUrl": getPlaceholderImg("Technique")
   }
+];
+
+export const SCHOOL_ACRONYMS = [
+  "BTS", "CPGE", "ENSA", "ENCG", "ENS", "ENSET", "ENSAM", "FST", "EST", "FMP", "FMD", 
+  "ISPITS", "EMI", "ENSIAS", "EHTP", "INPT", "ENSEM", "INSEA", "ENFI", "ESITH", "IAV", 
+  "ISPM", "ERA", "ERN", "ARM", "FRA", "AIAC", "ESMA", "CFPNC", "ISMA", "IFA", "ENA", 
+  "EAC", "ISTA", "ITA", "FS", "FLSH", "FSJES", "UM6P", "UIR", "UIC", "UPM", "HEM", 
+  "ESCA", "IGA", "SUPMTI", "ECC", "TBS", "SUPINFO", "EPSI", "INAS", "ISITT", "ISIC", 
+  "INSAP", "IRFCJS", "ISADAC", "ESBAC", "ESAV", "INBA", "IFMIA", "ISCAE", "IAP", "EMSI"
 ];
