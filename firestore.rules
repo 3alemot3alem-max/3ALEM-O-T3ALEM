@@ -48,7 +48,7 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read: if isSignedIn();
+      allow read: if true;
       allow create: if isOwner(userId) && isValidUser(incoming());
       allow update: if isOwner(userId) && isValidUser(incoming());
     }
@@ -61,7 +61,7 @@ service cloud.firestore {
     }
 
     match /posts/{postId} {
-      allow read: if isSignedIn();
+      allow read: if true;
       allow create: if isSignedIn() && isValidPost(incoming());
       allow update: if isSignedIn() && (
         // Owner can edit post
@@ -73,7 +73,7 @@ service cloud.firestore {
       allow delete: if isSignedIn() && existing().authorUid == request.auth.uid;
 
       match /comments/{commentId} {
-        allow read: if isSignedIn();
+        allow read: if true;
         allow create: if isSignedIn() && 
                       isValidString(incoming().content, 1, 1000) && 
                       incoming().authorUid == request.auth.uid;

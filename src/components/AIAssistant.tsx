@@ -7,7 +7,7 @@ import rehypeKatex from 'rehype-katex';
 import { getGeminiResponse, ChatMessage } from '../services/geminiService';
 import { useAuth } from '../AuthContext';
 import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp, doc, deleteDoc } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db, handleFirestoreError, OperationType } from '../firebase';
 
 interface ChatSession {
   id: string;
@@ -36,12 +36,21 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(!isFullPage && ! (mode === 'service'));
+  const [guestCount, setGuestCount] = useState(() => {
+    const saved = localStorage.getItem('guest_ai_count');
+    return saved ? parseInt(saved, 10) : 0;
+  });
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const sessionCollection = mode === 'academic' ? 'ai_sessions' : 'support_sessions';
   const messageCollection = mode === 'academic' ? 'ai_messages' : 'support_messages';
+
+  // Update localStorage when guestCount changes
+  useEffect(() => {
+    localStorage.setItem('guest_ai_count', guestCount.toString());
+  }, [guestCount]);
 
   // Load chat sessions
   useEffect(() => {
@@ -62,6 +71,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
       if (!currentSessionId && activeSessions.length > 0) {
         // setCurrentSessionId(activeSessions[0].id); // Don't auto-load to allow fresh start
       }
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, sessionCollection);
     });
 
     return () => unsubscribe();
@@ -69,14 +80,15 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
 
   // Load current session messages
   useEffect(() => {
-    if (!currentSessionId) {
-      setMessages([]);
+    if (!user || !currentSessionId) {
+      if (!currentSessionId) setMessages([]);
       return;
     }
 
     const q = query(
       collection(db, messageCollection),
       where('sessionId', '==', currentSessionId),
+      where('userId', '==', user.uid),
       orderBy('createdAt', 'asc')
     );
 
@@ -89,6 +101,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         };
       }) as ChatMessage[];
       setMessages(msgs);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, messageCollection);
     });
 
     return () => unsubscribe();
@@ -107,7 +121,15 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
 
   const handleSend = async () => {
     if (!input.trim() && !fileData) return;
-    if (!user) return;
+    
+    // Guest limit check
+    if (!user && guestCount >= 3) {
+      setMessages(prev => [...prev, {
+        role: 'model',
+        parts: [{ text: "❌ Vous avez atteint la limite de 3 questions d'essai. Veuillez vous inscrire ou vous connecter pour continuer à discuter avec notre IA." }]
+      }]);
+      return;
+    }
 
     const userMessage = input.trim();
     let sessionId = currentSessionId;
@@ -115,42 +137,79 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
     setIsLoading(true);
     setInput('');
 
+    // For guests, add message to local state immediately
+    if (!user) {
+      setMessages(prev => [...prev, { role: 'user', parts: [{ text: userMessage }] }]);
+    }
+
     try {
-      // Create session if it doesn't exist
-      if (!sessionId) {
-        const sessionDoc = await addDoc(collection(db, sessionCollection), {
-          userId: user.uid,
-          title: userMessage.substring(0, 30) + (userMessage.length > 30 ? '...' : ''),
-          createdAt: serverTimestamp()
-        });
-        sessionId = sessionDoc.id;
-        setCurrentSessionId(sessionId);
+      if (user) {
+        // Create session if it doesn't exist
+        if (!sessionId) {
+          try {
+            const sessionDoc = await addDoc(collection(db, sessionCollection), {
+              userId: user.uid,
+              title: userMessage.substring(0, 30) + (userMessage.length > 30 ? '...' : ''),
+              createdAt: serverTimestamp()
+            });
+            sessionId = sessionDoc.id;
+            setCurrentSessionId(sessionId);
+          } catch (error) {
+            handleFirestoreError(error, OperationType.CREATE, sessionCollection);
+          }
+        }
+
+        // 1. Save user message to Firestore
+        try {
+          await addDoc(collection(db, messageCollection), {
+            sessionId,
+            userId: user.uid,
+            role: 'user',
+            text: userMessage,
+            createdAt: serverTimestamp()
+          });
+        } catch (error) {
+          handleFirestoreError(error, OperationType.CREATE, messageCollection);
+        }
       }
 
-      // 1. Save user message to Firestore
-      await addDoc(collection(db, messageCollection), {
-        sessionId,
-        userId: user.uid,
-        role: 'user',
-        text: userMessage,
-        createdAt: serverTimestamp()
-      });
-
       // 2. Get AI Response
-      const response = await getGeminiResponse(userMessage, messages, profile, mode);
+      const response = await getGeminiResponse(userMessage, messages, profile, mode, fileData);
       
-      // 3. Save AI response to Firestore
-      await addDoc(collection(db, messageCollection), {
-        sessionId,
-        userId: user.uid,
-        role: 'model',
-        text: response || '',
-        createdAt: serverTimestamp()
-      });
+      if (user) {
+        // 3. Save AI response to Firestore
+        try {
+          await addDoc(collection(db, messageCollection), {
+            sessionId,
+            userId: user.uid,
+            role: 'model',
+            text: response || '',
+            createdAt: serverTimestamp()
+          });
+        } catch (error) {
+          handleFirestoreError(error, OperationType.CREATE, messageCollection);
+        }
+      } else {
+        // Guest mode response
+        let aiText = response || "";
+        const newCount = guestCount + 1;
+        setGuestCount(newCount);
+        
+        if (newCount === 3) {
+          aiText += "\n\n---\n⚠️ **Ceci était votre dernière question d'essai.** Pour continuer à utiliser l'IA et sauvegarder votre historique, veuillez créer un compte gratuitement !";
+        }
+        
+        setMessages(prev => [...prev, { role: 'model', parts: [{ text: aiText }] }]);
+      }
 
     } catch (error) {
       console.error('AI Assistant Error:', error);
-      // Fallback for UI if firestore fails or something
+      if (!user) {
+        setMessages(prev => [...prev, {
+          role: 'model',
+          parts: [{ text: "Une erreur est survenue. Veuillez réessayer." }]
+        }]);
+      }
     } finally {
       setIsLoading(false);
       setFileData(undefined);
@@ -302,7 +361,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                   <Bot size={48} className="animate-pulse" />
                 </motion.div>
                 <div className="max-w-md space-y-4">
-                  <h3 className="font-serif italic font-bold text-slate-800 text-3xl">Salam, {profile?.firstName} !</h3>
+                  <h3 className="font-serif italic font-bold text-slate-800 text-3xl">Salam, {profile?.firstName || 'ami'} !</h3>
                   <p className="text-slate-500 leading-relaxed font-medium"> 
                     {mode === 'academic' 
                       ? <>Je suis <span className="text-moroccan-green font-bold">3alem o t3alem</span>, votre mentor IA dédié à la réussite au Maroc.</>
@@ -384,45 +443,65 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                 </button>
               </div>
             )}
-            <div className={`flex items-center gap-4 max-w-4xl mx-auto`}>
-              <div className="flex-1 relative flex items-center">
-                <button 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="absolute left-2 p-3 text-slate-400 hover:text-moroccan-green hover:bg-moroccan-green/5 rounded-2xl transition-all"
-                >
-                  <Paperclip size={20} />
-                </button>
-                <input 
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  onChange={handleFileChange}
-                  accept="image/*,application/pdf"
-                />
-                <input 
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                  placeholder="Posez votre question académique ou scientifique..."
-                  className="w-full bg-slate-100 pl-14 pr-6 py-4 rounded-[24px] border border-transparent focus:bg-white focus:border-moroccan-green/30 focus:shadow-xl focus:shadow-moroccan-green/5 outline-none transition-all font-medium"
-                />
+            
+            {!user && guestCount >= 3 ? (
+              <div className="flex flex-col items-center gap-4 py-4">
+                <p className="text-sm font-bold text-slate-500 text-center">
+                  ✨ Vous avez testé notre IA ! Pour continuer, créez votre compte gratuitement.
+                </p>
+                <div className="flex gap-4">
+                  <button 
+                    onClick={() => {
+                        onClose?.();
+                        // This assumes AuthModal is controlled elsewhere, but closing helps
+                    }}
+                    className="px-8 py-3 bg-moroccan-green text-white rounded-2xl font-bold shadow-xl shadow-moroccan-green/20 hover:scale-105 transition-all"
+                  >
+                    S&apos;inscrire maintenant
+                  </button>
+                </div>
               </div>
-              <button 
-                onClick={handleSend}
-                disabled={(!input.trim() && !fileData) || isLoading}
-                className="bg-moroccan-green text-white h-[56px] px-8 rounded-[24px] shadow-xl shadow-moroccan-green/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-30 disabled:scale-100 font-bold flex items-center gap-2"
-              >
-                {!isLoading ? (
-                  <>
-                    <span className="hidden md:block">Envoyer</span>
-                    <Send size={18} />
-                  </>
-                ) : (
-                  <Loader2 className="animate-spin" size={20} />
-                )}
-              </button>
-            </div>
+            ) : (
+              <div className={`flex items-center gap-4 max-w-4xl mx-auto`}>
+                <div className="flex-1 relative flex items-center">
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute left-2 p-3 text-slate-400 hover:text-moroccan-green hover:bg-moroccan-green/5 rounded-2xl transition-all"
+                  >
+                    <Paperclip size={20} />
+                  </button>
+                  <input 
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    onChange={handleFileChange}
+                    accept="image/*,application/pdf"
+                  />
+                  <input 
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                    placeholder={mode === 'academic' ? "Posez votre question académique ou scientifique..." : "Comment puis-je vous aider ?"}
+                    className="w-full bg-slate-100 pl-14 pr-6 py-4 rounded-[24px] border border-transparent focus:bg-white focus:border-moroccan-green/30 focus:shadow-xl focus:shadow-moroccan-green/5 outline-none transition-all font-medium"
+                  />
+                </div>
+                <button 
+                  onClick={handleSend}
+                  disabled={(!input.trim() && !fileData) || isLoading}
+                  className={`${mode === 'academic' ? 'bg-moroccan-green' : 'bg-orange-500'} text-white h-[56px] px-8 rounded-[24px] shadow-xl shadow-moroccan-green/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-30 disabled:scale-100 font-bold flex items-center gap-2`}
+                >
+                  {!isLoading ? (
+                    <>
+                      <span className="hidden md:block">Envoyer</span>
+                      <Send size={18} />
+                    </>
+                  ) : (
+                    <Loader2 className="animate-spin" size={20} />
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
