@@ -29,9 +29,9 @@ export const SchoolDirectory: React.FC = () => {
   );
 
   return (
-    <div className="max-w-7xl mx-auto py-12 px-6">
+    <div className="w-full max-w-7xl mx-auto py-6 md:py-12 px-4 md:px-6">
       {/* Magnificent Header */}
-      <div className="relative h-80 rounded-[48px] overflow-hidden mb-16 group shadow-2xl shadow-moroccan-green/20">
+      <div className="relative h-64 md:h-80 rounded-[32px] md:rounded-[48px] overflow-hidden mb-10 md:mb-16 group shadow-2xl shadow-moroccan-green/20">
         <img 
           src="https://images.unsplash.com/photo-1541339907198-e08756ebafe3?auto=format&fit=crop&q=80&w=2000" 
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110" 
@@ -40,21 +40,21 @@ export const SchoolDirectory: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-moroccan-green/90 via-moroccan-green/40 to-transparent"></div>
         <div className="absolute inset-0 zellij-pattern opacity-10"></div>
         
-        <div className="relative h-full flex flex-col justify-center px-12 md:px-20 max-w-3xl">
+        <div className="relative h-full flex flex-col justify-center px-6 md:px-20 max-w-3xl text-center md:text-left">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="backdrop-blur-md bg-white/10 p-8 md:p-12 rounded-[32px] border border-white/20 shadow-2xl">
-              <span className="bg-moroccan-red text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.4em] shadow-xl mb-6 inline-block">
+            <div className="backdrop-blur-md bg-white/10 p-6 md:p-12 rounded-[24px] md:rounded-[32px] border border-white/20 shadow-2xl">
+              <span className="bg-moroccan-red text-white px-4 md:px-6 py-1.5 md:py-2 rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] md:tracking-[0.4em] shadow-xl mb-4 md:mb-6 inline-block">
                 Annuaire 2024
               </span>
-              <h1 className="text-7xl md:text-9xl font-black text-white uppercase tracking-tighter leading-none mb-6 drop-shadow-2xl">
-                &Eacute;COLE
+              <h1 className="text-4xl md:text-8xl font-black text-white uppercase tracking-tighter leading-none mb-4 md:mb-6 drop-shadow-2xl">
+                ÉCOLE
               </h1>
-              <p className="text-white/90 font-serif italic text-xl md:text-2xl leading-relaxed max-w-xl drop-shadow-lg">
-                D&eacute;couvrez les seuils de pr&eacute;s&eacute;lection, les sp&eacute;cialit&eacute;s et forgez votre avenir acad&eacute;mique.
+              <p className="text-white/90 font-serif italic text-base md:text-2xl leading-relaxed max-w-xl drop-shadow-lg">
+                Découvrez les seuils de présélection, les spécialités et forgez votre avenir académique.
               </p>
             </div>
           </motion.div>
@@ -62,31 +62,31 @@ export const SchoolDirectory: React.FC = () => {
       </div>
 
 
-      <div className="mb-12 flex justify-center">
-        <div className="maroccan-card p-2 flex gap-3 w-full max-w-xl group">
+      <div className="mb-10 md:mb-12 flex justify-center">
+        <div className="maroccan-card p-1.5 md:p-2 flex flex-col sm:flex-row gap-2 md:gap-3 w-full max-w-xl group">
           <div className="flex-1 relative">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
             <input 
               type="text"
-              placeholder="Ecole, ville, seuil, informatique..."
+              placeholder="Ecole, ville, seuil..."
               value={filterQuery}
               onChange={(e) => setFilterQuery(e.target.value)}
-              className="w-full pl-14 pr-6 py-4 outline-none font-serif italic text-lg text-slate-700 bg-transparent"
+              className="w-full pl-14 pr-6 py-3.5 md:py-4 outline-none font-serif italic text-base md:text-lg text-slate-700 bg-transparent"
             />
           </div>
-          <div className="bg-moroccan-green p-4 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-moroccan-green/20">
+          <button className="bg-moroccan-green p-4 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-moroccan-green/20 shrink-0">
             <MapPin size={24} />
-          </div>
+          </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
         {filteredSchools.length === 0 ? (
           <div className="col-span-full py-32 text-center maroccan-card bg-ivory/50 border-dashed">
             <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-300">
               <MapPin size={32} />
             </div>
-            <p className="text-slate-400 font-serif italic text-xl">Aucune institution ne correspond &agrave; votre recherche.</p>
+            <p className="text-slate-400 font-serif italic text-xl">Aucune institution ne correspond à votre recherche.</p>
           </div>
         ) : (
           filteredSchools.map((school) => (
@@ -112,31 +112,31 @@ export const SchoolDirectory: React.FC = () => {
                   </div>
                 )}
               </div>
-              <div className="p-8 flex-1 flex flex-col">
-                <h3 className="text-xl font-serif italic font-bold text-slate-900 mb-3 leading-tight group-hover:text-moroccan-green transition-colors line-clamp-2">{school.name}</h3>
-                
-                {school.thresholds && (
-                  <div className="grid grid-cols-2 gap-2 mb-6">
-                    <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
-                      <p className="text-[8px] font-black uppercase text-slate-400 mb-0.5 whitespace-nowrap">Seuil SM</p>
-                      <p className="text-sm font-bold text-moroccan-green">{school.thresholds.sm}</p>
-                    </div>
-                    <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
-                      <p className="text-[8px] font-black uppercase text-slate-400 mb-0.5 whitespace-nowrap">Seuil PC</p>
-                      <p className="text-sm font-bold text-moroccan-green">{school.thresholds.pc}</p>
-                    </div>
-                  </div>
-                )}
+      <div className="p-6 md:p-8 flex-1 flex flex-col">
+        <h3 className="text-lg md:text-xl font-serif italic font-bold text-slate-900 mb-2 md:mb-3 leading-tight group-hover:text-moroccan-green transition-colors line-clamp-2">{school.name}</h3>
+        
+        {school.thresholds && (
+          <div className="grid grid-cols-2 gap-2 mb-4 md:mb-6">
+            <div className="bg-slate-50 p-2 md:p-2.5 rounded-xl border border-slate-100">
+              <p className="text-[8px] font-black uppercase text-slate-400 mb-0.5 whitespace-nowrap">Seuil SM</p>
+              <p className="text-xs md:text-sm font-bold text-moroccan-green">{school.thresholds.sm}</p>
+            </div>
+            <div className="bg-slate-50 p-2 md:p-2.5 rounded-xl border border-slate-100">
+              <p className="text-[8px] font-black uppercase text-slate-400 mb-0.5 whitespace-nowrap">Seuil PC</p>
+              <p className="text-xs md:text-sm font-bold text-moroccan-green">{school.thresholds.pc}</p>
+            </div>
+          </div>
+        )}
 
-                <p className="text-slate-500 font-serif italic text-sm leading-relaxed mb-6 line-clamp-2 flex-1">
-                  {school.specialties || school.description}
-                </p>
-                
-                <button className="w-full py-4 rounded-2xl bg-slate-50 text-slate-400 font-black uppercase text-[10px] tracking-[0.3em] group-hover:bg-moroccan-green group-hover:text-white transition-all duration-300 flex items-center justify-center gap-3 active:scale-95">
-                  D&eacute;tails & Seuils
-                  <Info size={14} />
-                </button>
-              </div>
+        <p className="text-slate-500 font-serif italic text-xs md:text-sm leading-relaxed mb-4 md:mb-6 line-clamp-2 flex-1">
+          {school.specialties || school.description}
+        </p>
+        
+        <button className="w-full py-3.5 md:py-4 rounded-xl md:rounded-2xl bg-slate-50 text-slate-400 font-black uppercase text-[9px] md:text-[10px] tracking-[0.2em] md:tracking-[0.3em] group-hover:bg-moroccan-green group-hover:text-white transition-all duration-300 flex items-center justify-center gap-3 active:scale-95">
+          Détails & Seuils
+          <Info size={14} />
+        </button>
+      </div>
             </motion.div>
           ))
         )}
@@ -145,7 +145,7 @@ export const SchoolDirectory: React.FC = () => {
       {/* School Detail Modal */}
       <AnimatePresence>
         {selectedSchool && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8">
+          <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center p-0 md:p-8">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -155,108 +155,104 @@ export const SchoolDirectory: React.FC = () => {
             ></motion.div>
             
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="maroccan-card w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white"
+              initial={{ opacity: 0, y: "100%" }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="bg-white rounded-t-[32px] md:rounded-[48px] w-full max-w-4xl h-[94vh] md:h-auto md:max-h-[90vh] overflow-y-auto relative z-10 shadow-3xl"
             >
-              <div className="h-72 relative">
+              <div className="h-40 md:h-72 relative">
                 <img src={selectedSchool.logoUrl} className="w-full h-full object-cover" alt="" />
-                <div className="absolute inset-0 bg-gradient-to-t from-white via-white/10 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent"></div>
                 <button 
                   onClick={() => setSelectedSchool(null)}
-                  className="absolute top-6 right-6 p-4 bg-white/80 backdrop-blur-md rounded-2xl text-slate-900 hover:text-moroccan-red transition-colors shadow-xl"
+                  className="absolute top-4 right-4 p-2.5 bg-white/80 backdrop-blur-md rounded-xl text-slate-900 shadow-xl"
                 >
-                  <X size={24} />
+                  <X size={20} />
                 </button>
               </div>
 
-              <div className="px-6 sm:px-10 pb-12 -mt-20 relative z-10">
-                <div className="flex flex-col md:flex-row items-start justify-between gap-8 mb-12">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-4">
-                      <span className="bg-moroccan-green text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-moroccan-green/20">
+              <div className="px-5 md:px-10 pb-12 -mt-8 md:-mt-20 relative z-10">
+                <div className="flex flex-col md:flex-row items-center md:items-end justify-between gap-4 md:gap-8 mb-8 text-center md:text-left">
+                  <div className="flex-1 w-full bg-white md:bg-transparent p-4 md:p-0 rounded-2xl md:rounded-none shadow-xl shadow-black/5 md:shadow-none">
+                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-3">
+                      <span className="bg-moroccan-green text-white px-3 py-1 rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-md">
                         {selectedSchool.type}
                       </span>
-                      <span className="bg-moroccan-red text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-moroccan-red/20">
+                      <span className="bg-moroccan-red text-white px-3 py-1 rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-md">
                         {selectedSchool.sector}
                       </span>
                     </div>
-                    <h2 className="text-4xl font-serif italic font-bold text-slate-900 leading-tight mb-4">{selectedSchool.name}</h2>
-                    <div className="flex items-center gap-2 text-slate-400 font-serif italic text-lg">
-                      <MapPin size={20} className="text-moroccan-red" />
+                    <h2 className="text-xl md:text-4xl font-serif italic font-bold text-slate-900 leading-tight mb-2">{selectedSchool.name}</h2>
+                    <div className="flex items-center justify-center md:justify-start gap-1.5 text-slate-400 font-serif italic text-sm md:text-lg">
+                      <MapPin size={16} className="text-moroccan-red" />
                       {selectedSchool.city}
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                  <div className="space-y-10">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
+                  <div className="space-y-8 md:space-y-10">
                     <section>
-                      <h3 className="text-xs font-black text-slate-300 uppercase tracking-[0.3em] mb-6 flex items-center gap-3">
-                        <Award size={18} className="text-moroccan-green" />
-                        Seuils de Pr&eacute;s&eacute;lection 2024
+                      <h3 className="text-[10px] md:text-xs font-black text-slate-300 uppercase tracking-widest md:tracking-[0.3em] mb-4 md:mb-6 flex items-center justify-center md:justify-start gap-3">
+                        <Award size={18} className="text-moroccan-green shrink-0" />
+                        Seuils de Présélection 2024
                       </h3>
                       {selectedSchool.thresholds ? (
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="bg-slate-50 p-6 rounded-[24px] border border-slate-100">
-                            <p className="text-[10px] font-black uppercase text-slate-400 mb-2">Sciences Maths</p>
-                            <p className="text-3xl font-serif italic font-bold text-moroccan-green">{selectedSchool.thresholds.sm}</p>
-                          </div>
-                          <div className="bg-slate-50 p-6 rounded-[24px] border border-slate-100">
-                            <p className="text-[10px] font-black uppercase text-slate-400 mb-2">Physique Chimie</p>
-                            <p className="text-3xl font-serif italic font-bold text-moroccan-green">{selectedSchool.thresholds.pc}</p>
-                          </div>
-                          <div className="bg-slate-50 p-6 rounded-[24px] border border-slate-100">
-                            <p className="text-[10px] font-black uppercase text-slate-400 mb-2">SVT</p>
-                            <p className="text-3xl font-serif italic font-bold text-moroccan-green">{selectedSchool.thresholds.svt}</p>
-                          </div>
-                          <div className="bg-slate-50 p-6 rounded-[24px] border border-slate-100">
-                            <p className="text-[10px] font-black uppercase text-slate-400 mb-2">Economie</p>
-                            <p className="text-3xl font-serif italic font-bold text-moroccan-green">{selectedSchool.thresholds.eco}</p>
-                          </div>
+                        <div className="grid grid-cols-2 gap-3 md:gap-4 font-sans">
+                          {[
+                            { label: 'Sciences Maths', val: selectedSchool.thresholds.sm },
+                            { label: 'Physique Chimie', val: selectedSchool.thresholds.pc },
+                            { label: 'SVT', val: selectedSchool.thresholds.svt },
+                            { label: 'Economie', val: selectedSchool.thresholds.eco }
+                          ].map((t, idx) => (
+                            <div key={idx} className="bg-slate-50 p-3 md:p-6 rounded-[20px] md:rounded-[24px] border border-slate-100 flex flex-col items-center md:items-start">
+                              <p className="text-[8px] md:text-[10px] font-black uppercase text-slate-400 mb-1 leading-none">{t.label}</p>
+                              <p className="text-xl md:text-3xl font-serif italic font-bold text-moroccan-green leading-none">{t.val}</p>
+                            </div>
+                          ))}
                         </div>
                       ) : (
-                        <p className="text-slate-400 italic">Donn&eacute;es de seuils non disponibles.</p>
+                        <p className="text-slate-400 italic text-sm text-center md:text-left">Données de seuils non disponibles.</p>
                       )}
                     </section>
 
                     <section>
-                      <h3 className="text-xs font-black text-slate-300 uppercase tracking-[0.3em] mb-6 flex items-center gap-3">
-                        <Users size={18} className="text-moroccan-green" />
-                        Concours & Admission
+                      <h3 className="text-[10px] md:text-xs font-black text-slate-300 uppercase tracking-widest md:tracking-[0.3em] mb-4 md:mb-6 flex items-center justify-center md:justify-start gap-3">
+                        <Users size={18} className="text-moroccan-green shrink-0" />
+                        Admission
                       </h3>
-                      <div className="bg-ivory/50 p-6 rounded-[24px] border border-moroccan-red/10">
-                        <p className="text-slate-700 font-serif italic text-lg leading-relaxed">
-                          {selectedSchool.entrance || "Admission sur concours national ou s&eacute;lection sur dossier."}
+                      <div className="bg-ivory/50 p-5 md:p-6 rounded-[20px] md:rounded-[24px] border border-moroccan-red/10 text-center md:text-left">
+                        <p className="text-slate-700 font-serif italic text-sm md:text-lg leading-relaxed">
+                          {selectedSchool.entrance || "Admission sur concours ou sélection sur dossier."}
                         </p>
                       </div>
                     </section>
                   </div>
 
-                  <div className="space-y-10">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="p-6 bg-slate-50 rounded-[28px] border border-slate-100">
-                        <Clock className="text-moroccan-red mb-3" size={24} />
-                        <p className="text-[10px] font-black uppercase text-slate-400 mb-1">Dur&eacute;e</p>
-                        <p className="font-bold text-slate-900">{selectedSchool.duration || "N/A"}</p>
+                  <div className="space-y-8 md:space-y-10">
+                    <div className="grid grid-cols-2 gap-3 md:gap-4">
+                      <div className="p-4 md:p-6 bg-slate-50 rounded-[20px] md:rounded-[28px] border border-slate-100 text-center md:text-left">
+                        <Clock className="text-moroccan-red mx-auto md:mx-0 mb-2 md:mb-3 md:w-6 md:h-6" size={20} />
+                        <p className="text-[8px] md:text-[10px] font-black uppercase text-slate-400 mb-0.5">Durée</p>
+                        <p className="font-bold text-slate-900 text-xs md:text-base">{selectedSchool.duration || "N/A"}</p>
                       </div>
-                      <div className="p-6 bg-slate-50 rounded-[28px] border border-slate-100">
-                        <GraduationCap className="text-moroccan-green mb-3" size={24} />
-                        <p className="text-[10px] font-black uppercase text-slate-400 mb-1">Dipl&ocirc;me</p>
-                        <p className="font-bold text-slate-900">{selectedSchool.diploma || "Ing&eacute;nieur d&apos;Etat"}</p>
+                      <div className="p-4 md:p-6 bg-slate-50 rounded-[20px] md:rounded-[28px] border border-slate-100 text-center md:text-left">
+                        <GraduationCap className="text-moroccan-green mx-auto md:mx-0 mb-2 md:mb-3 md:w-6 md:h-6" size={20} />
+                        <p className="text-[8px] md:text-[10px] font-black uppercase text-slate-400 mb-0.5">Diplôme</p>
+                        <p className="font-bold text-slate-900 text-xs md:text-base truncate px-1">Diplôme d'Etat</p>
                       </div>
                     </div>
 
                     <section>
-                      <h3 className="text-xs font-black text-slate-300 uppercase tracking-[0.3em] mb-6 flex items-center gap-3">
-                        <Info size={18} className="text-moroccan-green" />
-                        Sp&eacute;cialit&eacute;s & Modules
+                      <h3 className="text-[10px] md:text-xs font-black text-slate-300 uppercase tracking-widest md:tracking-[0.3em] mb-4 md:mb-6 flex items-center justify-center md:justify-start gap-3">
+                        <Info size={18} className="text-moroccan-green shrink-0" />
+                        Spécialités
                       </h3>
-                      <div className="flex flex-wrap gap-3">
+                      <div className="flex flex-wrap justify-center md:justify-start gap-2">
                         {(selectedSchool.specialties || "").split(',').map((spec, i) => (
-                          <div key={i} className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-xl text-slate-700 font-medium text-sm">
-                            <div className="w-1.5 h-1.5 bg-moroccan-red rounded-full"></div>
+                          <div key={i} className="flex items-center gap-2 px-3 py-1.5 md:py-2 bg-slate-100 rounded-lg text-slate-700 font-medium text-[10px] md:text-sm">
+                            <div className="w-1 md:w-1.5 h-1 md:h-1.5 bg-moroccan-red rounded-full"></div>
                             {spec.trim()}
                           </div>
                         ))}
@@ -264,6 +260,8 @@ export const SchoolDirectory: React.FC = () => {
                     </section>
                   </div>
                 </div>
+                {/* Mobile spacer */}
+                <div className="h-10 md:hidden"></div>
               </div>
             </motion.div>
           </div>

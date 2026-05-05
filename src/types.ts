@@ -12,6 +12,7 @@ export interface UserProfile {
   institution?: string;
   major?: string;
   city?: string;
+  selectedPack?: string;
   createdAt: string;
 }
 

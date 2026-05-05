@@ -53,6 +53,7 @@ INFOS UTILISATEUR :
 L'utilisateur s'appelle {{userName}} et étudie à {{userSchool}}. Son rôle est {{userRole}}.
 Utilise ces informations pour personnaliser tes conseils si nécessaire.`;
 
+
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export interface ChatMessage {
@@ -82,14 +83,12 @@ export async function getGeminiResponse(
   mode: 'academic' | 'service' = 'academic',
   fileData?: { data: string; mimeType: string }
 ) {
-  const model = "gemini-3-flash-preview";
-
   const userName = profile ? `${profile.firstName}` : "Utilisateur";
   const userSchool = profile?.institution || "Non spécifié";
-  const userRole = profile?.role || "Étudiant";
+  const userRole = profile?.role === 'mentor' ? 'Étudiant' : (profile?.role === 'student' ? 'Élève' : 'Étudiant');
 
   const basePrompt = mode === 'academic' ? SYSTEM_PROMPT : SERVICE_PROMPT;
-  const localizedPrompt = basePrompt
+  const systemInstruction = basePrompt
     .replace('{{userName}}', userName)
     .replace('{{userSchool}}', userSchool)
     .replace('{{userRole}}', userRole);
@@ -112,14 +111,23 @@ export async function getGeminiResponse(
   // Add the current user message to contents for generation
   contents.push({ role: "user", parts: currentParts });
 
-  const result = await ai.models.generateContent({
-    model,
-    contents,
-    config: {
-      systemInstruction: localizedPrompt,
-      temperature: 0.7,
-    },
-  });
+  if (!process.env.GEMINI_API_KEY) {
+    throw new Error("L'assistant IA n'est pas encore configuré (Clé API manquante). Veuillez contacter l'administrateur.");
+  }
 
-  return result.text;
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents,
+      config: {
+        systemInstruction,
+        temperature: 0.7,
+      },
+    });
+
+    return response.text;
+  } catch (error: any) {
+    console.error('Gemini Service Error:', error);
+    throw error;
+  }
 }

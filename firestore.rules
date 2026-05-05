@@ -33,7 +33,7 @@ service cloud.firestore {
     }
 
     function isValidEmail(email) {
-      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+      return email is string && email.size() <= 256 && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
     }
 
     // User Rules
@@ -44,25 +44,32 @@ service cloud.firestore {
              data.role in ['student', 'mentor'] &&
              (!('displayName' in data) || isValidString(data.displayName, 0, 100)) &&
              (!('firstName' in data) || isValidString(data.firstName, 0, 100)) &&
-             (!('lastName' in data) || isValidString(data.lastName, 0, 100));
+             (!('lastName' in data) || isValidString(data.lastName, 0, 100)) &&
+             (!('institution' in data) || isValidString(data.institution, 0, 200)) &&
+             (!('bio' in data) || isValidString(data.bio, 0, 500)) &&
+             (!('photoURL' in data) || isValidString(data.photoURL, 0, 2000));
     }
 
     match /users/{userId} {
-      allow read: if true;
+      allow read: if isSignedIn();
       allow create: if isOwner(userId) && isValidUser(incoming());
-      allow update: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && isValidUser(incoming()) && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'firstName', 'lastName', 'institution', 'bio', 'photoURL', 'updatedAt']) ||
+        incoming().diff(existing()).affectedKeys().hasOnly(['role']) // Allow initial role set if needed
+      );
     }
 
     // Posts Rules
     function isValidPost(data) {
       return data.keys().hasAll(['authorUid', 'content', 'createdAt']) &&
              data.authorUid == request.auth.uid &&
-             isValidString(data.content, 1, 5000);
+             isValidString(data.content, 1, 5000) &&
+             (!('imageUrl' in data) || isValidString(data.imageUrl, 0, 2000));
     }
 
     match /posts/{postId} {
-      allow read: if true;
-      allow create: if isSignedIn() && isValidPost(incoming());
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(postId) && isValidPost(incoming());
       allow update: if isSignedIn() && (
         // Owner can edit post
         (existing().authorUid == request.auth.uid && isValidPost(incoming()) && incoming().diff(existing()).affectedKeys().hasOnly(['content', 'imageUrl', 'tags', 'updatedAt'])) ||
@@ -73,8 +80,8 @@ service cloud.firestore {
       allow delete: if isSignedIn() && existing().authorUid == request.auth.uid;
 
       match /comments/{commentId} {
-        allow read: if true;
-        allow create: if isSignedIn() && 
+        allow read: if isSignedIn();
+        allow create: if isSignedIn() && isValidId(commentId) &&
                       isValidString(incoming().content, 1, 1000) && 
                       incoming().authorUid == request.auth.uid;
         allow delete: if isSignedIn() && existing().authorUid == request.auth.uid;

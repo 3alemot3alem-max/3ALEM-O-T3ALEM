@@ -202,14 +202,22 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         setMessages(prev => [...prev, { role: 'model', parts: [{ text: aiText }] }]);
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('AI Assistant Error:', error);
-      if (!user) {
-        setMessages(prev => [...prev, {
-          role: 'model',
-          parts: [{ text: "Une erreur est survenue. Veuillez réessayer." }]
-        }]);
+      let errorMessage = "Une erreur est survenue lors de la communication avec l'IA. Veuillez réessayer.";
+      
+      if (error?.message?.includes('quota')) {
+        errorMessage = "Désolé, le quota d'utilisation de l'IA est atteint pour le moment. Veuillez réessayer plus tard.";
+      } else if (error?.message?.includes('Clé API manquante')) {
+        errorMessage = "L'accès à l'IA n'est pas encore configuré. L'administrateur doit fournir une clé Gemini API valide.";
+      } else if (error?.message?.includes('API key not valid')) {
+        errorMessage = "La clé API de l'IA semble invalide. Veuillez contacter le support.";
       }
+      
+      setMessages(prev => [...prev, {
+        role: 'model',
+        parts: [{ text: `❌ ${errorMessage}` }]
+      }]);
     } finally {
       setIsLoading(false);
       setFileData(undefined);
