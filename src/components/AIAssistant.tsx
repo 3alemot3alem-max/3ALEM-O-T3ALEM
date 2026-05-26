@@ -4,7 +4,7 @@ import { Send, X, Bot, User, Loader2, Paperclip, Sparkles, History, Plus, Messag
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
-import { getGeminiResponse, ChatMessage } from '../services/geminiService';
+import { ChatMessage } from '../services/geminiService';
 import { useAuth } from '../AuthContext';
 import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp, doc, deleteDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
@@ -175,7 +175,27 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
       }
 
       // 2. Get AI Response
-      const response = await getGeminiResponse(userMessage, messages, profile, mode, fileData);
+      const response = await fetch('/api/ai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          history: messages,
+          profile,
+          mode,
+          fileData
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erreur API');
+      }
+
+      const responseData = await response.json();
+      const aiResponse = responseData.response;
       
       if (user) {
         // 3. Save AI response to Firestore
@@ -184,7 +204,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
             sessionId,
             userId: user.uid,
             role: 'model',
-            text: response || '',
+            text: aiResponse || '',
             createdAt: serverTimestamp()
           });
         } catch (error) {
@@ -192,7 +212,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         }
       } else {
         // Guest mode response
-        let aiText = response || "";
+        let aiText = aiResponse || "";
         const newCount = guestCount + 1;
         setGuestCount(newCount);
         

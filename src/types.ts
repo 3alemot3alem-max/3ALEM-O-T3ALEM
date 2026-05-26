@@ -1,8 +1,3 @@
-declare module "*.jpg" {
-  const value: any;
-  export default value;
-}
-
 export interface UserProfile {
   uid: string;
   displayName: string;
@@ -52,6 +47,7 @@ export interface Chat {
   lastMessage?: string;
   lastMessageAt?: string;
   unreadCount?: Record<string, number>;
+  createdAt?: string;
 }
 
 export interface Message {
