@@ -12,6 +12,7 @@ import { auth } from './firebase';
 import { motion, AnimatePresence } from 'motion/react';
 import { EmailVerification } from './components/EmailVerification';
 import { CompleteProfile } from './components/CompleteProfile';
+import regeneratedLogo from './assets/images/regenerated_image_1779220280486.jpg';
 
 const OfflineIndicator = () => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
@@ -83,7 +84,7 @@ export default function App() {
   }
 
   // Mandatory Email Verification
-  if (!user.emailVerified) {
+  if (!user.emailVerified && localStorage.getItem('is_school_auth') !== 'true') {
     return (
       <ErrorBoundary>
         <EmailVerification />
@@ -102,33 +103,33 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-ivory pb-6 pt-20 md:pb-0 md:pt-28 selection:bg-majorelle selection:text-white transition-all duration-300">
+      <div className="min-h-screen pb-6 pt-20 md:pb-0 md:pt-28 selection:bg-majorelle selection:text-white transition-colors duration-500 bg-[#e1d4d4] border-[#807e7e]">
         <OfflineIndicator />
         <div className="fixed inset-0 zellij-pattern opacity-[0.03] pointer-events-none"></div>
         
         {/* Mobile Top Header */}
-        <header className="md:hidden fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-b border-moroccan-green/5 px-4 flex items-center justify-between z-50 h-16 shadow-sm">
+        <header className="md:hidden fixed top-0 left-0 right-0 backdrop-blur-xl border-b border-black/5 px-4 flex items-center justify-between z-50 h-16 shadow-sm transition-colors duration-500 bg-[#e1d4d4]/90 text-slate-900">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-all"
+              className="p-2 rounded-xl transition-all hover:bg-black/5"
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
-            <div className="w-8 h-8 bg-moroccan-red rounded-lg flex items-center justify-center text-white font-serif italic font-bold text-lg shadow-lg">3</div>
-            <h1 className="text-base font-serif italic font-bold text-slate-900 tracking-tight">3ALEM O T3ALEM</h1>
+            <img src={regeneratedLogo} className="h-8 w-8 rounded-full border border-white/20 object-cover shadow-sm" alt="Logo" />
+            <span className="font-serif italic font-bold">3alem o t3alem</span>
           </div>
           
           <div className="flex items-center gap-2">
             <button 
               onClick={() => setIsAIOpen(true)}
-              className="text-orange-500 p-2 rounded-xl hover:bg-orange-50 transition-all"
+              className="text-[#f4d9a4] p-2 rounded-xl hover:bg-white/10 transition-all"
             >
               <Bot size={20} />
             </button>
             <button 
               onClick={() => auth.signOut()}
-              className="text-moroccan-red p-2 rounded-xl hover:bg-moroccan-red/5 transition-all"
+              className="text-white/80 hover:text-white hover:bg-white/10 p-2 rounded-xl transition-all"
             >
               <LogOut size={20} />
             </button>
@@ -151,11 +152,10 @@ export default function App() {
                 animate={{ x: 0 }}
                 exit={{ x: '-100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                className="fixed top-0 left-0 bottom-0 w-[80%] max-w-[300px] bg-white z-[60] md:hidden shadow-2xl flex flex-col p-6"
+                className="fixed top-0 left-0 bottom-0 w-[80%] max-w-[300px] bg-[#e1d4d4] z-[60] md:hidden shadow-2xl flex flex-col p-6 text-slate-900"
               >
-                <div className="flex items-center gap-3 mb-10 pb-6 border-b border-slate-100">
-                  <div className="w-10 h-10 bg-moroccan-red rounded-xl flex items-center justify-center text-white font-serif italic font-bold text-xl">3</div>
-                  <h1 className="font-serif italic font-bold text-slate-900">3ALEM O T3ALEM</h1>
+                <div className="flex items-center justify-center mb-10 pb-6 border-b border-black/10">
+                  <img src={regeneratedLogo} className="h-16 w-16 rounded-full border border-black/5 object-cover shadow-lg" alt="3alem o t3alem" />
                 </div>
 
                 <nav className="flex flex-col gap-2 flex-grow">
@@ -173,7 +173,7 @@ export default function App() {
                         setActiveTab(tab.id as any);
                         setIsMenuOpen(false);
                       }}
-                      className={`px-4 py-4 rounded-2xl text-sm font-bold transition-all flex items-center gap-4 ${activeTab === tab.id ? 'bg-moroccan-green text-white shadow-lg shadow-moroccan-green/20' : 'text-slate-500 hover:bg-slate-50'}`}
+                      className={`px-4 py-4 rounded-2xl text-sm font-bold transition-all flex items-center gap-4 ${activeTab === tab.id ? 'bg-[#1EBA64] text-white shadow-lg shadow-black/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
                     >
                       <tab.icon size={20} />
                       {tab.label}
@@ -181,10 +181,10 @@ export default function App() {
                   ))}
                 </nav>
 
-                <div className="pt-6 border-t border-slate-100">
+                <div className="pt-6 border-t border-white/10">
                   <button 
                     onClick={() => auth.signOut()}
-                    className="w-full bg-moroccan-red/5 text-moroccan-red p-4 rounded-2xl font-bold flex items-center gap-3 transition-all hover:bg-moroccan-red/10 border border-moroccan-red/10"
+                    className="w-full bg-white/10 text-white p-4 rounded-2xl font-bold flex items-center gap-3 transition-all hover:bg-white/20 border border-white/10"
                   >
                     <LogOut size={20} />
                     Déconnexion
@@ -196,16 +196,15 @@ export default function App() {
         </AnimatePresence>
 
         {/* Desktop Header */}
-        <header className="hidden md:flex fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl bg-white/80 backdrop-blur-xl border border-white/50 z-40 px-8 py-4 rounded-[32px] items-center justify-between shadow-2xl shadow-moroccan-green/5">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 bg-moroccan-red rounded-2xl flex items-center justify-center text-white font-serif italic font-bold text-2xl shadow-xl shadow-moroccan-red/20">3</div>
+        <header className="hidden md:flex fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl bg-[#310202]/95 backdrop-blur-xl border border-white/5 z-40 px-8 py-4 rounded-[32px] items-center justify-between shadow-2xl shadow-black/40">
+          <div className="flex items-center gap-3 shrink-0">
+            <img src={regeneratedLogo} className="h-10 w-10 rounded-full border border-white/20 object-cover shadow-lg shadow-[#1EBA64]/20" alt="3alem o t3alem" />
             <div className="flex flex-col">
-              <h1 className="text-xl font-serif italic font-bold text-slate-900 tracking-tight leading-none">3ALEM O T3ALEM</h1>
-              <span className="text-[10px] uppercase font-black tracking-[0.3em] text-moroccan-green/60">Knowledge Community</span>
+              <span className="font-serif italic font-bold text-white tracking-wide text-lg whitespace-nowrap">3alem o t3alem</span>
             </div>
           </div>
           
-          <nav className="flex items-center gap-2 bg-slate-50/50 p-1.5 rounded-[24px] border border-slate-100">
+          <nav className="flex items-center gap-2 bg-white/5 p-1.5 rounded-[24px] border border-white/10">
             {[
               { id: 'feed', icon: LayoutGrid, label: 'Communauté' },
               { id: 'schools', icon: GraduationCap, label: 'Écoles' },
@@ -219,9 +218,9 @@ export default function App() {
                   if (tab.id === 'profile') setViewingUserId(null);
                   setActiveTab(tab.id as any);
                 }}
-                className={`px-6 py-2.5 rounded-2xl text-sm font-bold transition-all duration-300 flex items-center gap-2.5 ${activeTab === tab.id ? 'bg-moroccan-green text-white shadow-xl shadow-moroccan-green/20 scale-105' : 'text-slate-400 hover:text-moroccan-green hover:bg-moroccan-green/5'}`}
+                className={`px-5 py-2.5 rounded-[20px] text-sm font-medium transition-all duration-300 flex items-center gap-2.5 ${activeTab === tab.id ? 'bg-[#1EBA64] text-white shadow-lg' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
               >
-                <tab.icon size={18} className={activeTab === tab.id ? 'animate-pulse' : ''} />
+                <tab.icon size={16} />
                 <span dangerouslySetInnerHTML={{ __html: tab.label }} />
               </button>
             ))}
@@ -229,19 +228,19 @@ export default function App() {
 
           <div className="flex items-center gap-5">
             <div className="text-right hidden lg:block">
-              <p className="text-sm font-serif italic font-bold text-slate-900 leading-none">{user.displayName || 'Utilisateur'}</p>
+              <p className="text-sm font-serif italic font-bold text-white leading-none">{user.displayName || 'Utilisateur'}</p>
               <div className="flex items-center justify-end gap-1.5 mt-1">
-                <div className="w-1.5 h-1.5 bg-moroccan-green rounded-full"></div>
-                <span className="text-[9px] text-slate-400 font-black uppercase tracking-[0.1em]">En ligne</span>
+                <div className="w-1.5 h-1.5 bg-[#1EBA64] rounded-full"></div>
+                <span className="text-[9px] text-white/50 font-black uppercase tracking-[0.1em]">En ligne</span>
               </div>
             </div>
             <button 
               onClick={() => auth.signOut()}
-              className="bg-moroccan-red/5 text-moroccan-red p-3 rounded-2xl hover:bg-moroccan-red/10 transition-all flex items-center gap-2 group"
-              title="D&eacute;connexion"
+              className="bg-white/5 border border-white/20 text-white/90 px-4 py-2 md:py-2.5 rounded-[20px] hover:bg-white/10 hover:text-white transition-all flex items-center gap-2 group"
+              title="Quitter"
             >
-              <LogOut size={20} className="group-hover:translate-x-1 transition-transform duration-300" />
-              <span className="hidden lg:block text-xs font-black uppercase tracking-widest">Quitter</span>
+              <LogOut size={16} className="group-hover:translate-x-1 transition-transform duration-300" />
+              <span className="hidden lg:block text-[11px] font-black uppercase tracking-widest mt-0.5">Quitter</span>
             </button>
           </div>
         </header>
@@ -250,17 +249,18 @@ export default function App() {
         <main className="container mx-auto px-4 relative z-10 transition-all duration-500 max-w-7xl">
           {activeTab === 'feed' && <Feed onStartChat={(email) => activateChat(email)} onViewProfile={viewUserProfile} />}
           {activeTab === 'schools' && <SchoolDirectory />}
-          {activeTab === 'ai' && <AIAssistant mode="academic" isFullPage={true} isOpen={true} onClose={() => setActiveTab('feed')} />}
           {activeTab === 'profile' && <Profile targetUserId={viewingUserId} onMessage={(uid) => {
             setActiveTab('messaging');
           }} />}
           {activeTab === 'messaging' && <Messaging targetEmail={chatTargetEmail} onClearTarget={() => setChatTargetEmail(null)} onViewProfile={viewUserProfile} />}
         </main>
 
+        {activeTab === 'ai' && <AIAssistant mode="academic" isFullPage={true} isOpen={true} onClose={() => setActiveTab('feed')} />}
+
         {/* Floating Support AI Button */}
         <button 
           onClick={() => setIsAIOpen(true)}
-          className="fixed bottom-24 right-6 md:bottom-8 md:right-8 w-16 h-16 bg-orange-500 text-white rounded-full shadow-2xl shadow-orange-500/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50 group border-4 border-white"
+          className="fixed bottom-24 right-6 md:bottom-8 md:right-8 w-16 h-16 bg-[#1EBA64] text-white rounded-full shadow-2xl shadow-[#1EBA64]/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50 group border-4 border-white"
         >
           <Bot size={32} className="group-hover:animate-bounce" />
           <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white"></div>

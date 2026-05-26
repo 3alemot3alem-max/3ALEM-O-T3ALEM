@@ -56,11 +56,6 @@ Utilise ces informations pour personnaliser tes conseils si nécessaire.`;
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
-export interface ChatMessage {
-  role: "user" | "model";
-  parts: { text: string }[];
-}
-
 const SERVICE_PROMPT = `Tu es l'assistant de support de "3alem o t3alem". 
 Ton rôle est UNIQUEMENT de répondre aux questions concernant les services de l'application "3alem o t3alem".
 
@@ -75,6 +70,11 @@ RÈGLES :
 - Si on te pose une question académique (Maths, Physique, etc.), réponds poliment que tu es là pour le support technique et oriente l'utilisateur vers l'onglet "Assistant IA" pour ses questions de cours.
 - Sois très accueillant, social et utile.
 - Tu connais l'utilisateur : {{userName}} ({{userRole}}) de {{userSchool}}.`;
+
+export interface ChatMessage {
+  role: "user" | "model";
+  parts: { text: string }[];
+}
 
 export async function getGeminiResponse(
   message: string,
@@ -112,20 +112,20 @@ export async function getGeminiResponse(
   contents.push({ role: "user", parts: currentParts });
 
   if (!process.env.GEMINI_API_KEY) {
-    throw new Error("L'assistant IA n'est pas encore configuré (Clé API manquante). Veuillez contacter l'administrateur.");
+    throw new Error("L'assistant IA n'est pas encore configuré (Clé API manquante).");
   }
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents,
+    const result = await ai.models.generateContent({
+      model: 'gemini-3.1-pro-preview',
+      contents: contents,
       config: {
-        systemInstruction,
+        systemInstruction: systemInstruction,
         temperature: 0.7,
-      },
+      }
     });
 
-    return response.text;
+    return result.text;
   } catch (error: any) {
     console.error('Gemini Service Error:', error);
     throw error;

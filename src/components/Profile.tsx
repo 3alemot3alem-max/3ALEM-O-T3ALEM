@@ -3,10 +3,10 @@ import { useAuth } from '../AuthContext';
 import { doc, updateDoc, collection, query, where, getDocs, getCountFromServer } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { motion, AnimatePresence } from 'motion/react';
-import { Camera, MapPin, BookOpen, Building2, Save, LogOut, GraduationCap, Image as ImageIcon, Mail, Briefcase, Zap, Crown } from 'lucide-react';
+import { Camera, MapPin, BookOpen, Building2, Save, LogOut, GraduationCap, Image as ImageIcon, Mail, Briefcase, Zap, Crown, Heart, MessageSquare } from 'lucide-react';
 import { auth } from '../firebase';
 
-import { UserProfile } from '../types';
+import { UserProfile, Post } from '../types';
 import { getDoc } from 'firebase/firestore';
 
 const PACK_INFO: Record<string, { name: string; color: string; icon: any }> = {
@@ -26,6 +26,7 @@ export const Profile: React.FC<ProfileProps> = ({ targetUserId, onMessage }) => 
   const [loading, setLoading] = useState(false);
   const [targetProfile, setTargetProfile] = useState<UserProfile | null>(null);
   const [stats, setStats] = useState({ posts: 0, impact: 'Normal' });
+  const [userPosts, setUserPosts] = useState<Post[]>([]);
   const [formData, setFormData] = useState({
     displayName: '',
     firstName: '',
@@ -63,12 +64,23 @@ export const Profile: React.FC<ProfileProps> = ({ targetUserId, onMessage }) => 
     const fetchProfile = async () => {
       if (targetUserId && targetUserId !== user?.uid) {
         setLoading(true);
-        setTargetProfile(null); // Clear previous profile while loading
+        setTargetProfile(null);
         try {
           const docRef = doc(db, 'users', targetUserId);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
-            setTargetProfile(docSnap.data() as UserProfile);
+            const data = docSnap.data() as UserProfile;
+            setTargetProfile(data);
+            
+            // Increment view count
+            try {
+              await updateDoc(docRef, {
+                profileViews: (data.profileViews || 0) + 1
+              });
+            } catch (err) {
+              console.error("Could not increment views:", err);
+            }
+
           }
         } catch (error) {
           console.error("Error fetching target profile:", error);
@@ -97,6 +109,9 @@ export const Profile: React.FC<ProfileProps> = ({ targetUserId, onMessage }) => 
             posts: count,
             impact: count > 10 ? 'Élite' : count > 5 ? 'Actif' : 'Membre'
           });
+          
+          const docsSnap = await getDocs(q);
+          setUserPosts(docsSnap.docs.map(d => ({ id: d.id, ...d.data() } as Post)).sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
         } catch (error) {
           console.error("Error fetching stats:", error);
         }
@@ -151,8 +166,27 @@ export const Profile: React.FC<ProfileProps> = ({ targetUserId, onMessage }) => 
     }
   };
   return (
-    <div className="w-full max-w-4xl mx-auto py-6 md:py-8 px-4">
-      <div className="maroccan-card">
+    <div className="w-full max-w-4xl mx-auto py-4 md:py-8 px-2 md:px-4">
+      <div className="bg-[#FAF8F5] border border-[#821316]/10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)] rounded-[32px] md:rounded-[40px] relative isolate min-h-[80vh] px-4 py-8 md:p-14 mb-16">
+        <div className="absolute inset-0 zellij-pattern opacity-[0.03] pointer-events-none rounded-[32px] md:rounded-[40px]"></div>
+
+        {/* Ornate corners */}
+        <div className="absolute top-4 left-4 w-16 h-16 md:w-24 md:h-24 pointer-events-none z-10" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M5,5 L95,5 L95,12 L12,12 L12,95 L5,95 Z\' fill=\'%231EBA64\'/%3E%3Cpath d=\'M20,20 L75,20 L75,24 L24,24 L24,75 L20,75 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M0,0 L100,0 L100,2 L2,2 L2,100 L0,100 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M32,32 L60,32 L60,35 L35,35 L35,60 L32,60 Z\' fill=\'%231EBA64\'/%3E%3C/svg%3E")', backgroundSize: '100% 100%' }}></div>
+        <div className="absolute top-4 right-4 w-16 h-16 md:w-24 md:h-24 pointer-events-none z-10 transform scale-x-[-1]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M5,5 L95,5 L95,12 L12,12 L12,95 L5,95 Z\' fill=\'%231EBA64\'/%3E%3Cpath d=\'M20,20 L75,20 L75,24 L24,24 L24,75 L20,75 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M0,0 L100,0 L100,2 L2,2 L2,100 L0,100 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M32,32 L60,32 L60,35 L35,35 L35,60 L32,60 Z\' fill=\'%231EBA64\'/%3E%3C/svg%3E")', backgroundSize: '100% 100%' }}></div>
+        <div className="absolute bottom-4 left-4 w-16 h-16 md:w-24 md:h-24 pointer-events-none z-10 transform scale-y-[-1]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M5,5 L95,5 L95,12 L12,12 L12,95 L5,95 Z\' fill=\'%231EBA64\'/%3E%3Cpath d=\'M20,20 L75,20 L75,24 L24,24 L24,75 L20,75 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M0,0 L100,0 L100,2 L2,2 L2,100 L0,100 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M32,32 L60,32 L60,35 L35,35 L35,60 L32,60 Z\' fill=\'%231EBA64\'/%3E%3C/svg%3E")', backgroundSize: '100% 100%' }}></div>
+        <div className="absolute bottom-4 right-4 w-16 h-16 md:w-24 md:h-24 pointer-events-none z-10 transform scale-x-[-1] scale-y-[-1]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M5,5 L95,5 L95,12 L12,12 L12,95 L5,95 Z\' fill=\'%231EBA64\'/%3E%3Cpath d=\'M20,20 L75,20 L75,24 L24,24 L24,75 L20,75 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M0,0 L100,0 L100,2 L2,2 L2,100 L0,100 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M32,32 L60,32 L60,35 L35,35 L35,60 L32,60 Z\' fill=\'%231EBA64\'/%3E%3C/svg%3E")', backgroundSize: '100% 100%' }}></div>
+
+        <div className="relative z-20">
+          <div className="text-center relative pb-8 md:pb-12">
+            <h1 className="text-4xl md:text-5xl font-serif italic font-bold text-[#4A0404] mb-5 tracking-tight leading-tight">Profil Universitaire</h1>
+            <div className="flex justify-center items-center gap-4 mb-5">
+              <div className="h-[1px] w-20 bg-[#1EBA64]"></div>
+              <div className="w-2.5 h-2.5 rotate-45 border-[1.5px] border-[#4A0404]"></div>
+              <div className="h-[1px] w-20 bg-[#1EBA64]"></div>
+            </div>
+          </div>
+
+      <div className="maroccan-card mt-4 z-20">
         {/* Banner */}
         <div 
           className="h-48 md:h-64 relative overflow-hidden bg-moroccan-green"
@@ -211,16 +245,24 @@ export const Profile: React.FC<ProfileProps> = ({ targetUserId, onMessage }) => 
             </div>
             <div className="flex-1 pb-2">
               <div className="flex flex-col md:flex-row items-center md:items-end gap-2 md:gap-4 mb-2">
-                <h2 className="text-2xl md:text-4xl font-serif italic font-bold text-slate-900 leading-tight">{profile.firstName} {profile.lastName}</h2>
-                <span className={`px-4 py-1.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] shadow-sm ${profile.role === 'mentor' ? 'bg-moroccan-red/20 text-moroccan-red' : 'bg-moroccan-green/10 text-moroccan-green'}`}>
-                  {profile.role === 'mentor' ? 'Mentorat' : 'Étudiant'}
+                <h2 className="text-2xl md:text-4xl font-serif italic font-bold text-slate-900 leading-tight flex items-center gap-2">
+                  {profile.firstName} {profile.lastName}
+                  {profile.role === 'school' && (
+                    <svg className="w-6 h-6 text-blue-500 fill-current ml-1 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <title>Institution Vérifiée</title>
+                      <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm-1.06 14.86l-4.14-4.13 1.41-1.42 2.73 2.72 6.03-6.02 1.41 1.41-7.44 7.44z" />
+                    </svg>
+                  )}
+                </h2>
+                <span className={`px-4 py-1.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] shadow-sm ${profile.role === 'mentor' ? 'bg-moroccan-red/20 text-moroccan-red' : profile.role === 'school' ? 'bg-blue-100 text-blue-700' : 'bg-moroccan-green/10 text-moroccan-green'}`}>
+                  {profile.role === 'school' ? 'Institution d\'Enseignement Supérieur' : profile.role === 'mentor' ? 'Mentorat' : 'Étudiant'}
                 </span>
               </div>
               <div className="flex flex-wrap gap-2 md:gap-4 items-center justify-center md:justify-start mb-4">
-                <p className="text-slate-400 font-bold text-xs md:text-sm tracking-tight">{profile.email}</p>
-                <div className="hidden md:block w-1 h-1 bg-slate-200 rounded-full"></div>
+                {profile.role !== 'school' && <p className="text-slate-400 font-bold text-xs md:text-sm tracking-tight">{profile.email}</p>}
+                {profile.role !== 'school' && <div className="hidden md:block w-1 h-1 bg-slate-200 rounded-full"></div>}
                 <p className="text-moroccan-green font-black uppercase text-[9px] md:text-[10px] tracking-[0.2em]">{profile.level}</p>
-                {profile.selectedPack && PACK_INFO[profile.selectedPack] && (
+                {profile.role !== 'school' && profile.selectedPack && PACK_INFO[profile.selectedPack] && (
                   <>
                     <div className="hidden md:block w-1 h-1 bg-slate-200 rounded-full"></div>
                     <div className={`flex items-center gap-2 px-3 py-1 rounded-lg border text-[9px] md:text-[10px] font-black uppercase tracking-widest ${PACK_INFO[profile.selectedPack].color}`}>
@@ -357,6 +399,7 @@ export const Profile: React.FC<ProfileProps> = ({ targetUserId, onMessage }) => 
               </div>
             </div>
 
+          {profile.role !== 'school' && (
             <div className="space-y-6 md:space-y-8 pb-8 lg:pb-0">
               <div className="relative group overflow-hidden bg-moroccan-green rounded-[32px] md:rounded-[40px] p-8 md:p-10 text-white shadow-2xl shadow-moroccan-green/20">
                 <div className="absolute inset-0 zellij-pattern opacity-10 group-hover:scale-110 transition-transform duration-700"></div>
@@ -375,8 +418,42 @@ export const Profile: React.FC<ProfileProps> = ({ targetUserId, onMessage }) => 
                 </div>
               </div>
             </div>
+          )}
+          </div>
+
+          <div className="mt-8 pt-8 border-t border-slate-100">
+            <h3 className="text-xl md:text-2xl font-serif italic text-slate-800 font-bold mb-6 flex items-center gap-3">
+              <BookOpen size={24} className="text-moroccan-green" />
+              Articles publiés ({userPosts.length})
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {userPosts.map(post => (
+                <div key={post.id} className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
+                  <p className="text-sm text-slate-700 line-clamp-3 mb-4 leading-relaxed">{post.content}</p>
+                  {post.imageUrl && (
+                    <div className="w-full h-32 rounded-xl mb-4 overflow-hidden">
+                      <img src={post.imageUrl} className="w-full h-full object-cover" alt="" />
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
+                    <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                    <div className="flex gap-3">
+                      <span className="flex items-center gap-1"><Heart size={14} /> {post.likesCount}</span>
+                      <span className="flex items-center gap-1"><MessageSquare size={14} /> {post.commentsCount}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {userPosts.length === 0 && (
+                <div className="col-span-full py-8 text-center text-slate-500 font-medium bg-slate-50 rounded-3xl">
+                  Cet utilisateur n'a pas encore publié d'articles.
+                </div>
+              )}
+            </div>
           </div>
         </div>
+      </div>
+      </div>
       </div>
     </div>
   );

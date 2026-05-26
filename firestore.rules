@@ -41,21 +41,31 @@ service cloud.firestore {
       return data.keys().hasAll(['uid', 'email', 'role']) &&
              data.uid == request.auth.uid &&
              isValidEmail(data.email) &&
-             data.role in ['student', 'mentor'] &&
+             data.role in ['student', 'mentor', 'school', 'admin'] &&
              (!('displayName' in data) || isValidString(data.displayName, 0, 100)) &&
              (!('firstName' in data) || isValidString(data.firstName, 0, 100)) &&
              (!('lastName' in data) || isValidString(data.lastName, 0, 100)) &&
              (!('institution' in data) || isValidString(data.institution, 0, 200)) &&
-             (!('bio' in data) || isValidString(data.bio, 0, 500)) &&
-             (!('photoURL' in data) || isValidString(data.photoURL, 0, 2000));
+             (!('major' in data) || isValidString(data.major, 0, 200)) &&
+             (!('level' in data) || isValidString(data.level, 0, 100)) &&
+             (!('city' in data) || isValidString(data.city, 0, 100)) &&
+             (!('bio' in data) || isValidString(data.bio, 0, 1000)) &&
+             (!('photoURL' in data) || isValidString(data.photoURL, 0, 2000000)) &&
+             (!('bannerURL' in data) || isValidString(data.bannerURL, 0, 2000000)) &&
+             (!('selectedPack' in data) || isValidString(data.selectedPack, 0, 100)) &&
+             (!('createdAt' in data) || isValidString(data.createdAt, 0, 100)) &&
+             (!('profileViews' in data) || data.profileViews is number);
     }
 
     match /users/{userId} {
       allow read: if isSignedIn();
       allow create: if isOwner(userId) && isValidUser(incoming());
       allow update: if isOwner(userId) && isValidUser(incoming()) && (
-        incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'firstName', 'lastName', 'institution', 'bio', 'photoURL', 'updatedAt']) ||
-        incoming().diff(existing()).affectedKeys().hasOnly(['role']) // Allow initial role set if needed
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'uid', 'email', 'displayName', 'firstName', 'lastName', 'institution', 'bio', 'photoURL', 'bannerURL', 'major', 'level', 'city', 'updatedAt', 'role', 'selectedPack', 'createdAt'
+        ])
+      ) || (
+        isSignedIn() && incoming().diff(existing()).affectedKeys().hasOnly(['profileViews'])
       );
     }
 
@@ -64,7 +74,10 @@ service cloud.firestore {
       return data.keys().hasAll(['authorUid', 'content', 'createdAt']) &&
              data.authorUid == request.auth.uid &&
              isValidString(data.content, 1, 5000) &&
-             (!('imageUrl' in data) || isValidString(data.imageUrl, 0, 2000));
+             (!('authorName' in data) || isValidString(data.authorName, 0, 200)) &&
+             (!('authorRole' in data) || isValidString(data.authorRole, 0, 50)) &&
+             (!('authorPhoto' in data) || isValidString(data.authorPhoto, 0, 2000000)) &&
+             (!('imageUrl' in data) || isValidString(data.imageUrl, 0, 2000000));
     }
 
     match /posts/{postId} {

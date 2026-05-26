@@ -28,6 +28,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   isFullPage = false,
   mode = 'academic'
 }) => {
+  const effectivelyFullPage = isFullPage || mode === 'academic';
   const { user, profile } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -35,7 +36,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   const [fileData, setFileData] = useState<{ data: string; mimeType: string } | undefined>();
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(!isFullPage && ! (mode === 'service'));
+  const [isSidebarOpen, setIsSidebarOpen] = useState(!effectivelyFullPage && !(mode === 'service'));
   const [guestCount, setGuestCount] = useState(() => {
     const saved = localStorage.getItem('guest_ai_count');
     return saved ? parseInt(saved, 10) : 0;
@@ -249,14 +250,25 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   };
 
   const AIArea = (
-    <div className={`relative flex flex-col bg-white overflow-hidden ${isFullPage ? 'h-[calc(100vh-14rem)] md:h-[calc(100vh-12rem)] rounded-[32px] shadow-2xl border border-white/50' : 'h-full'}`}>
-      {/* Header for small screens in full page or standard header for modal */}
-      {(!isFullPage || !isSidebarOpen) && (
-        <div className={`${mode === 'academic' ? 'bg-moroccan-green' : 'bg-orange-500'} p-4 md:p-6 text-white flex items-center justify-between relative overflow-hidden flex-shrink-0`}>
+    <div className={`${effectivelyFullPage ? 'w-full max-w-7xl mx-auto py-4 md:py-8 px-2 md:px-4 flex flex-col h-[calc(100vh-6rem)] md:h-[85vh]' : 'relative h-full text-slate-800 flex flex-col'}`}>
+      <div className={`${effectivelyFullPage ? 'bg-[#FAF8F5] border border-[#821316]/10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)] rounded-[32px] md:rounded-[40px] relative isolate overflow-hidden flex-1 flex flex-col' : 'relative h-full flex flex-col bg-white overflow-hidden'}`}>
+        {effectivelyFullPage && (
+          <>
+            <div className="absolute inset-0 zellij-pattern opacity-[0.03] pointer-events-none rounded-[32px] md:rounded-[40px]"></div>
+            <div className="absolute top-4 left-4 w-16 h-16 md:w-24 md:h-24 pointer-events-none z-10" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M5,5 L95,5 L95,12 L12,12 L12,95 L5,95 Z\' fill=\'%231EBA64\'/%3E%3Cpath d=\'M20,20 L75,20 L75,24 L24,24 L24,75 L20,75 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M0,0 L100,0 L100,2 L2,2 L2,100 L0,100 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M32,32 L60,32 L60,35 L35,35 L35,60 L32,60 Z\' fill=\'%231EBA64\'/%3E%3C/svg%3E")', backgroundSize: '100% 100%' }}></div>
+            <div className="absolute top-4 right-4 w-16 h-16 md:w-24 md:h-24 pointer-events-none z-10 transform scale-x-[-1]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M5,5 L95,5 L95,12 L12,12 L12,95 L5,95 Z\' fill=\'%231EBA64\'/%3E%3Cpath d=\'M20,20 L75,20 L75,24 L24,24 L24,75 L20,75 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M0,0 L100,0 L100,2 L2,2 L2,100 L0,100 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M32,32 L60,32 L60,35 L35,35 L35,60 L32,60 Z\' fill=\'%231EBA64\'/%3E%3C/svg%3E")', backgroundSize: '100% 100%' }}></div>
+            <div className="absolute bottom-4 left-4 w-16 h-16 md:w-24 md:h-24 pointer-events-none z-10 transform scale-y-[-1]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M5,5 L95,5 L95,12 L12,12 L12,95 L5,95 Z\' fill=\'%231EBA64\'/%3E%3Cpath d=\'M20,20 L75,20 L75,24 L24,24 L24,75 L20,75 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M0,0 L100,0 L100,2 L2,2 L2,100 L0,100 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M32,32 L60,32 L60,35 L35,35 L35,60 L32,60 Z\' fill=\'%231EBA64\'/%3E%3C/svg%3E")', backgroundSize: '100% 100%' }}></div>
+            <div className="absolute bottom-4 right-4 w-16 h-16 md:w-24 md:h-24 pointer-events-none z-10 transform scale-x-[-1] scale-y-[-1]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M5,5 L95,5 L95,12 L12,12 L12,95 L5,95 Z\' fill=\'%231EBA64\'/%3E%3Cpath d=\'M20,20 L75,20 L75,24 L24,24 L24,75 L20,75 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M0,0 L100,0 L100,2 L2,2 L2,100 L0,100 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M32,32 L60,32 L60,35 L35,35 L35,60 L32,60 Z\' fill=\'%231EBA64\'/%3E%3C/svg%3E")', backgroundSize: '100% 100%' }}></div>
+          </>
+        )}
+
+      {/* Header */}
+      {(!effectivelyFullPage || isOpen) && (
+      <div className={`${mode === 'academic' ? 'bg-moroccan-green' : 'bg-orange-500'} p-4 md:p-6 text-white flex items-center justify-between relative overflow-hidden flex-shrink-0 z-20`}>
           <div className="absolute inset-0 zellij-pattern opacity-10"></div>
           <div className="relative z-10 flex items-center gap-4">
             <div className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/30">
-              <Bot className="text-white" size={isFullPage ? 24 : 28} />
+              <Bot className="text-white" size={effectivelyFullPage ? 24 : 28} />
             </div>
             <div>
               <h2 className="text-lg md:text-xl font-serif italic font-bold">
@@ -271,7 +283,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2 relative z-10">
-            {isFullPage && (
+            {effectivelyFullPage && (
               <button 
                 onClick={() => setIsSidebarOpen(true)}
                 className="p-2 hover:bg-white/10 rounded-xl transition-colors md:hidden"
@@ -283,6 +295,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
               <button 
                 onClick={onClose}
                 className="p-2 hover:bg-white/10 rounded-xl transition-colors"
+                style={{display: effectivelyFullPage ? 'none' : 'block'}}
               >
                 <X size={24} />
               </button>
@@ -291,12 +304,12 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         </div>
       )}
 
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-1 overflow-hidden relative z-20">
         {/* Sidebar for History */}
-        {(isSidebarOpen || isFullPage) && (
+        {(isSidebarOpen || effectivelyFullPage) && (
           <motion.div 
-            initial={isFullPage ? { width: 0, opacity: 0 } : false}
-            animate={{ width: isFullPage ? (isSidebarOpen ? 280 : 0) : 0, opacity: 1 }}
+            initial={effectivelyFullPage ? { width: 0, opacity: 0 } : false}
+            animate={{ width: effectivelyFullPage ? (isSidebarOpen ? 280 : 0) : 0, opacity: 1 }}
             className={`bg-slate-50 border-r border-slate-100 flex flex-col overflow-hidden absolute inset-y-0 left-0 z-30 md:relative ${isSidebarOpen ? 'w-full md:w-[280px]' : 'w-0'}`}
           >
             <div className="p-4 border-b border-slate-200 flex items-center justify-between">
@@ -346,7 +359,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         {/* Chat Messages */}
         <div className="flex-1 flex flex-col min-w-0 bg-ivory/10 relative">
           {/* Toggle Sidebar Button for Desktop */}
-          {isFullPage && !isSidebarOpen && (
+          {effectivelyFullPage && !isSidebarOpen && (
             <button 
               onClick={() => setIsSidebarOpen(true)}
               className="absolute left-4 top-4 z-20 p-2 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-moroccan-green shadow-sm transition-all hidden md:flex"
@@ -513,16 +526,20 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           </div>
         </div>
       </div>
+      </div>
     </div>
   );
 
-  if (isFullPage) return AIArea;
+  if (effectivelyFullPage) {
+    if (!isOpen) return null;
+    return AIArea;
+  }
 
   if (!isOpen) return null;
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className={`fixed inset-0 z-[100] flex ${mode === 'service' ? 'items-center justify-center p-4' : ''}`}>
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -534,7 +551,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           initial={{ opacity: 0, scale: 0.9, y: 30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 30 }}
-          className="relative w-full max-w-4xl h-[85vh] overflow-hidden rounded-[32px] shadow-2xl"
+          className={`relative bg-white shadow-2xl flex flex-col overflow-hidden ${mode === 'service' ? 'w-full max-w-4xl h-[85vh] rounded-[32px]' : 'w-full h-full'}`}
         >
           {AIArea}
         </motion.div>

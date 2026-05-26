@@ -1,3 +1,8 @@
+declare module "*.jpg" {
+  const value: any;
+  export default value;
+}
+
 export interface UserProfile {
   uid: string;
   displayName: string;
@@ -6,13 +11,14 @@ export interface UserProfile {
   email: string;
   photoURL: string;
   bannerURL?: string;
-  role: 'student' | 'mentor';
+  role: 'student' | 'mentor' | 'school' | 'admin';
   level: string;
   bio?: string;
   institution?: string;
   major?: string;
   city?: string;
   selectedPack?: string;
+  profileViews?: number;
   createdAt: string;
 }
 
@@ -21,6 +27,7 @@ export interface Post {
   authorUid: string;
   authorName: string;
   authorPhoto: string;
+  authorRole?: string;
   content: string;
   imageUrl?: string;
   likesCount: number;

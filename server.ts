@@ -16,9 +16,31 @@ async function startServer() {
   app.use(express.json({ limit: '10mb' }));
   app.use(cors());
 
-  // Health check
+  // API routes FIRST
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok' });
+  });
+
+  app.post('/api/ai', async (req, res) => {
+    const { message, history, profile, mode, fileData } = req.body;
+    
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ error: "Clé API Gemini non configurée sur le serveur." });
+    }
+
+    try {
+      const { getGeminiResponse } = await import('./src/services/geminiService.js');
+      // Note: We need to handle the import carefully since it's a TS file being imported in server.ts (running via tsx)
+      // Actually, since we use tsx, we can just import it.
+      // But geminiService.ts might have client-only imports or logic?
+      // It imports GoogleGenAI which works on both.
+      
+      const response = await getGeminiResponse(message, history, profile, mode, fileData);
+      res.json({ response });
+    } catch (error: any) {
+      console.error('AI Route Error:', error);
+      res.status(500).json({ error: error.message || "Erreur lors de la génération de la réponse." });
+    }
   });
 
   // Vite Integration

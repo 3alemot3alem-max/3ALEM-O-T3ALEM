@@ -29,40 +29,29 @@ export const SchoolDirectory: React.FC = () => {
   );
 
   return (
-    <div className="w-full max-w-7xl mx-auto py-6 md:py-12 px-4 md:px-6">
-      {/* Magnificent Header */}
-      <div className="relative h-64 md:h-80 rounded-[32px] md:rounded-[48px] overflow-hidden mb-10 md:mb-16 group shadow-2xl shadow-moroccan-green/20">
-        <img 
-          src="https://images.unsplash.com/photo-1541339907198-e08756ebafe3?auto=format&fit=crop&q=80&w=2000" 
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110" 
-          alt="University" 
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-moroccan-green/90 via-moroccan-green/40 to-transparent"></div>
-        <div className="absolute inset-0 zellij-pattern opacity-10"></div>
-        
-        <div className="relative h-full flex flex-col justify-center px-6 md:px-20 max-w-3xl text-center md:text-left">
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="backdrop-blur-md bg-white/10 p-6 md:p-12 rounded-[24px] md:rounded-[32px] border border-white/20 shadow-2xl">
-              <span className="bg-moroccan-red text-white px-4 md:px-6 py-1.5 md:py-2 rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] md:tracking-[0.4em] shadow-xl mb-4 md:mb-6 inline-block">
-                Annuaire 2024
-              </span>
-              <h1 className="text-4xl md:text-8xl font-black text-white uppercase tracking-tighter leading-none mb-4 md:mb-6 drop-shadow-2xl">
-                ÉCOLE
-              </h1>
-              <p className="text-white/90 font-serif italic text-base md:text-2xl leading-relaxed max-w-xl drop-shadow-lg">
-                Découvrez les seuils de présélection, les spécialités et forgez votre avenir académique.
-              </p>
+    <div className="w-full max-w-7xl mx-auto py-4 md:py-8 px-2 md:px-4">
+      <div className="bg-[#FAF8F5] border border-[#821316]/10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)] rounded-[32px] md:rounded-[40px] relative isolate min-h-[80vh] px-4 py-8 md:p-14">
+        {/* Background Zellij */}
+        <div className="absolute inset-0 zellij-pattern opacity-[0.03] pointer-events-none rounded-[32px] md:rounded-[40px]"></div>
+
+        {/* Ornate corners */}
+        <div className="absolute top-4 left-4 w-16 h-16 md:w-24 md:h-24 pointer-events-none z-10" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M5,5 L95,5 L95,12 L12,12 L12,95 L5,95 Z\' fill=\'%231EBA64\'/%3E%3Cpath d=\'M20,20 L75,20 L75,24 L24,24 L24,75 L20,75 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M0,0 L100,0 L100,2 L2,2 L2,100 L0,100 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M32,32 L60,32 L60,35 L35,35 L35,60 L32,60 Z\' fill=\'%231EBA64\'/%3E%3C/svg%3E")', backgroundSize: '100% 100%' }}></div>
+        <div className="absolute top-4 right-4 w-16 h-16 md:w-24 md:h-24 pointer-events-none z-10 transform scale-x-[-1]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M5,5 L95,5 L95,12 L12,12 L12,95 L5,95 Z\' fill=\'%231EBA64\'/%3E%3Cpath d=\'M20,20 L75,20 L75,24 L24,24 L24,75 L20,75 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M0,0 L100,0 L100,2 L2,2 L2,100 L0,100 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M32,32 L60,32 L60,35 L35,35 L35,60 L32,60 Z\' fill=\'%231EBA64\'/%3E%3C/svg%3E")', backgroundSize: '100% 100%' }}></div>
+        <div className="absolute bottom-4 left-4 w-16 h-16 md:w-24 md:h-24 pointer-events-none z-10 transform scale-y-[-1]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M5,5 L95,5 L95,12 L12,12 L12,95 L5,95 Z\' fill=\'%231EBA64\'/%3E%3Cpath d=\'M20,20 L75,20 L75,24 L24,24 L24,75 L20,75 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M0,0 L100,0 L100,2 L2,2 L2,100 L0,100 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M32,32 L60,32 L60,35 L35,35 L35,60 L32,60 Z\' fill=\'%231EBA64\'/%3E%3C/svg%3E")', backgroundSize: '100% 100%' }}></div>
+        <div className="absolute bottom-4 right-4 w-16 h-16 md:w-24 md:h-24 pointer-events-none z-10 transform scale-x-[-1] scale-y-[-1]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M5,5 L95,5 L95,12 L12,12 L12,95 L5,95 Z\' fill=\'%231EBA64\'/%3E%3Cpath d=\'M20,20 L75,20 L75,24 L24,24 L24,75 L20,75 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M0,0 L100,0 L100,2 L2,2 L2,100 L0,100 Z\' fill=\'%23821316\'/%3E%3Cpath d=\'M32,32 L60,32 L60,35 L35,35 L35,60 L32,60 Z\' fill=\'%231EBA64\'/%3E%3C/svg%3E")', backgroundSize: '100% 100%' }}></div>
+
+        <div className="relative z-20">
+          <div className="text-center relative pb-8 md:pb-12">
+            <h1 className="text-4xl md:text-5xl font-serif italic font-bold text-[#4A0404] mb-5 tracking-tight leading-tight">Annuaire des Écoles</h1>
+            <div className="flex justify-center items-center gap-4 mb-5">
+              <div className="h-[1px] w-20 bg-[#1EBA64]"></div>
+              <div className="w-2.5 h-2.5 rotate-45 border-[1.5px] border-[#4A0404]"></div>
+              <div className="h-[1px] w-20 bg-[#1EBA64]"></div>
             </div>
-          </motion.div>
-        </div>
-      </div>
+            <p className="mt-4 text-slate-700 font-serif italic text-base md:text-xl leading-relaxed max-w-xl mx-auto px-4">Découvrez les seuils de présélection, les spécialités et forgez votre avenir académique.</p>
+          </div>
 
-
-      <div className="mb-10 md:mb-12 flex justify-center">
+          <div className="mb-10 md:mb-12 flex justify-center">
         <div className="maroccan-card p-1.5 md:p-2 flex flex-col sm:flex-row gap-2 md:gap-3 w-full max-w-xl group">
           <div className="flex-1 relative">
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
@@ -140,6 +129,8 @@ export const SchoolDirectory: React.FC = () => {
             </motion.div>
           ))
         )}
+      </div>
+      </div>
       </div>
 
       {/* School Detail Modal */}

@@ -50,7 +50,7 @@ export const SCHOOLS_DATA: School[] = [
     "entrance": "CNC après CPGE",
     "specialties": "Analyse, Algèbre, Mécanique solides, Thermodynamique, Informatique, Électronique, Génie Civil, Béton armé, Gestion projet, Stage",
     "sector": "Public",
-    "logoUrl": getPlaceholderImg("Ingénieur")
+    "logoUrl": "https://upload.wikimedia.org/wikipedia/fr/0/05/EMI.PNG"
   },
   {
     "id": "ensias",
@@ -63,7 +63,7 @@ export const SCHOOLS_DATA: School[] = [
     "entrance": "CNC après CPGE",
     "specialties": "Algorithmique avancée, IA, Machine Learning, Big Data, Cybersécurité, Cloud Computing, Réseaux, Génie Logiciel, Base données",
     "sector": "Public",
-    "logoUrl": getPlaceholderImg("Ingénieur")
+    "logoUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfn5Yl-KZFjJHICitFmd29kSTNHFeXKUhKcg&s"
   },
   {
     "id": "ehtp",
@@ -76,7 +76,7 @@ export const SCHOOLS_DATA: School[] = [
     "entrance": "CNC après CPGE",
     "specialties": "Résistance matériaux, Béton armé, Routes, Hydraulique, Géotechnique, Topographie, BIM, Management projet",
     "sector": "Public",
-    "logoUrl": getPlaceholderImg("Ingénieur")
+    "logoUrl": "https://www.ehtp.ac.ma/wp-content/uploads/2025/02/logo-wide.jpg"
   },
   {
     "id": "inpt",
@@ -102,72 +102,33 @@ export const SCHOOLS_DATA: School[] = [
     "entrance": "CNC après CPGE",
     "specialties": "Électrotechnique, Machines électriques, Automatisme, API, Électronique puissance, Énergies renouvelables",
     "sector": "Public",
-    "logoUrl": getPlaceholderImg("Ingénieur")
+    "logoUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS-8gAATYCsIsCYrpE0bQFQ50psQOq215IyZA&s"
   },
   {
-    "id": "ensam-casablanca",
-    "name": "ENSAM Casablanca",
+    "id": "ensam-national",
+    "name": "ENSAM (Réseau)",
     "type": "École d'Ingénieur",
-    "city": "Casablanca",
-    "duration": "5 ans",
-    "diploma": "Ingénieur d'État",
-    "thresholds": { "sm": 14.5, "pc": 15, "svt": 15.5, "eco": "Non éligible" },
-    "entrance": "National Post-Bac",
-    "specialties": "Maths, Physique, Chimie, Dessin indus, Mécanique, CAO, Automobile, Aéronautique, Productique",
-    "sector": "Public",
-    "logoUrl": getPlaceholderImg("Ingénieur")
-  },
-  {
-    "id": "ensam-meknes",
-    "name": "ENSAM Meknès",
-    "type": "École d'Ingénieur",
-    "city": "Meknès",
+    "city": "Casablanca, Meknès, Rabat...",
     "duration": "5 ans",
     "diploma": "Ingénieur d'État",
     "thresholds": { "sm": 14, "pc": 14.5, "svt": 15, "eco": "Non éligible" },
     "entrance": "National Post-Bac",
-    "specialties": "Productique, Fabrication mécanique, Énergétique, Méca fluides, Maintenance industrielle",
+    "specialties": "Mécanique, Automobile, Aéronautique, Productique, Énergétique, Maintenance industrielle",
     "sector": "Public",
-    "logoUrl": getPlaceholderImg("Ingénieur")
+    "logoUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBETqRTwuRitB0q-b0bYw0-YY_6hnRjtjtvg&s"
   },
   {
-    "id": "ensa-tanger",
-    "name": "ENSA Tanger",
+    "id": "ensa-national",
+    "name": "ENSA (Réseau)",
     "type": "École d'Ingénieur",
-    "city": "Tanger",
-    "duration": "5 ans",
-    "diploma": "Ingénieur d'État",
-    "thresholds": { "sm": 13.8, "pc": 14.2, "svt": 14.8, "eco": "Non éligible" },
-    "entrance": "National Post-Bac",
-    "specialties": "Automobile, Aéronautique, Mécatronique, Systèmes embarqués, Énergétique, Robotique",
-    "sector": "Public",
-    "logoUrl": getPlaceholderImg("Ingénieur")
-  },
-  {
-    "id": "ensa-marrakech",
-    "name": "ENSA Marrakech",
-    "type": "École d'Ingénieur",
-    "city": "Marrakech",
-    "duration": "5 ans",
-    "diploma": "Ingénieur d'État",
-    "thresholds": { "sm": 13.8, "pc": 14.3, "svt": 14.9, "eco": "Non éligible" },
-    "entrance": "National Post-Bac",
-    "specialties": "Génie Industriel, Logistique, Supply Chain, Data Science, Énergies renouvelables, IA",
-    "sector": "Public",
-    "logoUrl": getPlaceholderImg("Ingénieur")
-  },
-  {
-    "id": "ensa-agadir",
-    "name": "ENSA Agadir",
-    "type": "École d'Ingénieur",
-    "city": "Agadir",
+    "city": "Tanger, Marrakech, Agadir, Tétouan...",
     "duration": "5 ans",
     "diploma": "Ingénieur d'État",
     "thresholds": { "sm": 13.5, "pc": 14, "svt": 14.5, "eco": "Non éligible" },
     "entrance": "National Post-Bac",
-    "specialties": "Génie Industriel, Agroalimentaire, Génie des procédés, Énergétique, Environnement",
+    "specialties": "Automobile, Aéronautique, Mécatronique, Systèmes embarqués, Énergétique, Robotique, Génie Industriel, IA",
     "sector": "Public",
-    "logoUrl": getPlaceholderImg("Ingénieur")
+    "logoUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlC0dLhH_WguGxnzLOEQuiCP_DuT7ENWQNKQ&s"
   },
   {
     "id": "encg-casablanca",
@@ -180,7 +141,7 @@ export const SCHOOLS_DATA: School[] = [
     "entrance": "TAFEM",
     "specialties": "Comptabilité, Marketing Digital, Finance entreprise, Commerce International, Audit, RH, Droit affaires",
     "sector": "Public",
-    "logoUrl": getPlaceholderImg("Commerce")
+    "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/6/60/ENCG-Casablanca.png"
   },
   {
     "id": "iscae-casa",
@@ -193,7 +154,7 @@ export const SCHOOLS_DATA: School[] = [
     "entrance": "National",
     "specialties": "Finance marché, Marketing stratégique, Audit, Contrôle gestion, Leadership, Business Plan",
     "sector": "Semi-public",
-    "logoUrl": getPlaceholderImg("Commerce")
+    "logoUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUDVL5HqKF3YNfs8MNbmhsL8bpE-FGtErWDw&s"
   },
   {
     "id": "insea-rabat",
@@ -206,7 +167,7 @@ export const SCHOOLS_DATA: School[] = [
     "entrance": "National",
     "specialties": "Statistiques, Économétrie, Actuariat, Data Science, Recherche Opérationnelle, Sondage",
     "sector": "Public",
-    "logoUrl": getPlaceholderImg("Ingénieur")
+    "logoUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-kM0CodOXM0iDZL2FNKtcrKhmwWVkir0fvQ&s"
   },
   {
     "id": "era-marrakech",
@@ -219,7 +180,7 @@ export const SCHOOLS_DATA: School[] = [
     "entrance": "National + Médical + Sport",
     "specialties": "Pilotage, Aérodynamique, Navigation aérienne, Météorologie, Anglais aéronautique",
     "sector": "Public Militaire",
-    "logoUrl": getPlaceholderImg("Militaire")
+    "logoUrl": "https://api.dicebear.com/7.x/initials/svg?seed=ERA&backgroundColor=159c52"
   },
   {
     "id": "ern-casa",
@@ -232,7 +193,7 @@ export const SCHOOLS_DATA: School[] = [
     "entrance": "National + Médical + Sport",
     "specialties": "Navigation maritime, Mécanique navale, Électronique, Télécoms, Anglais maritime",
     "sector": "Public Militaire",
-    "logoUrl": getPlaceholderImg("Militaire")
+    "logoUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_3-mfO7sYxygeONqkD9pfT45qQ3YYn4RZvQ&s"
   },
   {
     "id": "arm-meknes",
@@ -245,7 +206,7 @@ export const SCHOOLS_DATA: School[] = [
     "entrance": "National + Médical + Sport",
     "specialties": "Tactique militaire, Topographie, Armement, Commandement",
     "sector": "Public Militaire",
-    "logoUrl": getPlaceholderImg("Militaire")
+    "logoUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1fz_3LFCESfA_wWrEBmezi-j4YQVnnLz5Fw&s"
   },
   {
     "id": "aiac-casa",
@@ -258,7 +219,7 @@ export const SCHOOLS_DATA: School[] = [
     "entrance": "National + Médical",
     "specialties": "Pilotage, Contrôle aérien, Maintenance aéronautique",
     "sector": "Public",
-    "logoUrl": getPlaceholderImg("Air")
+    "logoUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3D-HxICvW3pwQ0okEaj5IPzkRm34XJHdYZg&s"
   },
   {
     "id": "ispits-national",
@@ -271,72 +232,46 @@ export const SCHOOLS_DATA: School[] = [
     "entrance": "National",
     "specialties": "Soins infirmiers, Anatomie, Pharmacologie, Urgence",
     "sector": "Public",
-    "logoUrl": getPlaceholderImg("Médecine")
+    "logoUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpcoDF8QCwC1ooRENjzJEbfB6O2WywdGXOdA&s"
   },
   {
-    "id": "fmp-rabat",
-    "name": "FMP Rabat (Médecine)",
-    "type": "Médecine",
-    "city": "Rabat",
-    "duration": "7 ans",
-    "diploma": "Doctorat Médecine",
-    "thresholds": { "sm": 16.2, "pc": 16.7, "svt": 17, "eco": "Non éligible" },
-    "entrance": "National",
-    "specialties": "Anatomie, Morphologie, Chirurgie, Pédiatrie",
+    "id": "fmp-fmd-national",
+    "name": "FMP & FMD (Réseau)",
+    "type": "Médecine & Dentaire",
+    "city": "Rabat, Casablanca, Fès, Marrakech, Oujda...",
+    "duration": "7 ans (Médecine) / 6 ans (Dentaire)",
+    "diploma": "Doctorat (Médecine ou Dentaire)",
+    "thresholds": { "sm": "16.2+", "pc": "16.7+", "svt": "17.0+", "eco": "Non éligible" },
+    "entrance": "National Commun",
+    "specialties": "Différence majeure: La FMP dure 7 ans pour la médecine générale (Pédiatrie, Chirurgie, etc.) via résidanat, tandis que la FMD dure 6 ans pour la chirurgie dentaire (Orthodontie, Prothèse). Le seuil et concours sont désormais communs.",
     "sector": "Public",
-    "logoUrl": getPlaceholderImg("Médecine")
+    "logoUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQgx6Wf3HLfapHtePu7Mf0RjW8YmDKmfas0eQ&s"
   },
   {
-    "id": "fmd-rabat",
-    "name": "FMD Rabat (Dentaire)",
-    "type": "Médecine",
-    "city": "Rabat",
-    "duration": "6 ans",
-    "diploma": "Doctorat Dentaire",
-    "thresholds": { "sm": 16.5, "pc": 17, "svt": 17.3, "eco": "Non éligible" },
-    "entrance": "National",
-    "specialties": "Chirurgie buccale, Orthodontie, Prothèse",
-    "sector": "Public",
-    "logoUrl": getPlaceholderImg("Médecine")
-  },
-  {
-    "id": "fst-tanger",
-    "name": "FST Tanger",
+    "id": "fst-national",
+    "name": "FST (Réseau)",
     "type": "Faculté Sciences Techniques",
-    "city": "Tanger",
-    "duration": "3 ans",
+    "city": "Tanger, Settat, Marrakech, Fès...",
+    "duration": "3 ans (LST)",
     "diploma": "Licence LST",
-    "thresholds": { "sm": 12, "pc": 12, "svt": 12.5, "eco": "Non éligible" },
+    "thresholds": { "sm": "11.5 - 12", "pc": "11.5 - 12", "svt": "12 - 12.5", "eco": "Non éligible" },
     "entrance": "Dossier",
-    "specialties": "Logistique, Info, Énergétique, Automobile",
+    "specialties": "Contrairement aux facultés classiques, la FST offre une formation technique et appliquée (Logistique, Info, Énergétique, MIP, BCG), avec un accès possible au cycle Ingénieur après Bac+2.",
     "sector": "Public",
-    "logoUrl": getPlaceholderImg("Faculté")
+    "logoUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRi4N13joSjZISYOIi_bh8lwZDRSktsALRbWQ&s"
   },
   {
-    "id": "bts-mi-casa",
-    "name": "BTS Maintenance Industrielle",
+    "id": "bts-national",
+    "name": "BTS (Réseau)",
     "type": "BTS",
-    "city": "Casablanca",
-    "duration": "2 ans",
-    "diploma": "BTS",
-    "thresholds": { "sm": 11.5, "pc": 11.5, "svt": "Non éligible", "eco": "Non éligible" },
-    "entrance": "Dossier",
-    "specialties": "Hydraulique, Pneumatique, Automatisme",
-    "sector": "Public",
-    "logoUrl": getPlaceholderImg("Technique")
-  },
-  {
-    "id": "bts-compta-casa",
-    "name": "BTS Comptabilité Gestion",
-    "type": "BTS",
-    "city": "Casablanca",
+    "city": "Plusieurs Villes",
     "duration": "2 ans",
     "diploma": "BTS",
     "thresholds": { "sm": 10.5, "pc": 10.5, "svt": 10.5, "eco": 10 },
     "entrance": "Dossier",
-    "specialties": "Comptabilité, Fiscalité, Sage, Droit",
+    "specialties": "Comptabilité, Gestion, Maintenance Industrielle, Automatisme...",
     "sector": "Public",
-    "logoUrl": getPlaceholderImg("Commerce")
+    "logoUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbC6osKBPM-2xLdPlu5OqV_unfaAk8xkmk-g&s"
   },
   {
     "id": "cpge-mpsi-rabat",
@@ -349,7 +284,7 @@ export const SCHOOLS_DATA: School[] = [
     "entrance": "Dossier",
     "specialties": "Maths, Physique, Sciences Ingénieur",
     "sector": "Public",
-    "logoUrl": getPlaceholderImg("Préparatoire")
+    "logoUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRji51fPRA2v1JMydbbkQoisSkSJwUvd7hhQw&s"
   },
   {
     "id": "isic-rabat",
@@ -362,46 +297,7 @@ export const SCHOOLS_DATA: School[] = [
     "entrance": "Concours + Oral",
     "specialties": "Rédaction, Audiovisuel, Montage, Droit presse",
     "sector": "Public",
-    "logoUrl": getPlaceholderImg("Université")
-  },
-  {
-    "id": "ensa-tetouan",
-    "name": "ENSA Tétouan",
-    "type": "École d'Ingénieur",
-    "city": "Tétouan",
-    "duration": "5 ans",
-    "diploma": "Ingénieur d'État",
-    "thresholds": { "sm": 12.5, "pc": 13, "svt": 13.5, "eco": "Non éligible" },
-    "entrance": "National Post-Bac",
-    "specialties": "Génie Civil, Mécatronique, Logistique, Systèmes d'information",
-    "sector": "Public",
-    "logoUrl": getPlaceholderImg("Ingénieur")
-  },
-  {
-    "id": "ensa-el-jadida",
-    "name": "ENSA El Jadida",
-    "type": "École d'Ingénieur",
-    "city": "El Jadida",
-    "duration": "5 ans",
-    "diploma": "Ingénieur d'État",
-    "thresholds": { "sm": 13, "pc": 13.5, "svt": 14, "eco": "Non éligible" },
-    "entrance": "National Post-Bac",
-    "specialties": "Génie Énergétique, Génie Industriel, Environnement",
-    "sector": "Public",
-    "logoUrl": getPlaceholderImg("Ingénieur")
-  },
-  {
-    "id": "fst-settat",
-    "name": "FST Settat",
-    "type": "Faculté Sciences Techniques",
-    "city": "Settat",
-    "duration": "3 ans",
-    "diploma": "Licence LST",
-    "thresholds": { "sm": 11.5, "pc": 11.5, "svt": 12, "eco": "Non éligible" },
-    "entrance": "Dossier",
-    "specialties": "Génie Industriel, Procédés, Environnement, Info",
-    "sector": "Public",
-    "logoUrl": getPlaceholderImg("Faculté")
+    "logoUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkZfNDWxbt23DdGzUdpDmsv8fmvWD4zzB2Yg&s"
   },
   {
     "id": "est-casablanca",
@@ -414,7 +310,7 @@ export const SCHOOLS_DATA: School[] = [
     "entrance": "Dossier",
     "specialties": "Génie Électrique, Génie Mécanique, Info, Gestion",
     "sector": "Public",
-    "logoUrl": getPlaceholderImg("Technique")
+    "logoUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8-Kr2kNbHr61FTy6SqZeTN79uAGUi6gf83g&s"
   },
   {
     "id": "ista-gc-casa",
@@ -427,7 +323,7 @@ export const SCHOOLS_DATA: School[] = [
     "entrance": "Dossier",
     "specialties": "Béton armé, Topographie, Métré, Conducteur travaux",
     "sector": "Public",
-    "logoUrl": getPlaceholderImg("Technique")
+    "logoUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJ7pefXUppPgJSumNE9TfG3HJqpEs6NfAUkw&s"
   }
 ];
 

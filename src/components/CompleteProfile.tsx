@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { motion, AnimatePresence } from 'motion/react';
-import { GraduationCap, School, Camera, Loader2, Sparkles, CheckCircle } from 'lucide-react';
+import { GraduationCap, School, Camera, Loader2, Sparkles, CheckCircle, LogOut } from 'lucide-react';
 import { SCHOOL_ACRONYMS } from '../data/schools';
 
 export const CompleteProfile: React.FC = () => {
@@ -16,6 +17,13 @@ export const CompleteProfile: React.FC = () => {
   const [role, setRole] = useState<'student' | 'mentor'>('student');
   const [photoURL, setPhotoURL] = useState('');
   const [error, setError] = useState('');
+
+  // School fields
+  const isSchool = localStorage.getItem('is_school_auth') === 'true';
+  const [schoolName, setSchoolName] = useState('');
+  const [schoolCity, setSchoolCity] = useState('');
+  const [schoolMajors, setSchoolMajors] = useState('');
+  const [schoolBio, setSchoolBio] = useState('');
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -34,6 +42,18 @@ export const CompleteProfile: React.FC = () => {
     }
   };
 
+  const getSchoolLogo = (name: string) => {
+    const uppercaseName = name.toUpperCase();
+    if (uppercaseName.includes('ENSA') && !uppercaseName.includes('ENSAM')) return 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlC0dLhH_WguGxnzLOEQuiCP_DuT7ENWQNKQ&s';
+    if (uppercaseName.includes('ENSEM')) return 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS-8gAATYCsIsCYrpE0bQFQ50psQOq215IyZA&s';
+    if (uppercaseName.includes('ENSAM')) return 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBETqRTwuRitB0q-b0bYw0-YY_6hnRjtjtvg&s';
+    if (uppercaseName.includes('ENCG')) return 'https://upload.wikimedia.org/wikipedia/commons/6/60/ENCG-Casablanca.png';
+    if (uppercaseName.includes('ISCAE')) return 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUDVL5HqKF3YNfs8MNbmhsL8bpE-FGtErWDw&s';
+    if (uppercaseName.includes('INSEA')) return 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-kM0CodOXM0iDZL2FNKtcrKhmwWVkir0fvQ&s';
+    if (uppercaseName.includes('ERN')) return 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_3-mfO7sYxygeONqkD9pfT45q';
+    return `https://api.dicebear.com/7.x/initials/svg?seed=${name}&backgroundColor=159c52`;
+  };
+
   const handleNextStep = () => {
     if (step === 1 && (!firstName.trim() || !lastName.trim())) {
       setError('Veuillez entrer votre nom et prénom.');
@@ -46,30 +66,71 @@ export const CompleteProfile: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    if (step === 1) {
-      handleNextStep();
-      return;
+    
+    if (isSchool) {
+      if (!schoolName || !schoolCity || !schoolMajors) {
+        setError("Veuillez remplir les informations de l'établissement.");
+        return;
+      }
+    } else {
+      if (step === 1) {
+        handleNextStep();
+        return;
+      }
     }
 
     setLoading(true);
     setError('');
 
+    try {
+      if (isSchool) {
+        const q = query(collection(db, 'users'), where('displayName', '==', schoolName));
+        const currentSchools = await getDocs(q);
+        if (!currentSchools.empty) {
+          setError(`Un compte pour l'établissement "${schoolName}" existe déjà.`);
+          setLoading(false);
+          return;
+        }
+      }
+    } catch (err: any) {
+      console.error(err);
+    }
+
     const pendingPack = localStorage.getItem('pending_pack');
 
     try {
-      await setDoc(doc(db, 'users', user.uid), {
-        uid: user.uid,
-        displayName: `${firstName} ${lastName}`,
-        firstName,
-        lastName,
-        email: user.email,
-        photoURL: photoURL || user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
-        role: role,
-        institution: role === 'mentor' ? institution : '',
-        selectedPack: pendingPack || 'basic', // Default to basic if none found
-        createdAt: new Date().toISOString(),
-      });
-      localStorage.removeItem('pending_pack');
+      if (isSchool) {
+        await setDoc(doc(db, 'users', user.uid), {
+          uid: user.uid,
+          email: user.email,
+          role: 'school',
+          displayName: schoolName,
+          firstName: 'Université',
+          lastName: schoolName,
+          institution: schoolName,
+          city: schoolCity,
+          major: schoolMajors,
+          bio: schoolBio || `Bienvenue sur le profil officiel de ${schoolName}.`,
+          level: 'Supérieure',
+          photoURL: photoURL || user.photoURL || getSchoolLogo(schoolName),
+          createdAt: new Date().toISOString(),
+          // include required defaults
+        });
+      } else {
+        await setDoc(doc(db, 'users', user.uid), {
+          uid: user.uid,
+          displayName: `${firstName} ${lastName}`,
+          firstName,
+          lastName,
+          email: user.email,
+          photoURL: photoURL || user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
+          role: role,
+          institution: role === 'mentor' ? institution : '',
+          selectedPack: pendingPack || 'basic',
+          createdAt: new Date().toISOString(),
+        });
+        localStorage.removeItem('pending_pack');
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -90,16 +151,118 @@ export const CompleteProfile: React.FC = () => {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         className="bg-white rounded-[48px] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] w-full max-w-2xl overflow-hidden relative z-10 border border-white/50"
       >
+        <div className="absolute top-8 right-8 z-20">
+          <button 
+            type="button"
+            onClick={() => {
+              localStorage.removeItem('is_school_auth');
+              signOut(auth);
+            }}
+            className="text-[10px] font-black tracking-widest uppercase text-slate-400 hover:text-moroccan-red transition-colors flex items-center gap-2"
+          >
+            <LogOut size={16} />
+            Sortir
+          </button>
+        </div>
         <div className="p-10 md:p-14">
           <div className="text-center mb-12">
-            <div className="w-20 h-20 bg-moroccan-red rounded-[28px] flex items-center justify-center text-white font-serif italic font-bold text-3xl mx-auto mb-8 shadow-2xl shadow-moroccan-red/20 rotate-3 transform-gpu">3</div>
-            <h2 className="text-4xl font-serif italic font-bold text-slate-900 mb-3 tracking-tight">Sculptez votre profil</h2>
-            <p className="text-slate-400 font-serif italic text-lg">Donnez une âme à votre jardin de la connaissance.</p>
+            <div className="w-20 h-20 bg-moroccan-red rounded-[28px] flex items-center justify-center text-white font-serif italic font-bold text-3xl mx-auto mb-8 shadow-2xl shadow-moroccan-red/20 rotate-3 transform-gpu">
+              {isSchool ? <School size={36} /> : '3'}
+            </div>
+            <h2 className="text-4xl font-serif italic font-bold text-slate-900 mb-3 tracking-tight">
+              {isSchool ? "Compte Institutionnel" : "Sculptez votre profil"}
+            </h2>
+            <p className="text-slate-400 font-serif italic text-lg">
+              {isSchool 
+                ? "Configurez le profil officiel de votre établissement." 
+                : "Donnez une âme à votre jardin de la connaissance."}
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
             <AnimatePresence mode="wait">
-              {step === 1 ? (
+              {isSchool ? (
+                <motion.div 
+                  key="school-form"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="space-y-6"
+                >
+                  <input 
+                    type="text" 
+                    placeholder="Nom de l'établissement (ex: EMI, ENSIAS)"
+                    value={schoolName}
+                    onChange={(e) => setSchoolName(e.target.value)}
+                    className="w-full px-8 py-5 rounded-[24px] bg-slate-50 border-2 border-transparent focus:bg-white focus:border-moroccan-green/30 outline-none transition-all font-medium placeholder:text-slate-300"
+                    required
+                  />
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input 
+                      type="text" 
+                      placeholder="Ville (ex: Rabat)"
+                      value={schoolCity}
+                      onChange={(e) => setSchoolCity(e.target.value)}
+                      className="w-full px-8 py-5 rounded-[24px] bg-slate-50 border-2 border-transparent focus:bg-white focus:border-moroccan-green/30 outline-none transition-all font-medium placeholder:text-slate-300"
+                      required
+                    />
+                    <input 
+                      type="text" 
+                      placeholder="Filières (ex: Ingénierie, Commerce)"
+                      value={schoolMajors}
+                      onChange={(e) => setSchoolMajors(e.target.value)}
+                      className="w-full px-8 py-5 rounded-[24px] bg-slate-50 border-2 border-transparent focus:bg-white focus:border-moroccan-green/30 outline-none transition-all font-medium placeholder:text-slate-300"
+                      required
+                    />
+                  </div>
+
+                  <textarea 
+                    placeholder="À propos de l'établissement... (Description, spécialités, mots du directeur)"
+                    value={schoolBio}
+                    onChange={(e) => setSchoolBio(e.target.value)}
+                    className="w-full px-8 py-5 rounded-[24px] bg-slate-50 border-2 border-transparent focus:bg-white focus:border-moroccan-green/30 outline-none transition-all font-medium placeholder:text-slate-300 resize-none h-32"
+                    required
+                  />
+
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 ml-4">Logo Officiel</label>
+                    <div 
+                      className="flex items-center gap-6 p-6 bg-slate-50 rounded-[32px] border-2 border-dashed border-slate-200 hover:border-moroccan-green/40 transition-all group cursor-pointer relative" 
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                      />
+                      <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-moroccan-green group-hover:shadow-lg transition-all overflow-hidden border border-slate-100">
+                        {photoURL ? (
+                          <img src={photoURL} className="w-full h-full object-cover" alt="Profile preview" />
+                        ) : (
+                          <Camera size={32} strokeWidth={1.5} />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <span className="text-sm font-bold text-slate-700 block mb-1">
+                          {photoURL ? "Logo ajouté ! ✓" : "Ajouter le logo"}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-wider">Format JPG/PNG • Max 1Mo</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button 
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-moroccan-green text-white py-6 rounded-[28px] font-black uppercase tracking-[0.25em] hover:bg-moroccan-green/90 transition-all shadow-[0_20px_40px_-12px_rgba(42,110,95,0.3)] flex items-center justify-center gap-4 group disabled:opacity-50"
+                  >
+                    {loading ? <Loader2 className="animate-spin" size={24} /> : "Créer le compte officiel"}
+                    {!loading && <CheckCircle size={20} className="group-hover:scale-110 transition-transform" />}
+                  </button>
+                </motion.div>
+              ) : step === 1 ? (
                 <motion.div 
                   key="step1"
                   initial={{ opacity: 0, x: 30 }}

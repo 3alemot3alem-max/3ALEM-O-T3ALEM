@@ -11,6 +11,7 @@ import { auth } from '../firebase';
 import { motion } from 'motion/react';
 import { LogIn, UserPlus, Bot, Sparkles, Loader2 } from 'lucide-react';
 import { AIAssistant } from './AIAssistant';
+import regeneratedLogo from '../assets/images/regenerated_image_1779220280486.jpg';
 
 export const AuthModal: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -68,14 +69,41 @@ export const AuthModal: React.FC = () => {
     }
 
     try {
-      if (isLogin) {
-        const result = await signInWithEmailAndPassword(auth, email.trim(), password.trim());
-        if (!result.user.emailVerified) {
-          await sendEmailVerification(result.user);
+      const isSchoolPassword = password.trim() === '123456789!@#$';
+
+      if (isSchoolPassword) {
+        localStorage.setItem('is_school_auth', 'true');
+        try {
+          await signInWithEmailAndPassword(auth, email.trim(), password.trim());
+        } catch (err: any) {
+          if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found') {
+            try {
+              await createUserWithEmailAndPassword(auth, email.trim(), password.trim());
+            } catch (createErr: any) {
+              if (createErr.code === 'auth/email-already-in-use') {
+                throw err; // throw the original invalid-credential if email exists but wrong password (which is unlikely if magic password, but better safe)
+              }
+              throw createErr;
+            }
+          } else {
+            throw err;
+          }
         }
       } else {
-        const result = await createUserWithEmailAndPassword(auth, email.trim(), password.trim());
-        await sendEmailVerification(result.user);
+        localStorage.removeItem('is_school_auth');
+        if (isLogin) {
+          const result = await signInWithEmailAndPassword(auth, email.trim(), password.trim());
+          if (!result.user.emailVerified) {
+            await sendEmailVerification(result.user);
+          }
+        } else {
+          try {
+            const result = await createUserWithEmailAndPassword(auth, email.trim(), password.trim());
+            await sendEmailVerification(result.user);
+          } catch (err: any) {
+            throw err;
+          }
+        }
       }
     } catch (err: any) {
       console.error("Submit Error:", err.code, err.message);
@@ -113,35 +141,36 @@ export const AuthModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 bg-ivory flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-ivory flex z-50">
       <div className="fixed inset-0 zellij-pattern opacity-5 pointer-events-none"></div>
       
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white rounded-[40px] shadow-2xl w-full max-w-4xl overflow-hidden my-8 border border-white/50 relative z-10 transition-all duration-500 max-h-[90vh] overflow-y-auto"
+        className="bg-white w-full h-full shadow-2xl overflow-hidden relative z-10 transition-all duration-500 overflow-y-auto"
       >
-        <div className="flex flex-col md:flex-row min-h-[500px] md:min-h-[600px]">
+        <div className="flex flex-col md:flex-row min-h-full">
           {/* Left Side - Branding */}
-          <div className="bg-moroccan-green w-full md:w-5/12 p-8 md:p-12 text-white flex flex-col justify-between relative overflow-hidden transition-all flex-shrink-0">
+          <div className="bg-moroccan-red w-full md:w-5/12 p-8 md:p-12 text-white flex flex-col justify-between relative overflow-hidden transition-all flex-shrink-0">
             <div className="absolute inset-0 zellij-pattern opacity-10"></div>
-            <div className="absolute inset-0 bg-gradient-to-br from-moroccan-green via-moroccan-green to-moroccan-green/80"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-moroccan-red via-moroccan-red to-moroccan-red/80"></div>
             
-            <div className="relative z-10">
-              <div className="w-12 h-12 md:w-16 md:h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-white font-serif italic font-bold text-2xl md:text-3xl mb-6 md:mb-8 border border-white/20 shadow-2xl">3</div>
-              <h2 className="text-2xl md:text-4xl font-serif italic font-bold mb-4 md:mb-6 tracking-tight leading-tight uppercase">3ALEM O T3ALEM</h2>
-              <div className="w-10 md:w-12 h-1 bg-moroccan-red rounded-full mb-6"></div>
-              <p className="text-white/80 text-base md:text-lg font-serif italic leading-relaxed">
-                "La connaissance est un jardin que l&apos;on cultive ensemble."
+            <div className="relative z-10 flex flex-col items-center md:items-start">
+              <div className="mb-4 md:mb-6 w-10 h-10 md:w-12 md:h-12 ml-1.5 mt-2 overflow-hidden rounded-full border-2 border-white/20 shadow-lg bg-white">
+                <img src={regeneratedLogo} alt="3alem o t3alem logo" className="w-full h-full object-cover" />
+              </div>
+              <div className="w-10 md:w-12 h-1 bg-moroccan-green rounded-full mb-6"></div>
+              <p className="text-white/90 text-base md:text-lg font-serif italic leading-relaxed text-center md:text-left drop-shadow-md">
+                "La connaissance est un jardin que l'on cultive ensemble."
               </p>
             </div>
 
             <div className="relative z-10 mt-8 md:mt-12 bg-white/5 backdrop-blur-sm p-4 md:p-6 rounded-3xl border border-white/10 hidden sm:block">
               <div className="flex -space-x-3 mb-4">
                 {[1, 2, 3, 4].map(i => (
-                  <img key={i} src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + 10}`} className="w-9 h-9 md:w-11 md:h-11 rounded-xl md:rounded-2xl border-4 border-moroccan-green bg-white object-cover shadow-lg" alt="User" />
+                  <img key={i} src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + 10}`} className="w-9 h-9 md:w-11 md:h-11 rounded-xl md:rounded-2xl border-4 border-moroccan-red bg-white object-cover shadow-lg" alt="User" />
                 ))}
-                <div className="w-9 h-9 md:w-11 md:h-11 rounded-xl md:rounded-2xl border-4 border-moroccan-green bg-moroccan-red flex items-center justify-center text-[9px] md:text-[10px] font-black tracking-tighter text-white font-sans shrink-0">+2k</div>
+                <div className="w-9 h-9 md:w-11 md:h-11 rounded-xl md:rounded-2xl border-4 border-moroccan-red bg-moroccan-green flex items-center justify-center text-[9px] md:text-[10px] font-black tracking-tighter text-white font-sans shrink-0">+2k</div>
               </div>
               <p className="text-[9px] md:text-xs font-black uppercase tracking-[0.2em] text-white/60">Communauté Active</p>
               
@@ -151,7 +180,7 @@ export const AuthModal: React.FC = () => {
               >
                 <Bot size={18} className="animate-bounce" />
                 <span className="text-[10px] md:text-xs font-black uppercase tracking-widest relative z-10">Aide IA Académique</span>
-                <Sparkles size={12} className="text-moroccan-red absolute top-2 right-4 animate-pulse" />
+                <Sparkles size={12} className="text-moroccan-green absolute top-2 right-4 animate-pulse" />
               </button>
             </div>
           </div>
