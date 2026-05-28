@@ -9,6 +9,8 @@ import { useAuth } from '../AuthContext';
 import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp, doc, deleteDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 
+import regeneratedLogo from '../assets/images/regenerated_image_1779220280486.jpg';
+
 interface ChatSession {
   id: string;
   title: string;
@@ -227,12 +229,14 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
       console.error('AI Assistant Error:', error);
       let errorMessage = "Une erreur est survenue lors de la communication avec l'IA. Veuillez réessayer.";
       
-      if (error?.message?.includes('quota')) {
-        errorMessage = "Désolé, le quota d'utilisation de l'IA est atteint pour le moment. Veuillez réessayer plus tard.";
-      } else if (error?.message?.includes('Clé API manquante')) {
-        errorMessage = "L'accès à l'IA n'est pas encore configuré. L'administrateur doit fournir une clé Gemini API valide.";
-      } else if (error?.message?.includes('API key not valid')) {
-        errorMessage = "La clé API de l'IA semble invalide. Veuillez contacter le support.";
+      if (error?.message) {
+        if (error.message.includes('quota')) {
+          errorMessage = "Désolé, le quota d'utilisation de l'IA est atteint pour le moment. Veuillez réessayer plus tard.";
+        } else if (error.message.includes('Clé API manquante')) {
+          errorMessage = "L'accès à l'IA n'est pas encore configuré. L'administrateur doit fournir une clé Gemini API valide.";
+        } else {
+          errorMessage = error.message;
+        }
       }
       
       setMessages(prev => [...prev, {
@@ -287,8 +291,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
       <div className={`${mode === 'academic' ? 'bg-moroccan-green' : 'bg-orange-500'} p-4 md:p-6 text-white flex items-center justify-between relative overflow-hidden flex-shrink-0 z-20`}>
           <div className="absolute inset-0 zellij-pattern opacity-10"></div>
           <div className="relative z-10 flex items-center gap-4">
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/30">
-              <Bot className="text-white" size={effectivelyFullPage ? 24 : 28} />
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center p-0.5 overflow-hidden border border-white/30 shadow-lg">
+              <img src={regeneratedLogo} alt="3alem o t3alem AI" className="w-full h-full object-cover rounded-full" />
             </div>
             <div>
               <h2 className="text-lg md:text-xl font-serif italic font-bold">
@@ -397,9 +401,9 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                 <motion.div 
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  className={`w-24 h-24 ${mode === 'academic' ? 'bg-moroccan-green/10 text-moroccan-green' : 'bg-orange-500/10 text-orange-500'} rounded-[40px] flex items-center justify-center`}
+                  className={`w-28 h-28 bg-white overflow-hidden rounded-[40px] flex items-center justify-center shadow-lg border-[4px] border-white`}
                 >
-                  <Bot size={48} className="animate-pulse" />
+                  <img src={regeneratedLogo} alt="3alem o t3alem Logo" className="w-full h-full object-cover" />
                 </motion.div>
                 <div className="max-w-md space-y-4">
                   <h3 className="font-serif italic font-bold text-slate-800 text-3xl">Salam, {profile?.firstName || 'ami'} !</h3>
@@ -441,8 +445,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                 key={i}
                 className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
               >
-                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg ${msg.role === 'user' ? 'bg-moroccan-red text-white' : 'bg-moroccan-green text-white'}`}>
-                  {msg.role === 'user' ? <User size={20} /> : <Bot size={20} />}
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg border-2 border-white overflow-hidden ${msg.role === 'user' ? 'bg-moroccan-red text-white border-transparent' : 'bg-white'}`}>
+                  {msg.role === 'user' ? <User size={20} /> : <img src={regeneratedLogo} alt="AI" className="w-full h-full object-cover" />}
                 </div>
                 <div className={`max-w-[85%] p-5 rounded-3xl text-sm leading-relaxed shadow-sm ${msg.role === 'user' ? 'bg-white border border-slate-100 text-slate-800 rounded-tr-none' : 'bg-white border border-emerald-50 text-slate-800 rounded-tl-none shadow-md overflow-x-auto'}`}>
                   <div className="prose prose-slate max-w-none prose-p:leading-relaxed prose-headings:font-serif prose-headings:italic markdown-body">
@@ -459,8 +463,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
 
             {isLoading && (
               <div className="flex gap-4">
-                <div className="w-10 h-10 bg-moroccan-green rounded-2xl flex items-center justify-center text-white shadow-lg">
-                  <Bot size={20} />
+                <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center border-2 border-white shadow-lg overflow-hidden">
+                  <img src={regeneratedLogo} alt="AI" className="w-full h-full object-cover" />
                 </div>
                 <div className="bg-white border border-emerald-50 p-5 rounded-3xl rounded-tl-none shadow-md">
                   <div className="flex gap-1.5 min-w-[40px] justify-center">

@@ -117,7 +117,7 @@ export async function getGeminiResponse(
 
   try {
     const result = await ai.models.generateContent({
-      model: 'gemini-3.5-flash',
+      model: 'gemini-1.5-flash',
       contents: contents,
       config: {
         systemInstruction: systemInstruction,

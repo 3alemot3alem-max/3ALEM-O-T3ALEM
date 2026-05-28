@@ -30,16 +30,17 @@ async function startServer() {
 
     try {
       const { getGeminiResponse } = await import('./src/services/geminiService.js');
-      // Note: We need to handle the import carefully since it's a TS file being imported in server.ts (running via tsx)
-      // Actually, since we use tsx, we can just import it.
-      // But geminiService.ts might have client-only imports or logic?
-      // It imports GoogleGenAI which works on both.
-      
       const response = await getGeminiResponse(message, history, profile, mode, fileData);
       res.json({ response });
     } catch (error: any) {
       console.error('AI Route Error:', error);
-      res.status(500).json({ error: error.message || "Erreur lors de la génération de la réponse." });
+      
+      let errorMessage = error.message || "Erreur lors de la génération de la réponse.";
+      if (typeof errorMessage === 'string' && errorMessage.includes('API_KEY_INVALID')) {
+        errorMessage = "Votre clé API Gemini est invalide ou manquante. Veuillez vérifier vos paramètres ou utiliser une clé valide.";
+      }
+      
+      res.status(500).json({ error: errorMessage });
     }
   });
 
