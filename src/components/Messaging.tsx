@@ -7,6 +7,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Search, Send, MessageCircle, User as UserIcon, X, Mail, BookOpen } from 'lucide-react';
 import { formatDate, formatTime, formatChatDate } from '../lib/utils';
 
+const profileCache: Record<string, UserProfile> = {};
+
 export const Messaging: React.FC<{ 
   targetEmail?: string | null; 
   onClearTarget?: () => void;
@@ -22,6 +24,7 @@ export const Messaging: React.FC<{
   const [isSearching, setIsSearching] = useState(false);
   const [userChats, setUserChats] = useState<(Chat & { recipientProfile?: UserProfile })[]>([]);
   const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     if (activeChat) {
@@ -46,9 +49,19 @@ export const Messaging: React.FC<{
         const recipientUid = chat.participants.find(id => id !== user.uid);
         if (!recipientUid) return chat;
 
-        const profileDoc = await getDocs(query(collection(db, 'users'), where('uid', '==', recipientUid), limit(1)));
-        if (!profileDoc.empty) {
-          return { ...chat, recipientProfile: profileDoc.docs[0].data() as UserProfile };
+        if (profileCache[recipientUid]) {
+          return { ...chat, recipientProfile: profileCache[recipientUid] };
+        }
+
+        try {
+          const profileDoc = await getDocs(query(collection(db, 'users'), where('uid', '==', recipientUid), limit(1)));
+          if (!profileDoc.empty) {
+            const profile = profileDoc.docs[0].data() as UserProfile;
+            profileCache[recipientUid] = profile;
+            return { ...chat, recipientProfile: profile };
+          }
+        } catch (err) {
+          console.error("Error fetching profile", err);
         }
         return chat;
       }));
@@ -94,7 +107,7 @@ export const Messaging: React.FC<{
       setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message)));
     });
     return () => unsubscribe();
-  }, [activeChat]);
+  }, [activeChat?.id]);
 
   useEffect(() => {
     const fetchSearch = async () => {
@@ -376,15 +389,21 @@ export const Messaging: React.FC<{
                   <button className="hidden md:block">
                     <Search size={20} />
                   </button>
-                  <div className="relative group">
-                    <button className="p-1 focus:outline-none">
+                  <div className="relative">
+                    <button 
+                      className="p-1 focus:outline-none"
+                      onClick={() => setMenuOpen(!menuOpen)}
+                      onBlur={() => setTimeout(() => setMenuOpen(false), 200)}
+                    >
                       <svg viewBox="0 0 24 24" width="24" height="24" className=""><path fill="currentColor" d="M12 7a2 2 0 1 0-.001-4.001A2 2 0 0 0 12 7zm0 2a2 2 0 1 0-.001 3.999A2 2 0 0 0 12 9zm0 6a2 2 0 1 0-.001 3.999A2 2 0 0 0 12 15z"></path></svg>
                     </button>
                     {/* Dropdown menu */}
-                    <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded shadow-lg py-2 opacity-0 pointer-events-none group-focus-within:opacity-100 group-focus-within:pointer-events-auto transition-opacity z-50">
-                      <button className="w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-700" onClick={() => { setActiveChat(null); setActiveRecipient(null); setMobileView('list'); }}>Fermer la discussion</button>
-                      <button className="w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-700">Effacer les messages</button>
-                    </div>
+                    {menuOpen && (
+                      <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded shadow-lg py-2 z-50">
+                        <button className="w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-700" onClick={() => { setActiveChat(null); setActiveRecipient(null); setMobileView('list'); setMenuOpen(false); }}>Fermer la discussion</button>
+                        <button className="w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-700" onClick={() => setMenuOpen(false)}>Effacer les messages</button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

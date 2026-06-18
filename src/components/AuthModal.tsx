@@ -9,8 +9,7 @@ import {
 } from 'firebase/auth';
 import { auth } from '../firebase';
 import { motion } from 'motion/react';
-import { LogIn, UserPlus, Bot, Sparkles, Loader2 } from 'lucide-react';
-import { AIAssistant } from './AIAssistant';
+import { LogIn, UserPlus, Loader2 } from 'lucide-react';
 import regeneratedLogo from '../assets/images/regenerated_image_1779220280486.jpg';
 
 export const AuthModal: React.FC = () => {
@@ -19,7 +18,6 @@ export const AuthModal: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isAIOpen, setIsAIOpen] = useState(false);
 
   const handleTabSwitch = (login: boolean) => {
     setIsLogin(login);
@@ -173,15 +171,6 @@ export const AuthModal: React.FC = () => {
                 <div className="w-9 h-9 md:w-11 md:h-11 rounded-xl md:rounded-2xl border-4 border-moroccan-red bg-moroccan-green flex items-center justify-center text-[9px] md:text-[10px] font-black tracking-tighter text-white font-sans shrink-0">+2k</div>
               </div>
               <p className="text-[9px] md:text-xs font-black uppercase tracking-[0.2em] text-white/60">Communauté Active</p>
-              
-              <button 
-                onClick={() => setIsAIOpen(true)}
-                className="mt-6 w-full bg-white/20 hover:bg-white/30 backdrop-blur-md text-white py-3 md:py-4 rounded-2xl border border-white/30 flex items-center justify-center gap-3 transition-all group overflow-hidden relative shadow-xl"
-              >
-                <Bot size={18} className="animate-bounce" />
-                <span className="text-[10px] md:text-xs font-black uppercase tracking-widest relative z-10">Aide IA Académique</span>
-                <Sparkles size={12} className="text-moroccan-green absolute top-2 right-4 animate-pulse" />
-              </button>
             </div>
           </div>
 
@@ -283,7 +272,6 @@ export const AuthModal: React.FC = () => {
           </div>
         </div>
       </motion.div>
-      <AIAssistant isOpen={isAIOpen} onClose={() => setIsAIOpen(false)} />
     </div>
   );
 };

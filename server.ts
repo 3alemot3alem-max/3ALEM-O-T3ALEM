@@ -1,6 +1,7 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import express from 'express';
 import cors from 'cors';
-import { GoogleGenAI } from '@google/genai';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
@@ -19,29 +20,6 @@ async function startServer() {
   // API routes FIRST
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok' });
-  });
-
-  app.post('/api/ai', async (req, res) => {
-    const { message, history, profile, mode, fileData } = req.body;
-    
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ error: "Clé API Gemini non configurée sur le serveur." });
-    }
-
-    try {
-      const { getGeminiResponse } = await import('./src/services/geminiService.js');
-      const response = await getGeminiResponse(message, history, profile, mode, fileData);
-      res.json({ response });
-    } catch (error: any) {
-      console.error('AI Route Error:', error);
-      
-      let errorMessage = error.message || "Erreur lors de la génération de la réponse.";
-      if (typeof errorMessage === 'string' && errorMessage.includes('API_KEY_INVALID')) {
-        errorMessage = "Votre clé API Gemini est invalide ou manquante. Veuillez vérifier vos paramètres ou utiliser une clé valide.";
-      }
-      
-      res.status(500).json({ error: errorMessage });
-    }
   });
 
   // Vite Integration

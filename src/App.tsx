@@ -7,7 +7,6 @@ import { Profile } from './components/Profile';
 import { Messaging } from './components/Messaging';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { LayoutGrid, GraduationCap, User, LogOut, MessageSquare, Bot, WifiOff, Loader2, Menu, X } from 'lucide-react';
-import { AIAssistant } from './components/AIAssistant';
 import { auth } from './firebase';
 import { motion, AnimatePresence } from 'motion/react';
 import { EmailVerification } from './components/EmailVerification';
@@ -50,7 +49,6 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'feed' | 'schools' | 'profile' | 'messaging' | 'ai'>('feed');
   const [chatTargetEmail, setChatTargetEmail] = useState<string | null>(null);
   const [viewingUserId, setViewingUserId] = useState<string | null>(null);
-  const [isAIOpen, setIsAIOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const activateChat = (email: string) => {
@@ -122,12 +120,6 @@ export default function App() {
           
           <div className="flex items-center gap-2">
             <button 
-              onClick={() => setIsAIOpen(true)}
-              className="text-[#f4d9a4] p-2 rounded-xl hover:bg-white/10 transition-all"
-            >
-              <Bot size={20} />
-            </button>
-            <button 
               onClick={() => auth.signOut()}
               className="text-white/80 hover:text-white hover:bg-white/10 p-2 rounded-xl transition-all"
             >
@@ -162,7 +154,6 @@ export default function App() {
                   {[
                     { id: 'feed', icon: LayoutGrid, label: 'Fil d\'actualité' },
                     { id: 'schools', icon: GraduationCap, label: 'Annuaire des Écoles' },
-                    { id: 'ai', icon: Bot, label: 'Assistant IA' },
                     { id: 'profile', icon: User, label: 'Mon Profil' },
                     { id: 'messaging', icon: MessageSquare, label: 'Messages' }
                   ].map((tab) => (
@@ -208,7 +199,6 @@ export default function App() {
             {[
               { id: 'feed', icon: LayoutGrid, label: 'Communauté' },
               { id: 'schools', icon: GraduationCap, label: 'Écoles' },
-              { id: 'ai', icon: Bot, label: 'Assistant IA' },
               { id: 'profile', icon: User, label: 'Profil' },
               { id: 'messaging', icon: MessageSquare, label: 'Messages' }
             ].map((tab) => (
@@ -254,19 +244,6 @@ export default function App() {
           }} />}
           {activeTab === 'messaging' && <Messaging targetEmail={chatTargetEmail} onClearTarget={() => setChatTargetEmail(null)} onViewProfile={viewUserProfile} />}
         </main>
-
-        {activeTab === 'ai' && <AIAssistant mode="academic" isFullPage={true} isOpen={true} onClose={() => setActiveTab('feed')} />}
-
-        {/* Floating Support AI Button */}
-        <button 
-          onClick={() => setIsAIOpen(true)}
-          className="fixed bottom-24 right-6 md:bottom-8 md:right-8 w-16 h-16 bg-[#1EBA64] text-white rounded-full shadow-2xl shadow-[#1EBA64]/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50 group border-4 border-white"
-        >
-          <Bot size={32} className="group-hover:animate-bounce" />
-          <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white"></div>
-        </button>
-
-        <AIAssistant mode="service" isOpen={isAIOpen} onClose={() => setIsAIOpen(false)} />
 
         {/* Removed Mobile bottom nav to use burger menu instead as requested */}
       </div>
