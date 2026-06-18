@@ -173,7 +173,8 @@ export const Profile: React.FC<ProfileProps> = ({ targetUserId, onMessage }) => 
       if (permission === 'granted') {
         const msg = await messaging();
         if (msg) {
-          const token = await getToken(msg);
+          const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
+          const token = await getToken(msg, vapidKey ? { vapidKey } : undefined);
           if (token) {
             await updateDoc(doc(db, 'users', user.uid), {
               fcmToken: token
@@ -188,9 +189,35 @@ export const Profile: React.FC<ProfileProps> = ({ targetUserId, onMessage }) => 
       } else {
         alert('Permission des notifications refusée.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error requesting notification permission:', error);
-      alert('Erreur lors de l\'activation des notifications.');
+      alert('Erreur lors de l\'activation des notifications: ' + (error?.message || error));
+    }
+  };
+
+  const testNotification = async () => {
+    if (!profile.fcmToken) {
+      alert("Veuillez d'abord activer les notifications");
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/notifications/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token: profile.fcmToken,
+          title: '3alem O T3alem',
+          body: 'Ceci est un test de notification push!'
+        })
+      });
+      
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error);
+      console.log('Notification envoyée:', result);
+    } catch (error: any) {
+      console.error('Erreur test notification:', error);
+      alert('Erreur: ' + error.message);
     }
   };
 
@@ -277,13 +304,24 @@ export const Profile: React.FC<ProfileProps> = ({ targetUserId, onMessage }) => 
                     </button>
                   )}
                   {!isEditing && (
-                    <button 
-                      onClick={requestNotificationPermission}
-                      className="bg-slate-50 text-slate-600 border border-slate-200 p-2.5 rounded-full hover:bg-moroccan-green hover:text-white hover:border-moroccan-green transition-all flex items-center justify-center active:scale-95 shrink-0"
-                      title="Activer les notifications"
-                    >
-                      <Bell size={20} />
-                    </button>
+                    <>
+                      <button 
+                        onClick={requestNotificationPermission}
+                        className="bg-slate-50 text-slate-600 border border-slate-200 p-2.5 rounded-full hover:bg-moroccan-green hover:text-white hover:border-moroccan-green transition-all flex items-center justify-center active:scale-95 shrink-0"
+                        title="Activer les notifications"
+                      >
+                        <Bell size={20} />
+                      </button>
+                      {profile.fcmToken && (
+                        <button 
+                          onClick={testNotification}
+                          className="bg-slate-50 text-slate-600 border border-slate-200 p-2.5 rounded-full hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all flex items-center justify-center active:scale-95 shrink-0"
+                          title="Tester les notifications"
+                        >
+                          <Zap size={20} />
+                        </button>
+                      )}
+                    </>
                   )}
                   <button 
                     onClick={() => auth.signOut()}

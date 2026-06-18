@@ -5,6 +5,24 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
+import admin from 'firebase-admin';
+
+// Initialize Firebase Admin SDK
+try {
+  const serviceAccountPath = path.join(process.cwd(), 'service-account.json');
+  const fs = require('fs');
+  if (fs.existsSync(serviceAccountPath)) {
+    const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+    console.log("Firebase Admin SDK initialized");
+  } else {
+    console.warn("service-account.json not found, Firebase Admin features will not work");
+  }
+} catch (error) {
+  console.error("Failed to initialize Firebase Admin SDK", error);
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,6 +38,31 @@ async function startServer() {
   // API routes FIRST
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok' });
+  });
+
+  app.post('/api/notifications/send', async (req, res) => {
+    const { token, title, body, data } = req.body;
+    
+    if (!token || !title || !body) {
+      return res.status(400).json({ error: 'Missing required parameters (token, title, body)' });
+    }
+
+    try {
+      const message = {
+        notification: {
+          title: title,
+          body: body
+        },
+        data: data || {},
+        token: token
+      };
+
+      const response = await admin.messaging().send(message);
+      res.json({ success: true, messageId: response });
+    } catch (error: any) {
+      console.error('Error sending message:', error);
+      res.status(500).json({ error: error.message });
+    }
   });
 
   // Serve firebase-messaging-sw.js dynamically to inject config
