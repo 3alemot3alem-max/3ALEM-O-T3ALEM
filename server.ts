@@ -6,19 +6,28 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 import admin from 'firebase-admin';
+import * as fs from 'fs';
 
 // Initialize Firebase Admin SDK
 try {
   const serviceAccountPath = path.join(process.cwd(), 'service-account.json');
-  const fs = require('fs');
   if (fs.existsSync(serviceAccountPath)) {
     const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount)
     });
-    console.log("Firebase Admin SDK initialized");
+    console.log("Firebase Admin SDK initialized from file");
+  } else if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      })
+    });
+    console.log("Firebase Admin SDK initialized from environment variables");
   } else {
-    console.warn("service-account.json not found, Firebase Admin features will not work");
+    console.warn("service-account.json and Firebase ENV vars not found, Firebase Admin features will not work");
   }
 } catch (error) {
   console.error("Failed to initialize Firebase Admin SDK", error);
@@ -62,39 +71,6 @@ async function startServer() {
     } catch (error: any) {
       console.error('Error sending message:', error);
       res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Serve firebase-messaging-sw.js dynamically to inject config
-  app.get('/firebase-messaging-sw.js', (req, res) => {
-    try {
-      const fs = require('fs');
-      const configPath = path.join(process.cwd(), 'firebase-applet-config.json');
-      if (fs.existsSync(configPath)) {
-        const configContent = fs.readFileSync(configPath, 'utf8');
-        const config = JSON.parse(configContent);
-        res.type('application/javascript');
-        res.send(`
-          importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
-          importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
-          firebase.initializeApp(${JSON.stringify(config)});
-          const messaging = firebase.messaging();
-          messaging.onBackgroundMessage((payload) => {
-            const notificationTitle = payload.notification?.title || 'Nouvelle notification 3alem O T3alem';
-            const notificationOptions = {
-              body: payload.notification?.body,
-              icon: 'https://api.dicebear.com/7.x/initials/svg?seed=3A&backgroundColor=1aa653',
-              badge: 'https://api.dicebear.com/7.x/initials/svg?seed=3A&backgroundColor=1aa653'
-            };
-            self.registration.showNotification(notificationTitle, notificationOptions);
-          });
-        `);
-      } else {
-        res.status(404).send('Config not found');
-      }
-    } catch (e) {
-      console.error(e);
-      res.status(500).send('Error loading config');
     }
   });
 
