@@ -54,7 +54,7 @@ service cloud.firestore {
              (!('bannerURL' in data) || isValidString(data.bannerURL, 0, 2000000)) &&
              (!('selectedPack' in data) || isValidString(data.selectedPack, 0, 100)) &&
              (!('createdAt' in data) || isValidString(data.createdAt, 0, 100)) &&
-             (!('fcmToken' in data) || isValidString(data.fcmToken, 0, 1000)) &&
+             (!('fcmToken' in data) || isValidString(data.fcmToken, 0, 4096)) &&
              (!('profileViews' in data) || data.profileViews is number);
     }
 
