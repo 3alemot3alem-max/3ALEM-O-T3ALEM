@@ -7,6 +7,16 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
 
+// Initialize Cloud Messaging and conditionally export it
+import { getMessaging, isSupported } from 'firebase/messaging';
+export const messaging = async () => {
+  const supported = await isSupported();
+  if (supported) {
+    return getMessaging(app);
+  }
+  return null;
+};
+
 export enum OperationType {
   CREATE = 'create',
   UPDATE = 'update',

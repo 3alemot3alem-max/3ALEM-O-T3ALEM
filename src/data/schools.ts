@@ -106,7 +106,7 @@ export const SCHOOLS_DATA: School[] = [
   },
   {
     "id": "ensam-national",
-    "name": "ENSAM (Réseau)",
+    "name": "ENSAM",
     "type": "École d'Ingénieur",
     "city": "Casablanca, Meknès, Rabat...",
     "duration": "5 ans",
@@ -119,7 +119,7 @@ export const SCHOOLS_DATA: School[] = [
   },
   {
     "id": "ensa-national",
-    "name": "ENSA (Réseau)",
+    "name": "ENSA",
     "type": "École d'Ingénieur",
     "city": "Tanger, Marrakech, Agadir, Tétouan...",
     "duration": "5 ans",
@@ -180,7 +180,7 @@ export const SCHOOLS_DATA: School[] = [
     "entrance": "National + Médical + Sport",
     "specialties": "Pilotage, Aérodynamique, Navigation aérienne, Météorologie, Anglais aéronautique",
     "sector": "Public Militaire",
-    "logoUrl": "https://api.dicebear.com/7.x/initials/svg?seed=ERA&backgroundColor=159c52"
+    "logoUrl": "https://uploads.9rayti.com/2012/07/logo-era-marrakech.png"
   },
   {
     "id": "ern-casa",
@@ -236,7 +236,7 @@ export const SCHOOLS_DATA: School[] = [
   },
   {
     "id": "fmp-fmd-national",
-    "name": "FMP & FMD (Réseau)",
+    "name": "FMP & FMD",
     "type": "Médecine & Dentaire",
     "city": "Rabat, Casablanca, Fès, Marrakech, Oujda...",
     "duration": "7 ans (Médecine) / 6 ans (Dentaire)",
@@ -249,7 +249,7 @@ export const SCHOOLS_DATA: School[] = [
   },
   {
     "id": "fst-national",
-    "name": "FST (Réseau)",
+    "name": "FST",
     "type": "Faculté Sciences Techniques",
     "city": "Tanger, Settat, Marrakech, Fès...",
     "duration": "3 ans (LST)",
@@ -262,7 +262,7 @@ export const SCHOOLS_DATA: School[] = [
   },
   {
     "id": "bts-national",
-    "name": "BTS (Réseau)",
+    "name": "BTS",
     "type": "BTS",
     "city": "Plusieurs Villes",
     "duration": "2 ans",

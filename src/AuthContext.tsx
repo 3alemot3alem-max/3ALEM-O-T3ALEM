@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { auth, db, messaging } from './firebase';
+import { onMessage } from 'firebase/messaging';
 import { UserProfile } from './types';
 
 interface AuthContextType {
@@ -53,7 +54,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       const unsubscribeProfile = onSnapshot(doc(db, 'users', user.uid), (docSnap) => {
         if (docSnap.exists()) {
-          setProfile(docSnap.data() as UserProfile);
+          const data = docSnap.data() as UserProfile;
+          if (data.email === '3alemot3alem@gmail.com' && data.role !== 'admin') {
+            import('firebase/firestore').then(({ updateDoc }) => {
+               updateDoc(doc(db, 'users', user.uid), { role: 'admin' });
+            });
+            data.role = 'admin';
+          }
+          setProfile(data);
         } else {
           setProfile(null);
         }
@@ -67,6 +75,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return () => unsubscribeProfile();
     }
   }, [user]);
+
+  useEffect(() => {
+    const setupMessaging = async () => {
+      try {
+        const msg = await messaging();
+        if (msg) {
+          onMessage(msg, (payload) => {
+            console.log('Received foreground message', payload);
+            if (payload.notification) {
+              // Custom toast or browser notification via simple alert when in app
+               alert(`NOUVELLE NOTIFICATION: ${payload.notification.title}\n${payload.notification.body}`);
+            }
+          });
+        }
+      } catch (err) {
+        console.error("Foreground message error:", err);
+      }
+    };
+    setupMessaging();
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, profile, loading, isAuthReady, refreshUser }}>
