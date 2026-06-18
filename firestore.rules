@@ -54,6 +54,7 @@ service cloud.firestore {
              (!('bannerURL' in data) || isValidString(data.bannerURL, 0, 2000000)) &&
              (!('selectedPack' in data) || isValidString(data.selectedPack, 0, 100)) &&
              (!('createdAt' in data) || isValidString(data.createdAt, 0, 100)) &&
+             (!('fcmToken' in data) || isValidString(data.fcmToken, 0, 1000)) &&
              (!('profileViews' in data) || data.profileViews is number);
     }
 
@@ -62,7 +63,7 @@ service cloud.firestore {
       allow create: if isOwner(userId) && isValidUser(incoming());
       allow update: if isOwner(userId) && isValidUser(incoming()) && (
         incoming().diff(existing()).affectedKeys().hasOnly([
-          'uid', 'email', 'displayName', 'firstName', 'lastName', 'institution', 'bio', 'photoURL', 'bannerURL', 'major', 'level', 'city', 'updatedAt', 'role', 'selectedPack', 'createdAt'
+          'uid', 'email', 'displayName', 'firstName', 'lastName', 'institution', 'bio', 'photoURL', 'bannerURL', 'major', 'level', 'city', 'updatedAt', 'role', 'selectedPack', 'createdAt', 'fcmToken'
         ])
       ) || (
         isSignedIn() && incoming().diff(existing()).affectedKeys().hasOnly(['profileViews'])
