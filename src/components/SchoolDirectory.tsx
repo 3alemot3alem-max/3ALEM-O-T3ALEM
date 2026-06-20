@@ -5,6 +5,7 @@ import { School } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapPin, ExternalLink, X, Info, GraduationCap, Clock, Award, Users, Search } from 'lucide-react';
 import { SCHOOLS_DATA } from '../data/schools';
+import Markdown from 'react-markdown';
 
 export const SchoolDirectory: React.FC = () => {
   const [schools, setSchools] = useState<School[]>([]);
@@ -162,75 +163,91 @@ export const SchoolDirectory: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
-                  <div className="space-y-8 md:space-y-10">
-                    <section>
-                      <h3 className="text-[10px] md:text-xs font-black text-slate-300 uppercase tracking-widest md:tracking-[0.3em] mb-4 md:mb-6 flex items-center justify-center md:justify-start gap-3">
-                        <Award size={18} className="text-moroccan-green shrink-0" />
-                        Seuils de Présélection 2024
-                      </h3>
-                      {selectedSchool.thresholds ? (
-                        <div className="grid grid-cols-2 gap-3 md:gap-4 font-sans">
-                          {[
-                            { label: 'Sciences Maths', val: selectedSchool.thresholds.sm },
-                            { label: 'Physique Chimie', val: selectedSchool.thresholds.pc },
-                            { label: 'SVT', val: selectedSchool.thresholds.svt },
-                            { label: 'Economie', val: selectedSchool.thresholds.eco }
-                          ].map((t, idx) => (
-                            <div key={idx} className="bg-slate-50 p-3 md:p-6 rounded-[20px] md:rounded-[24px] border border-slate-100 flex flex-col items-center md:items-start">
-                              <p className="text-[8px] md:text-[10px] font-black uppercase text-slate-400 mb-1 leading-none">{t.label}</p>
-                              <p className="text-xl md:text-3xl font-serif italic font-bold text-moroccan-green leading-none">{t.val}</p>
+                {selectedSchool.details ? (
+                  <div className="mt-8 prose prose-slate max-w-none text-left">
+                    <Markdown
+                      components={{
+                        h3: ({node, ...props}) => <h3 className="text-xl font-bold text-moroccan-green mt-8 mb-4 border-b pb-2" {...props} />,
+                        p: ({node, ...props}) => <p className="text-slate-700 leading-relaxed mb-4" {...props} />,
+                        ul: ({node, ...props}) => <ul className="list-disc pl-5 mb-4 text-slate-700 space-y-2" {...props} />,
+                        li: ({node, ...props}) => <li className="" {...props} />,
+                        strong: ({node, ...props}) => <strong className="font-bold text-slate-900" {...props} />,
+                      }}
+                    >
+                      {selectedSchool.details}
+                    </Markdown>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 mt-8">
+                    <div className="space-y-8 md:space-y-10">
+                      <section>
+                        <h3 className="text-[10px] md:text-xs font-black text-slate-300 uppercase tracking-widest md:tracking-[0.3em] mb-4 md:mb-6 flex items-center justify-center md:justify-start gap-3">
+                          <Award size={18} className="text-moroccan-green shrink-0" />
+                          Seuils de Présélection 2024
+                        </h3>
+                        {selectedSchool.thresholds ? (
+                          <div className="grid grid-cols-2 gap-3 md:gap-4 font-sans">
+                            {[
+                              { label: 'Sciences Maths', val: selectedSchool.thresholds.sm },
+                              { label: 'Physique Chimie', val: selectedSchool.thresholds.pc },
+                              { label: 'SVT', val: selectedSchool.thresholds.svt },
+                              { label: 'Economie', val: selectedSchool.thresholds.eco }
+                            ].map((t, idx) => (
+                              <div key={idx} className="bg-slate-50 p-3 md:p-6 rounded-[20px] md:rounded-[24px] border border-slate-100 flex flex-col items-center md:items-start">
+                                <p className="text-[8px] md:text-[10px] font-black uppercase text-slate-400 mb-1 leading-none">{t.label}</p>
+                                <p className="text-xl md:text-3xl font-serif italic font-bold text-moroccan-green leading-none">{t.val}</p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-slate-400 italic text-sm text-center md:text-left">Données de seuils non disponibles.</p>
+                        )}
+                      </section>
+
+                      <section>
+                        <h3 className="text-[10px] md:text-xs font-black text-slate-300 uppercase tracking-widest md:tracking-[0.3em] mb-4 md:mb-6 flex items-center justify-center md:justify-start gap-3">
+                          <Users size={18} className="text-moroccan-green shrink-0" />
+                          Admission
+                        </h3>
+                        <div className="bg-white/50 p-5 md:p-6 rounded-[20px] md:rounded-[24px] border border-moroccan-red/10 text-center md:text-left">
+                          <p className="text-slate-700 font-serif italic text-sm md:text-lg leading-relaxed">
+                            {selectedSchool.entrance || "Admission sur concours ou sélection sur dossier."}
+                          </p>
+                        </div>
+                      </section>
+                    </div>
+
+                    <div className="space-y-8 md:space-y-10">
+                      <div className="grid grid-cols-2 gap-3 md:gap-4">
+                        <div className="p-4 md:p-6 bg-slate-50 rounded-[20px] md:rounded-[28px] border border-slate-100 text-center md:text-left">
+                          <Clock className="text-moroccan-red mx-auto md:mx-0 mb-2 md:mb-3 md:w-6 md:h-6" size={20} />
+                          <p className="text-[8px] md:text-[10px] font-black uppercase text-slate-400 mb-0.5">Durée</p>
+                          <p className="font-bold text-slate-900 text-xs md:text-base">{selectedSchool.duration || "N/A"}</p>
+                        </div>
+                        <div className="p-4 md:p-6 bg-slate-50 rounded-[20px] md:rounded-[28px] border border-slate-100 text-center md:text-left">
+                          <GraduationCap className="text-moroccan-green mx-auto md:mx-0 mb-2 md:mb-3 md:w-6 md:h-6" size={20} />
+                          <p className="text-[8px] md:text-[10px] font-black uppercase text-slate-400 mb-0.5">Diplôme</p>
+                          <p className="font-bold text-slate-900 text-xs md:text-base truncate px-1">Diplôme d'Etat</p>
+                        </div>
+                      </div>
+
+                      <section>
+                        <h3 className="text-[10px] md:text-xs font-black text-slate-300 uppercase tracking-widest md:tracking-[0.3em] mb-4 md:mb-6 flex items-center justify-center md:justify-start gap-3">
+                          <Info size={18} className="text-moroccan-green shrink-0" />
+                          Spécialités
+                        </h3>
+                        <div className="flex flex-wrap justify-center md:justify-start gap-2">
+                          {(selectedSchool.specialties || "").split(',').map((spec, i) => (
+                            <div key={i} className="flex items-center gap-2 px-3 py-1.5 md:py-2 bg-slate-100 rounded-lg text-slate-700 font-medium text-[10px] md:text-sm">
+                              <div className="w-1 md:w-1.5 h-1 md:h-1.5 bg-moroccan-red rounded-full"></div>
+                              {spec.trim()}
                             </div>
                           ))}
                         </div>
-                      ) : (
-                        <p className="text-slate-400 italic text-sm text-center md:text-left">Données de seuils non disponibles.</p>
-                      )}
-                    </section>
-
-                    <section>
-                      <h3 className="text-[10px] md:text-xs font-black text-slate-300 uppercase tracking-widest md:tracking-[0.3em] mb-4 md:mb-6 flex items-center justify-center md:justify-start gap-3">
-                        <Users size={18} className="text-moroccan-green shrink-0" />
-                        Admission
-                      </h3>
-                      <div className="bg-white/50 p-5 md:p-6 rounded-[20px] md:rounded-[24px] border border-moroccan-red/10 text-center md:text-left">
-                        <p className="text-slate-700 font-serif italic text-sm md:text-lg leading-relaxed">
-                          {selectedSchool.entrance || "Admission sur concours ou sélection sur dossier."}
-                        </p>
-                      </div>
-                    </section>
-                  </div>
-
-                  <div className="space-y-8 md:space-y-10">
-                    <div className="grid grid-cols-2 gap-3 md:gap-4">
-                      <div className="p-4 md:p-6 bg-slate-50 rounded-[20px] md:rounded-[28px] border border-slate-100 text-center md:text-left">
-                        <Clock className="text-moroccan-red mx-auto md:mx-0 mb-2 md:mb-3 md:w-6 md:h-6" size={20} />
-                        <p className="text-[8px] md:text-[10px] font-black uppercase text-slate-400 mb-0.5">Durée</p>
-                        <p className="font-bold text-slate-900 text-xs md:text-base">{selectedSchool.duration || "N/A"}</p>
-                      </div>
-                      <div className="p-4 md:p-6 bg-slate-50 rounded-[20px] md:rounded-[28px] border border-slate-100 text-center md:text-left">
-                        <GraduationCap className="text-moroccan-green mx-auto md:mx-0 mb-2 md:mb-3 md:w-6 md:h-6" size={20} />
-                        <p className="text-[8px] md:text-[10px] font-black uppercase text-slate-400 mb-0.5">Diplôme</p>
-                        <p className="font-bold text-slate-900 text-xs md:text-base truncate px-1">Diplôme d'Etat</p>
-                      </div>
+                      </section>
                     </div>
-
-                    <section>
-                      <h3 className="text-[10px] md:text-xs font-black text-slate-300 uppercase tracking-widest md:tracking-[0.3em] mb-4 md:mb-6 flex items-center justify-center md:justify-start gap-3">
-                        <Info size={18} className="text-moroccan-green shrink-0" />
-                        Spécialités
-                      </h3>
-                      <div className="flex flex-wrap justify-center md:justify-start gap-2">
-                        {(selectedSchool.specialties || "").split(',').map((spec, i) => (
-                          <div key={i} className="flex items-center gap-2 px-3 py-1.5 md:py-2 bg-slate-100 rounded-lg text-slate-700 font-medium text-[10px] md:text-sm">
-                            <div className="w-1 md:w-1.5 h-1 md:h-1.5 bg-moroccan-red rounded-full"></div>
-                            {spec.trim()}
-                          </div>
-                        ))}
-                      </div>
-                    </section>
                   </div>
-                </div>
+                )}
                 {/* Mobile spacer */}
                 <div className="h-10 md:hidden"></div>
               </div>

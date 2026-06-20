@@ -16,12 +16,6 @@ const AppLogo = ({ className = "h-8 w-8" }: { className?: string }) => (
   <div className={`relative flex items-center justify-center shrink-0 ${className}`}>
     <div className="absolute inset-0 border border-current"></div>
     <div className="absolute inset-0 border border-current rotate-45"></div>
-    <GraduationCap 
-      size={Math.max(16, parseInt(className.replace(/[^0-9]/g, '')) * 0.7)} 
-      className="absolute -top-[15%] -left-[10%] transform -rotate-[20deg] text-moroccan-green z-10" 
-      fill="currentColor" 
-      strokeWidth={1.5}
-    />
   </div>
 );
 

@@ -15,6 +15,7 @@ export interface School {
   specialties: string;
   sector: string;
   logoUrl: string;
+  details?: string;
 }
 
 const getPlaceholderImg = (type: string) => {
@@ -50,7 +51,106 @@ export const SCHOOLS_DATA: School[] = [
     "entrance": "CNC après CPGE",
     "specialties": "Analyse, Algèbre, Mécanique solides, Thermodynamique, Informatique, Électronique, Génie Civil, Béton armé, Gestion projet, Stage",
     "sector": "Public",
-    "logoUrl": "https://upload.wikimedia.org/wikipedia/fr/0/05/EMI.PNG"
+    "logoUrl": "https://upload.wikimedia.org/wikipedia/fr/0/05/EMI.PNG",
+    "details": `🎓 EMI — École Mohammadia d'Ingénieurs
+
+Type : École d’ingénieurs publique  
+Ville : Rabat (Agdal) 🇲🇦  
+Université : Université Mohammed V de Rabat  
+Création : 1959  
+Diplôme : Diplôme d’Ingénieur d’État  
+Durée de formation : 5 ans après le Bac (ou cycle ingénieur selon voie d’accès)
+
+EMI est considérée comme une des grandes écoles d’ingénieurs les plus prestigieuses du Maroc. Elle forme des ingénieurs polyvalents avec une forte base scientifique, technique et managériale.
+
+### 📌 Admission
+
+**1) Après CPGE (2 ans)**
+Accès après :
+- CPGE MP
+- CPGE PSI
+- CPGE TSI
+
+➡️ Passage par le Concours National Commun (CNC).
+
+**2) Après FST / Faculté des Sciences**
+Possible aussi pour les étudiants titulaires de :
+- DEUG / DEUST
+- Licence
+
+Filières acceptées selon les concours :
+- Mathématiques
+- Mathématiques-Informatique
+- Physique
+- MIP (Mathématiques Informatique Physique) pour FST
+
+Admission par concours spécifique / sélection selon conditions.
+
+### 🏫 Organisation des études
+**Cycle ingénieur (3 ans)**
+
+*1ère année* - Formation générale :
+- Mathématiques avancées
+- Physique
+- Informatique
+- Sciences de l’ingénieur
+- Management
+- Communication
+
+*2ème et 3ème année*
+Spécialisation dans une filière.
+
+### 🚀 Les filières de l'EMI
+
+EMI propose plusieurs grandes filières d'ingénierie :
+
+**💻 1) Génie Informatique (GI)**  
+*Formation dans* : Programmation, Algorithmique, Bases de données, Intelligence artificielle, Machine Learning, Cybersécurité, Réseaux, Systèmes d'information, Développement logiciel.  
+*Métiers* : Ingénieur logiciel, Data Engineer, Ingénieur IA, Architecte systèmes, Chef de projet IT.
+
+**🏗️ 2) Génie Civil (GC)**  
+*Formation* : Structures, Béton armé, Résistance des matériaux, Construction, Routes, Hydraulique, Gestion des projets.  
+*Métiers* : Ingénieur BTP, Ingénieur structures, Chef de chantier, Responsable projets.
+
+**⚡ 3) Génie Électrique (GE)**  
+*Formation* : Électronique, Automatique, Électricité, Énergies, Systèmes embarqués.  
+*Métiers* : Ingénieur électrique, Ingénieur énergie, Ingénieur systèmes.
+
+**⚙️ 4) Génie Mécanique (GM)**  
+*Formation* : Mécanique des solides, Conception mécanique, Machines, Matériaux, Thermodynamique.  
+*Métiers* : Ingénieur mécanique, Ingénieur automobile, Ingénieur industriel.
+
+**🏭 5) Génie Industriel (GI)**  
+*Formation* : Production, Logistique, Qualité, Management industriel, Optimisation.  
+*Métiers* : Ingénieur industriel, Supply chain manager, Chef de production.
+
+**🧪 6) Génie des Procédés**  
+*Formation* : Chimie industrielle, Thermodynamique, Transfert de matière, Procédés industriels.  
+*Métiers* : Ingénieur procédés, Industrie chimique, Énergie.
+
+**⛏️ 7) Génie Minéral**  
+*Formation* : Mines, Géologie, Matériaux, Exploitation minière.  
+*Métiers* : Ingénieur mines, Ingénieur matériaux.
+
+**📊 8) Modélisation et Informatique Scientifique**  
+*Formation* : Mathématiques appliquées, Simulation, Calcul scientifique, Modélisation.  
+*Métiers* : Ingénieur simulation, Data scientist, Recherche.
+
+### 🌍 Stages
+Pendant la formation :
+- Stage découverte
+- Stage technique
+- Projet de fin d'études (PFE)
+
+Les étudiants peuvent travailler avec : Entreprises industrielles, Banques, Sociétés IT, Bureaux d’études.
+
+### ⭐ Points forts de EMI
+- ✅ Grande école publique
+- ✅ Diplôme d’État reconnu
+- ✅ Très bonne réputation au Maroc
+- ✅ Formation polyvalente
+- ✅ Réseau important d’anciens élèves
+- ✅ Opportunités internationales`
   },
   {
     "id": "ensias",
