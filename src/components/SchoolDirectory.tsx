@@ -71,7 +71,7 @@ export const SchoolDirectory: React.FC = () => {
 
       <div className="flex flex-col gap-4">
         {filteredSchools.length === 0 ? (
-          <div className="py-20 text-center maroccan-card bg-ivory/50 border-dashed">
+          <div className="py-20 text-center maroccan-card bg-white/50 border-dashed">
             <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-300">
               <MapPin size={32} />
             </div>
@@ -193,7 +193,7 @@ export const SchoolDirectory: React.FC = () => {
                         <Users size={18} className="text-moroccan-green shrink-0" />
                         Admission
                       </h3>
-                      <div className="bg-ivory/50 p-5 md:p-6 rounded-[20px] md:rounded-[24px] border border-moroccan-red/10 text-center md:text-left">
+                      <div className="bg-white/50 p-5 md:p-6 rounded-[20px] md:rounded-[24px] border border-moroccan-red/10 text-center md:text-left">
                         <p className="text-slate-700 font-serif italic text-sm md:text-lg leading-relaxed">
                           {selectedSchool.entrance || "Admission sur concours ou sélection sur dossier."}
                         </p>

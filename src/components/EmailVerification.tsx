@@ -52,7 +52,7 @@ export const EmailVerification: React.FC = () => {
   }, [user, refreshUser]);
 
   return (
-    <div className="min-h-screen bg-ivory flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-white flex items-center justify-center p-6 relative overflow-hidden">
       <div className="fixed inset-0 zellij-pattern opacity-[0.03] pointer-events-none"></div>
       
       {/* Background accents */}

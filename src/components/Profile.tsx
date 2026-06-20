@@ -169,6 +169,11 @@ export const Profile: React.FC<ProfileProps> = ({ targetUserId, onMessage }) => 
 
   const requestNotificationPermission = async () => {
     try {
+      if (Notification.permission === 'denied') {
+        alert("Vous avez précédemment bloqué les notifications pour ce site. Veuillez cliquer sur l'icône de cadenas à côté de l'URL dans votre navigateur, autoriser les notifications, puis réessayer.");
+        return;
+      }
+      
       const permission = await Notification.requestPermission();
       if (permission === 'granted') {
         const msg = await messaging();
@@ -187,7 +192,7 @@ export const Profile: React.FC<ProfileProps> = ({ targetUserId, onMessage }) => 
              alert('Les notifications ne sont pas supportées sur ce navigateur.');
         }
       } else {
-        alert('Permission des notifications refusée.');
+        alert('Permission des notifications refusée. Vous devez autoriser les notifications dans votre navigateur.');
       }
     } catch (error: any) {
       console.error('Error requesting notification permission:', error);

@@ -12,17 +12,27 @@ const UserDisplay: React.FC<{ uid: string, fallbackName?: string, fallbackPhoto?
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    if (!uid) return;
-    const unsubscribe = onSnapshot(doc(db, 'users', uid), (snapshot) => {
-      if (snapshot.exists()) {
-        setProfile(snapshot.data() as UserProfile);
+    // To prevent exceeding Firebase free quota, skip fetching if we already have the fallback data
+    if (!uid || (fallbackName && fallbackPhoto)) return;
+    
+    // We only fetch if we don't have basic display data to save reads
+    const fetchProfile = async () => {
+      try {
+        const docSnap = await getDoc(doc(db, 'users', uid));
+        if (docSnap.exists()) {
+          setProfile(docSnap.data() as UserProfile);
+        }
+      } catch (err) {
+        console.warn("Could not fetch user profile details:", err);
       }
-    });
-    return () => unsubscribe();
-  }, [uid]);
+    };
+    
+    fetchProfile();
+  }, [uid, fallbackName, fallbackPhoto]);
 
-  const name = profile?.displayName || `${profile?.firstName || ''} ${profile?.lastName || ''}`.trim() || fallbackName || 'Utilisateur';
-  const photo = profile?.photoURL || fallbackPhoto || `https://api.dicebear.com/7.x/avataaars/svg?seed=${uid}`;
+  // Use fallback data primarily, fall back to fetched profile if needed
+  const name = fallbackName || profile?.displayName || `${profile?.firstName || ''} ${profile?.lastName || ''}`.trim() || 'Utilisateur';
+  const photo = fallbackPhoto || profile?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${uid}`;
   
   const sizeClasses = {
     sm: 'w-8 h-8',
@@ -47,7 +57,7 @@ const UserDisplay: React.FC<{ uid: string, fallbackName?: string, fallbackPhoto?
           onClick={onClick}
         >
           {name}
-          {profile?.role === 'school' && (
+          {(profile?.role === 'school' || fallbackName?.includes('Université') || fallbackName?.includes('Ecole')) && (
             <svg className="w-4 h-4 text-blue-500 fill-current shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm-1.06 14.86l-4.14-4.13 1.41-1.42 2.73 2.72 6.03-6.02 1.41 1.41-7.44 7.44z" />
             </svg>

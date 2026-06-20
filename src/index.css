@@ -10,24 +10,24 @@
   --color-saffron: #F4A460;
   --color-terracotta: #A11C20;
   --color-emerald: #1EBA64;
-  --color-ivory: #F9F7F2;
+  --color-ivory: #ffffff;
   --color-moroccan-red: #821316;
   --color-moroccan-green: #1EBA64;
 }
 
 body {
-  @apply font-sans bg-ivory text-slate-800 antialiased;
+  @apply font-sans bg-white text-slate-800 antialiased;
 }
 
 /* Zellij Background Pattern */
 .zellij-pattern {
   position: absolute;
   inset: 0;
-  background-color: #f9f7f2;
+  background-color: #ffffff;
   background-image: 
-    radial-gradient(circle at 100% 150%, #f9f7f2 24%, #eee 25%, #eee 28%, #f9f7f2 29%, #f9f7f2 36%, #eee 36%, #eee 40%, transparent 40%, transparent),
-    radial-gradient(circle at 0    150%, #f9f7f2 24%, #eee 25%, #eee 28%, #f9f7f2 29%, #f9f7f2 36%, #eee 36%, #eee 40%, transparent 40%, transparent),
-    radial-gradient(circle at 50%  100%, #eee 10%, #f9f7f2 11%, #f9f7f2 23%, #eee 24%, #eee 30%, #f9f7f2 31%, #f9f7f2 43%, #eee 44%, #eee 50%, #f9f7f2 51%, #f9f7f2 63%, #eee 64%, #eee 71%, transparent 71%, transparent),
+    radial-gradient(circle at 100% 150%, #ffffff 24%, #eee 25%, #eee 28%, #ffffff 29%, #ffffff 36%, #eee 36%, #eee 40%, transparent 40%, transparent),
+    radial-gradient(circle at 0    150%, #ffffff 24%, #eee 25%, #eee 28%, #ffffff 29%, #ffffff 36%, #eee 36%, #eee 40%, transparent 40%, transparent),
+    radial-gradient(circle at 50%  100%, #eee 10%, #ffffff 11%, #ffffff 23%, #eee 24%, #eee 30%, #ffffff 31%, #ffffff 43%, #eee 44%, #eee 50%, #ffffff 51%, #ffffff 63%, #eee 64%, #eee 71%, transparent 71%, transparent),
     radial-gradient(circle at 100% 50%, #eee 5%, #f9f7f2 6%, #f9f7f2 15%, #eee 16%, #eee 20%, #f9f7f2 21%, #f9f7f2 30%, #eee 31%, #eee 35%, #f9f7f2 36%, #f9f7f2 45%, #eee 46%, #eee 49%, transparent 50%, transparent),
     radial-gradient(circle at 0    50%, #eee 5%, #f9f7f2 6%, #f9f7f2 15%, #eee 16%, #eee 20%, #f9f7f2 21%, #f9f7f2 30%, #eee 31%, #eee 35%, #f9f7f2 36%, #f9f7f2 45%, #eee 46%, #eee 49%, transparent 50%, transparent);
   background-size: 50px 25px;

@@ -61,11 +61,12 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isSignedIn();
       allow create: if isOwner(userId) && isValidUser(incoming());
-      allow update: if isOwner(userId) && isValidUser(incoming()) && (
+      allow update: if (isOwner(userId) && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['fcmToken']) ||
         incoming().diff(existing()).affectedKeys().hasOnly([
-          'uid', 'email', 'displayName', 'firstName', 'lastName', 'institution', 'bio', 'photoURL', 'bannerURL', 'major', 'level', 'city', 'updatedAt', 'role', 'selectedPack', 'createdAt', 'fcmToken'
+          'uid', 'email', 'displayName', 'firstName', 'lastName', 'institution', 'bio', 'photoURL', 'bannerURL', 'major', 'level', 'city', 'updatedAt', 'role', 'selectedPack', 'createdAt', 'fcmToken', 'profileViews'
         ])
-      ) || (
+      )) || (
         isSignedIn() && incoming().diff(existing()).affectedKeys().hasOnly(['profileViews'])
       );
     }

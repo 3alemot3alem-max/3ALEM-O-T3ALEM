@@ -11,7 +11,19 @@ import { auth } from './firebase';
 import { motion, AnimatePresence } from 'motion/react';
 import { EmailVerification } from './components/EmailVerification';
 import { CompleteProfile } from './components/CompleteProfile';
-import regeneratedLogo from './assets/images/regenerated_image_1779220280486.jpg';
+
+const AppLogo = ({ className = "h-8 w-8" }: { className?: string }) => (
+  <div className={`relative flex items-center justify-center shrink-0 ${className}`}>
+    <div className="absolute inset-0 border border-current"></div>
+    <div className="absolute inset-0 border border-current rotate-45"></div>
+    <GraduationCap 
+      size={Math.max(16, parseInt(className.replace(/[^0-9]/g, '')) * 0.7)} 
+      className="absolute -top-[15%] -left-[10%] transform -rotate-[20deg] text-moroccan-green z-10" 
+      fill="currentColor" 
+      strokeWidth={1.5}
+    />
+  </div>
+);
 
 const OfflineIndicator = () => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
@@ -63,14 +75,9 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-ivory flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center space-y-4">
-          <motion.div 
-            animate={{ rotate: 360 }} 
-            transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-          >
-            <Loader2 className="text-moroccan-green" size={48} />
-          </motion.div>
+          <Loader2 className="text-moroccan-green animate-spin mx-auto" size={48} />
           <p className="font-serif italic text-moroccan-green font-bold animate-pulse">Chargement de votre univers...</p>
         </div>
       </div>
@@ -114,8 +121,8 @@ export default function App() {
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
-            <img src={regeneratedLogo} className="h-8 w-8 rounded-full border border-white/20 object-cover shadow-sm" alt="Logo" />
-            <span className="font-serif italic font-bold">3alem o t3alem</span>
+            <AppLogo className="w-8 h-8 text-moroccan-red ml-2" />
+            <span className="font-serif italic font-bold ml-1 text-moroccan-red">3alem o t3alem</span>
           </div>
           
           <div className="flex items-center gap-2">
@@ -146,8 +153,9 @@ export default function App() {
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                 className="fixed top-0 left-0 bottom-0 w-[80%] max-w-[300px] bg-[#e1d4d4] z-[60] md:hidden shadow-2xl flex flex-col p-6 text-slate-900"
               >
-                <div className="flex items-center justify-center mb-10 pb-6 border-b border-black/10">
-                  <img src={regeneratedLogo} className="h-16 w-16 rounded-full border border-black/5 object-cover shadow-lg" alt="3alem o t3alem" />
+                <div className="flex items-center justify-center mb-10 pb-6 border-b border-black/10 gap-3">
+                  <AppLogo className="w-10 h-10 text-moroccan-red" />
+                  <span className="font-serif italic font-bold text-xl text-moroccan-red">3alem o t3alem</span>
                 </div>
 
                 <nav className="flex flex-col gap-2 flex-grow">
@@ -188,10 +196,10 @@ export default function App() {
 
         {/* Desktop Header */}
         <header className="hidden md:flex fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl bg-[#310202]/95 backdrop-blur-xl border border-white/5 z-40 px-8 py-4 rounded-[32px] items-center justify-between shadow-2xl shadow-black/40">
-          <div className="flex items-center gap-3 shrink-0">
-            <img src={regeneratedLogo} className="h-10 w-10 rounded-full border border-white/20 object-cover shadow-lg shadow-[#1EBA64]/20" alt="3alem o t3alem" />
+          <div className="flex items-center gap-4 shrink-0">
+            <AppLogo className="w-10 h-10 text-white/90" />
             <div className="flex flex-col">
-              <span className="font-serif italic font-bold text-white tracking-wide text-lg whitespace-nowrap">3alem o t3alem</span>
+              <span className="font-serif italic font-bold text-[#f9f7f2] tracking-wide text-lg whitespace-nowrap">3alem o t3alem</span>
             </div>
           </div>
           

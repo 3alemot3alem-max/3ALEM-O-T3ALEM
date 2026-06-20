@@ -139,95 +139,104 @@ export const CompleteProfile: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-ivory flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4 md:p-6 py-10 relative overflow-y-auto">
       <div className="fixed inset-0 zellij-pattern opacity-[0.03] pointer-events-none"></div>
       
       {/* Background accents */}
-      <div className="absolute -top-20 -right-20 w-96 h-96 bg-moroccan-red/5 rounded-full blur-[100px]"></div>
-      <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-moroccan-green/5 rounded-full blur-[100px]"></div>
+      <div className="absolute -top-20 -right-20 w-96 h-96 bg-moroccan-red/5 rounded-full blur-[100px] hidden md:block"></div>
+      <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-moroccan-green/5 rounded-full blur-[100px] hidden md:block"></div>
 
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="bg-white rounded-[48px] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] w-full max-w-2xl overflow-hidden relative z-10 border border-white/50"
+        className="bg-white rounded-[32px] md:rounded-[48px] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] w-full max-w-2xl overflow-hidden relative z-10 border border-slate-100/50 m-auto"
       >
-        <div className="absolute top-8 right-8 z-20">
+        <div className="absolute top-6 right-6 z-20">
           <button 
             type="button"
             onClick={() => {
               localStorage.removeItem('is_school_auth');
               signOut(auth);
             }}
-            className="text-[10px] font-black tracking-widest uppercase text-slate-400 hover:text-moroccan-red transition-colors flex items-center gap-2"
+            className="text-xs font-semibold text-gray-500 hover:text-moroccan-red transition-colors flex items-center gap-2 bg-gray-50/80 p-2 rounded-lg border border-gray-100"
           >
             <LogOut size={16} />
-            Sortir
+            <span className="hidden sm:inline">Sortir</span>
           </button>
         </div>
-        <div className="p-10 md:p-14">
-          <div className="text-center mb-12">
-            <div className="w-20 h-20 bg-moroccan-red rounded-[28px] flex items-center justify-center text-white font-serif italic font-bold text-3xl mx-auto mb-8 shadow-2xl shadow-moroccan-red/20 rotate-3 transform-gpu">
-              {isSchool ? <School size={36} /> : '3'}
-            </div>
-            <h2 className="text-4xl font-serif italic font-bold text-slate-900 mb-3 tracking-tight">
+        <div className="p-8 md:p-14">
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-3 tracking-tight">
               {isSchool ? "Compte Institutionnel" : "Sculptez votre profil"}
             </h2>
-            <p className="text-slate-400 font-serif italic text-lg">
+            <p className="text-slate-600 text-[1rem] md:text-[1.1rem] leading-relaxed font-light">
               {isSchool 
                 ? "Configurez le profil officiel de votre établissement." 
-                : "Donnez une âme à votre jardin de la connaissance."}
+                : "Aidez-nous à personnaliser votre expérience."}
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <AnimatePresence mode="wait">
               {isSchool ? (
                 <motion.div 
                   key="school-form"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="space-y-6"
+                  className="space-y-5"
                 >
-                  <input 
-                    type="text" 
-                    placeholder="Nom de l'établissement (ex: EMI, ENSIAS)"
-                    value={schoolName}
-                    onChange={(e) => setSchoolName(e.target.value)}
-                    className="w-full px-8 py-5 rounded-[24px] bg-slate-50 border-2 border-transparent focus:bg-white focus:border-moroccan-green/30 outline-none transition-all font-medium placeholder:text-slate-300"
-                    required
-                  />
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-0.5">Nom de l'établissement</label>
                     <input 
                       type="text" 
-                      placeholder="Ville (ex: Rabat)"
-                      value={schoolCity}
-                      onChange={(e) => setSchoolCity(e.target.value)}
-                      className="w-full px-8 py-5 rounded-[24px] bg-slate-50 border-2 border-transparent focus:bg-white focus:border-moroccan-green/30 outline-none transition-all font-medium placeholder:text-slate-300"
+                      placeholder="Ex: EMI, ENSIAS"
+                      value={schoolName}
+                      onChange={(e) => setSchoolName(e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:border-moroccan-green focus:ring-2 focus:ring-moroccan-green/20 outline-none transition-all placeholder-gray-400 text-gray-900"
                       required
                     />
-                    <input 
-                      type="text" 
-                      placeholder="Filières (ex: Ingénierie, Commerce)"
-                      value={schoolMajors}
-                      onChange={(e) => setSchoolMajors(e.target.value)}
-                      className="w-full px-8 py-5 rounded-[24px] bg-slate-50 border-2 border-transparent focus:bg-white focus:border-moroccan-green/30 outline-none transition-all font-medium placeholder:text-slate-300"
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-0.5">Ville</label>
+                      <input 
+                        type="text" 
+                        placeholder="Ex: Rabat"
+                        value={schoolCity}
+                        onChange={(e) => setSchoolCity(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:border-moroccan-green focus:ring-2 focus:ring-moroccan-green/20 outline-none transition-all placeholder-gray-400 text-gray-900"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-0.5">Filières</label>
+                      <input 
+                        type="text" 
+                        placeholder="Ex: Ingénierie, Commerce"
+                        value={schoolMajors}
+                        onChange={(e) => setSchoolMajors(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:border-moroccan-green focus:ring-2 focus:ring-moroccan-green/20 outline-none transition-all placeholder-gray-400 text-gray-900"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-0.5">À propos</label>
+                    <textarea 
+                      placeholder="Description, spécialités, mots du directeur..."
+                      value={schoolBio}
+                      onChange={(e) => setSchoolBio(e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:border-moroccan-green focus:ring-2 focus:ring-moroccan-green/20 outline-none transition-all placeholder-gray-400 text-gray-900 resize-none h-28"
                       required
                     />
                   </div>
 
-                  <textarea 
-                    placeholder="À propos de l'établissement... (Description, spécialités, mots du directeur)"
-                    value={schoolBio}
-                    onChange={(e) => setSchoolBio(e.target.value)}
-                    className="w-full px-8 py-5 rounded-[24px] bg-slate-50 border-2 border-transparent focus:bg-white focus:border-moroccan-green/30 outline-none transition-all font-medium placeholder:text-slate-300 resize-none h-32"
-                    required
-                  />
-
-                  <div className="space-y-4">
-                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 ml-4">Logo Officiel</label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-0.5">Logo Officiel</label>
                     <div 
-                      className="flex items-center gap-6 p-6 bg-slate-50 rounded-[32px] border-2 border-dashed border-slate-200 hover:border-moroccan-green/40 transition-all group cursor-pointer relative" 
+                      className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300 hover:border-moroccan-green/40 transition-all cursor-pointer group" 
                       onClick={() => fileInputRef.current?.click()}
                     >
                       <input 
@@ -237,18 +246,18 @@ export const CompleteProfile: React.FC = () => {
                         ref={fileInputRef}
                         onChange={handleFileChange}
                       />
-                      <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-moroccan-green group-hover:shadow-lg transition-all overflow-hidden border border-slate-100">
+                      <div className="w-14 h-14 bg-white rounded-md flex items-center justify-center text-gray-400 border border-gray-200 overflow-hidden">
                         {photoURL ? (
                           <img src={photoURL} className="w-full h-full object-cover" alt="Profile preview" />
                         ) : (
-                          <Camera size={32} strokeWidth={1.5} />
+                          <Camera size={24} />
                         )}
                       </div>
                       <div className="flex-1">
-                        <span className="text-sm font-bold text-slate-700 block mb-1">
+                        <span className="text-sm font-medium text-gray-700 block">
                           {photoURL ? "Logo ajouté ! ✓" : "Ajouter le logo"}
                         </span>
-                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-wider">Format JPG/PNG • Max 1Mo</span>
+                        <span className="text-xs text-gray-500">Format JPG/PNG • Max 1Mo</span>
                       </div>
                     </div>
                   </div>
@@ -256,10 +265,9 @@ export const CompleteProfile: React.FC = () => {
                   <button 
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-moroccan-green text-white py-6 rounded-[28px] font-black uppercase tracking-[0.25em] hover:bg-moroccan-green/90 transition-all shadow-[0_20px_40px_-12px_rgba(42,110,95,0.3)] flex items-center justify-center gap-4 group disabled:opacity-50"
+                    className="w-full bg-moroccan-green text-white py-3.5 rounded-lg font-medium hover:bg-moroccan-green/90 transition-colors flex items-center justify-center gap-2 mt-4 disabled:opacity-70 shadow-sm shadow-emerald-900/20 active:scale-[0.99]"
                   >
-                    {loading ? <Loader2 className="animate-spin" size={24} /> : "Créer le compte officiel"}
-                    {!loading && <CheckCircle size={20} className="group-hover:scale-110 transition-transform" />}
+                    {loading ? <Loader2 className="animate-spin" size={20} /> : "Créer le compte officiel"}
                   </button>
                 </motion.div>
               ) : step === 1 ? (
@@ -268,41 +276,39 @@ export const CompleteProfile: React.FC = () => {
                   initial={{ opacity: 0, x: 30 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -30 }}
-                  className="space-y-8"
+                  className="space-y-6"
                 >
-                  <div className="flex flex-col gap-4">
-                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 ml-4">Je suis un(e)...</label>
-                    <div className="grid grid-cols-2 gap-6">
+                  <div className="flex flex-col gap-4 mb-4">
+                    <label className="block text-sm font-medium text-gray-700 ml-0.5">Je suis un(e)...</label>
+                    <div className="grid grid-cols-2 gap-4">
                       <div 
                         onClick={() => setRole('student')}
-                        className={`group relative flex flex-col items-center justify-center p-8 rounded-[36px] border-2 transition-all duration-500 overflow-hidden ${role === 'student' ? 'border-moroccan-green bg-moroccan-green/[0.03] shadow-2xl shadow-moroccan-green/10' : 'border-slate-50 bg-slate-50/50 hover:border-slate-200 cursor-pointer'}`}>
-                        {role === 'student' && <motion.div layoutId="role-bg" className="absolute inset-0 bg-gradient-to-br from-moroccan-green/5 to-transparent" />}
-                        <div className={`p-4 rounded-2xl mb-4 transition-colors duration-300 ${role === 'student' ? 'bg-moroccan-green text-white shadow-xl' : 'bg-white text-slate-400 group-hover:text-slate-600'}`}>
-                          <GraduationCap size={32} />
+                        className={`group relative flex flex-col items-center justify-center p-6 rounded-xl border-2 transition-all duration-300 overflow-hidden ${role === 'student' ? 'border-moroccan-green bg-moroccan-green/[0.03] shadow-md shadow-moroccan-green/10' : 'border-gray-200 bg-gray-50 hover:bg-gray-100 cursor-pointer'}`}>
+                        <div className={`p-3 rounded-xl mb-3 transition-colors duration-300 ${role === 'student' ? 'bg-moroccan-green text-white' : 'bg-white text-gray-400 group-hover:text-gray-600 shadow-sm'}`}>
+                          <GraduationCap size={28} />
                         </div>
-                        <span className={`text-xs font-black uppercase tracking-[0.2em] relative z-10 transition-colors ${role === 'student' ? 'text-moroccan-green' : 'text-slate-500'}`}>Élève</span>
+                        <span className={`text-sm font-semibold transition-colors ${role === 'student' ? 'text-moroccan-green' : 'text-gray-600'}`}>Élève</span>
                       </div>
                       <div 
                         onClick={() => setRole('mentor')}
-                        className={`group relative flex flex-col items-center justify-center p-8 rounded-[36px] border-2 transition-all duration-500 overflow-hidden ${role === 'mentor' ? 'border-moroccan-green bg-moroccan-green/[0.03] shadow-2xl shadow-moroccan-green/10' : 'border-slate-50 bg-slate-50/50 hover:border-slate-200 cursor-pointer'}`}>
-                        {role === 'mentor' && <motion.div layoutId="role-bg" className="absolute inset-0 bg-gradient-to-br from-moroccan-green/5 to-transparent" />}
-                        <div className={`p-4 rounded-2xl mb-4 transition-colors duration-300 ${role === 'mentor' ? 'bg-moroccan-green text-white shadow-xl' : 'bg-white text-slate-400 group-hover:text-slate-600'}`}>
-                          <School size={32} />
+                        className={`group relative flex flex-col items-center justify-center p-6 rounded-xl border-2 transition-all duration-300 overflow-hidden ${role === 'mentor' ? 'border-moroccan-green bg-moroccan-green/[0.03] shadow-md shadow-moroccan-green/10' : 'border-gray-200 bg-gray-50 hover:bg-gray-100 cursor-pointer'}`}>
+                        <div className={`p-3 rounded-xl mb-3 transition-colors duration-300 ${role === 'mentor' ? 'bg-moroccan-green text-white' : 'bg-white text-gray-400 group-hover:text-gray-600 shadow-sm'}`}>
+                          <School size={28} />
                         </div>
-                        <span className={`text-xs font-black uppercase tracking-[0.2em] relative z-10 transition-colors ${role === 'mentor' ? 'text-moroccan-green' : 'text-slate-500'}`}>Étudiant</span>
+                        <span className={`text-sm font-semibold transition-colors ${role === 'mentor' ? 'text-moroccan-green' : 'text-gray-600'}`}>Étudiant</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 ml-4">Identité</label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-0.5">Mon identité</label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <input 
                         type="text" 
                         placeholder="Prénom"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        className="w-full px-8 py-5 rounded-[24px] bg-slate-50 border-2 border-transparent focus:bg-white focus:border-moroccan-green/30 outline-none transition-all font-medium placeholder:text-slate-300"
+                        className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:border-moroccan-green focus:ring-2 focus:ring-moroccan-green/20 outline-none transition-all placeholder-gray-400 text-gray-900"
                         required
                       />
                       <input 
@@ -310,7 +316,7 @@ export const CompleteProfile: React.FC = () => {
                         placeholder="Nom"
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        className="w-full px-8 py-5 rounded-[24px] bg-slate-50 border-2 border-transparent focus:bg-white focus:border-moroccan-green/30 outline-none transition-all font-medium placeholder:text-slate-300"
+                        className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:border-moroccan-green focus:ring-2 focus:ring-moroccan-green/20 outline-none transition-all placeholder-gray-400 text-gray-900"
                         required
                       />
                     </div>
@@ -319,10 +325,9 @@ export const CompleteProfile: React.FC = () => {
                   <button 
                     type="button"
                     onClick={handleNextStep}
-                    className="w-full bg-moroccan-green text-white py-6 rounded-[28px] font-black uppercase tracking-[0.25em] hover:bg-moroccan-green/90 transition-all shadow-[0_20px_40px_-12px_rgba(42,110,95,0.3)] flex items-center justify-center gap-4 group"
+                    className="w-full bg-moroccan-green text-white py-3.5 rounded-lg font-medium hover:bg-moroccan-green/90 transition-colors flex items-center justify-center gap-2 mt-4 shadow-sm shadow-emerald-900/20 active:scale-[0.99]"
                   >
-                    Continuer l&apos;aventure
-                    <Sparkles size={20} className="group-hover:rotate-12 transition-transform" />
+                    Suivant
                   </button>
                 </motion.div>
               ) : (
@@ -331,17 +336,17 @@ export const CompleteProfile: React.FC = () => {
                   initial={{ opacity: 0, x: 30 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -30 }}
-                  className="space-y-8"
+                  className="space-y-6"
                 >
                   {role === 'mentor' ? (
-                    <div className="space-y-4">
-                      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 ml-4">Établissement actuel</label>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-0.5">Établissement actuel</label>
                       <input 
                         type="text" 
                         placeholder="Ex: EMI, ENIM, FST Marrakech..."
                         value={institution}
                         onChange={(e) => setInstitution(e.target.value)}
-                        className="w-full px-8 py-5 rounded-[24px] bg-slate-50 border-2 border-transparent focus:bg-white focus:border-moroccan-green/30 outline-none transition-all font-medium placeholder:text-slate-300 shadow-inner"
+                        className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:border-moroccan-green focus:ring-2 focus:ring-moroccan-green/20 outline-none transition-all placeholder-gray-400 text-gray-900"
                         list="school-suggestions"
                         required
                       />
@@ -352,22 +357,21 @@ export const CompleteProfile: React.FC = () => {
                       </datalist>
                     </div>
                   ) : (
-                    <div className="p-10 bg-gradient-to-br from-moroccan-green/5 to-slate-50 rounded-[40px] border border-dashed border-moroccan-green/20 text-center relative overflow-hidden group">
-                      <div className="absolute -top-10 -right-10 w-32 h-32 bg-moroccan-green/5 rounded-full blur-2xl group-hover:bg-moroccan-green/10 transition-colors"></div>
-                      <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-moroccan-green mx-auto mb-6 shadow-xl relative z-10">
-                        <CheckCircle size={32} />
+                    <div className="p-8 bg-gray-50 rounded-xl border border-gray-200 text-center relative overflow-hidden group mb-4">
+                      <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-moroccan-green mx-auto mb-4 shadow-sm border border-gray-100">
+                        <CheckCircle size={24} />
                       </div>
-                      <p className="text-slate-600 font-serif italic text-lg leading-relaxed relative z-10">
-                        Bienvenue, futur bâchelier ! <br/>
-                        <span className="text-slate-400 text-sm mt-2 block">Accédez bientôt à votre coaching sur mesure.</span>
+                      <p className="text-slate-700 font-medium text-lg">
+                        Bienvenue, futur bâchelier !
                       </p>
+                      <span className="text-slate-500 text-sm mt-1 block">Accédez bientôt à votre coaching sur mesure.</span>
                     </div>
                   )}
 
-                  <div className="space-y-4">
-                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 ml-4">Avatar Personnel</label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-0.5">Avatar Personnel</label>
                     <div 
-                      className="flex items-center gap-6 p-6 bg-slate-50 rounded-[32px] border-2 border-dashed border-slate-200 hover:border-moroccan-green/40 transition-all group cursor-pointer relative" 
+                      className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300 hover:border-moroccan-green/40 transition-all cursor-pointer group" 
                       onClick={() => fileInputRef.current?.click()}
                     >
                       <input 
@@ -377,36 +381,36 @@ export const CompleteProfile: React.FC = () => {
                         ref={fileInputRef}
                         onChange={handleFileChange}
                       />
-                      <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-moroccan-green group-hover:shadow-lg transition-all overflow-hidden border border-slate-100">
+                      <div className="w-14 h-14 bg-white rounded-md flex items-center justify-center text-gray-400 border border-gray-200 overflow-hidden">
                         {photoURL ? (
                           <img src={photoURL} className="w-full h-full object-cover" alt="Profile preview" />
                         ) : (
-                          <Camera size={32} strokeWidth={1.5} />
+                          <Camera size={24} />
                         )}
                       </div>
                       <div className="flex-1">
-                        <span className="text-sm font-bold text-slate-700 block mb-1">
+                        <span className="text-sm font-medium text-gray-700 block">
                           {photoURL ? "Photo parfaite ! ✓" : "Ajouter un portrait"}
                         </span>
-                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-wider">Format JPG/PNG • Max 1Mo</span>
+                        <span className="text-xs text-gray-500">Format JPG/PNG • Max 1Mo</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-6 pt-4">
+                  <div className="flex gap-4 pt-4">
                     <button 
                       type="button"
                       onClick={() => setStep(1)}
-                      className="bg-slate-100 text-slate-500 py-6 rounded-[28px] font-black text-xs uppercase tracking-[0.2em] hover:bg-slate-200 transition-all active:scale-95 flex items-center justify-center"
+                      className="flex-1 bg-gray-100 text-gray-600 py-3.5 rounded-lg font-medium hover:bg-gray-200 transition-colors flex items-center justify-center active:scale-[0.99]"
                     >
                       Retour
                     </button>
                     <button 
                       type="submit"
                       disabled={loading}
-                      className="bg-moroccan-green text-white py-6 rounded-[28px] font-black uppercase tracking-[0.25em] hover:bg-moroccan-green/90 transition-all shadow-2xl shadow-moroccan-green/20 flex items-center justify-center gap-3 disabled:opacity-50 active:scale-95"
+                      className="flex-[2] bg-moroccan-green text-white py-3.5 rounded-lg font-medium hover:bg-moroccan-green/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-70 shadow-sm shadow-emerald-900/20 active:scale-[0.99]"
                     >
-                      {loading ? <Loader2 className="animate-spin text-white" size={24} /> : "Finaliser"}
+                      {loading ? <Loader2 className="animate-spin text-white" size={20} /> : "Finaliser"}
                     </button>
                   </div>
                 </motion.div>
@@ -418,7 +422,7 @@ export const CompleteProfile: React.FC = () => {
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-10 text-moroccan-red text-[10px] font-black uppercase tracking-[0.2em] text-center bg-moroccan-red/5 p-5 rounded-[24px] border border-moroccan-red/10"
+              className="mt-6 text-moroccan-red text-sm text-center bg-red-50 p-4 rounded-lg border border-red-100 font-medium"
             >
               {error}
             </motion.div>
