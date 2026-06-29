@@ -6,6 +6,7 @@ import { SchoolDirectory } from './components/SchoolDirectory';
 import { CourseMarketplace } from './components/CourseMarketplace';
 import { Profile } from './components/Profile';
 import { Messaging } from './components/Messaging';
+import { EducationalAI } from './components/EducationalAI';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { LayoutGrid, GraduationCap, User, LogOut, MessageSquare, Bot, WifiOff, Loader2, Menu, X, BookOpen } from 'lucide-react';
 import { auth } from './firebase';
@@ -153,6 +154,7 @@ export default function App() {
                     { id: 'feed', icon: LayoutGrid, label: 'Fil d\'actualité' },
                     { id: 'schools', icon: GraduationCap, label: 'Annuaire des Écoles' },
                     { id: 'courses', icon: BookOpen, label: 'Place de Cours' },
+                    { id: 'ai', icon: Bot, label: 'Assistant IA' },
                     { id: 'profile', icon: User, label: 'Mon Profil' },
                     { id: 'messaging', icon: MessageSquare, label: 'Messages' }
                   ].map((tab) => (
@@ -198,6 +200,7 @@ export default function App() {
               { id: 'feed', icon: LayoutGrid, label: 'Communauté' },
               { id: 'schools', icon: GraduationCap, label: 'Écoles' },
               { id: 'courses', icon: BookOpen, label: 'Cours' },
+              { id: 'ai', icon: Bot, label: 'Assistant IA' },
               { id: 'profile', icon: User, label: 'Profil' },
               { id: 'messaging', icon: MessageSquare, label: 'Messages' }
             ].map((tab) => (
@@ -239,6 +242,7 @@ export default function App() {
           {activeTab === 'feed' && <Feed onStartChat={(email) => activateChat(email)} onViewProfile={viewUserProfile} />}
           {activeTab === 'schools' && <SchoolDirectory />}
           {activeTab === 'courses' && <CourseMarketplace />}
+          {activeTab === 'ai' && <EducationalAI />}
           {activeTab === 'profile' && <Profile targetUserId={viewingUserId} onMessage={(uid) => {
             setActiveTab('messaging');
           }} />}
