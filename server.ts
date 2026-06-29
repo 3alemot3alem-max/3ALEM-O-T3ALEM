@@ -87,6 +87,10 @@ async function startServer() {
 
   app.post('/api/ai/chat', async (req, res) => {
     try {
+      if (!process.env.GEMINI_API_KEY) {
+        return res.status(500).json({ error: 'La clé API Gemini n\'est pas configurée. Veuillez ajouter votre clé API dans les paramètres.' });
+      }
+
       const { message, history } = req.body;
 
       if (!message) {
@@ -127,7 +131,11 @@ async function startServer() {
       res.json({ reply: response.text });
     } catch (error: any) {
       console.error('Error in AI chat:', error);
-      res.status(500).json({ error: error.message || 'An error occurred during AI chat' });
+      let errorMessage = 'Une erreur est survenue lors de la communication avec l\'assistant IA.';
+      if (error.message?.includes('API_KEY_INVALID') || error.message?.includes('API key not valid')) {
+        errorMessage = 'La clé API Gemini n\'est pas valide. Veuillez vérifier vos paramètres.';
+      }
+      res.status(500).json({ error: errorMessage });
     }
   });
 

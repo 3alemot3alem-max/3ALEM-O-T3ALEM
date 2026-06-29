@@ -48,16 +48,16 @@ export const EducationalAI: React.FC = () => {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Erreur lors de la communication avec l\'assistant');
-      }
-
       const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erreur lors de la communication avec l\'assistant');
+      }
       
       setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
     } catch (err: any) {
       console.error('Error fetching AI response:', err);
-      setError('Une erreur est survenue. Veuillez réessayer.');
+      setError(err.message || 'Une erreur est survenue. Veuillez réessayer.');
     } finally {
       setIsLoading(false);
     }
