@@ -14,6 +14,8 @@ export interface UserProfile {
   city?: string;
   selectedPack?: string;
   profileViews?: number;
+  coursePoints?: number;
+  unlockedCourses?: string[];
   createdAt: string;
 }
 
@@ -54,6 +56,20 @@ export interface Message {
   id: string;
   senderUid: string;
   text: string;
+  createdAt: string;
+}
+
+export interface Course {
+  id: string;
+  title: string;
+  description: string;
+  authorUid: string;
+  authorName: string;
+  fileUrl: string;
+  fileType: 'pdf' | 'video' | 'photo';
+  pages?: number;
+  level: string;
+  pointsCost: number;
   createdAt: string;
 }
 

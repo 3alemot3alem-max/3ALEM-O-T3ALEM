@@ -3,20 +3,18 @@ import { useAuth } from './AuthContext';
 import { AuthModal } from './components/AuthModal';
 import { Feed } from './components/Feed';
 import { SchoolDirectory } from './components/SchoolDirectory';
+import { CourseMarketplace } from './components/CourseMarketplace';
 import { Profile } from './components/Profile';
 import { Messaging } from './components/Messaging';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { LayoutGrid, GraduationCap, User, LogOut, MessageSquare, Bot, WifiOff, Loader2, Menu, X } from 'lucide-react';
+import { LayoutGrid, GraduationCap, User, LogOut, MessageSquare, Bot, WifiOff, Loader2, Menu, X, BookOpen } from 'lucide-react';
 import { auth } from './firebase';
 import { motion, AnimatePresence } from 'motion/react';
 import { EmailVerification } from './components/EmailVerification';
 import { CompleteProfile } from './components/CompleteProfile';
 
 const AppLogo = ({ className = "h-8 w-8" }: { className?: string }) => (
-  <div className={`relative flex items-center justify-center shrink-0 ${className}`}>
-    <div className="absolute inset-0 border border-current"></div>
-    <div className="absolute inset-0 border border-current rotate-45"></div>
-  </div>
+  <img src="/logo.png" alt="3alem o t3alem Logo" className={`object-contain ${className}`} />
 );
 
 const OfflineIndicator = () => {
@@ -52,7 +50,7 @@ const OfflineIndicator = () => {
 
 export default function App() {
   const { user, profile, loading } = useAuth();
-  const [activeTab, setActiveTab] = useState<'feed' | 'schools' | 'profile' | 'messaging' | 'ai'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'schools' | 'profile' | 'messaging' | 'courses' | 'ai'>('feed');
   const [chatTargetEmail, setChatTargetEmail] = useState<string | null>(null);
   const [viewingUserId, setViewingUserId] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -115,8 +113,7 @@ export default function App() {
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
-            <AppLogo className="w-8 h-8 text-moroccan-red ml-2" />
-            <span className="font-serif italic font-bold ml-1 text-moroccan-red">3alem o t3alem</span>
+            <span className="font-serif italic font-bold ml-2 text-moroccan-red flex items-center gap-1">3alem <AppLogo className="w-10 h-10 text-moroccan-red object-contain" /> t3alem</span>
           </div>
           
           <div className="flex items-center gap-2">
@@ -147,15 +144,15 @@ export default function App() {
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                 className="fixed top-0 left-0 bottom-0 w-[80%] max-w-[300px] bg-[#e1d4d4] z-[60] md:hidden shadow-2xl flex flex-col p-6 text-slate-900"
               >
-                <div className="flex items-center justify-center mb-10 pb-6 border-b border-black/10 gap-3">
-                  <AppLogo className="w-10 h-10 text-moroccan-red" />
-                  <span className="font-serif italic font-bold text-xl text-moroccan-red">3alem o t3alem</span>
+                <div className="flex items-center justify-center mb-10 pb-6 border-b border-black/10">
+                  <span className="font-serif italic font-bold text-xl text-moroccan-red flex items-center gap-2">3alem <AppLogo className="w-12 h-12 text-moroccan-red object-contain" /> t3alem</span>
                 </div>
 
                 <nav className="flex flex-col gap-2 flex-grow">
                   {[
                     { id: 'feed', icon: LayoutGrid, label: 'Fil d\'actualité' },
                     { id: 'schools', icon: GraduationCap, label: 'Annuaire des Écoles' },
+                    { id: 'courses', icon: BookOpen, label: 'Place de Cours' },
                     { id: 'profile', icon: User, label: 'Mon Profil' },
                     { id: 'messaging', icon: MessageSquare, label: 'Messages' }
                   ].map((tab) => (
@@ -190,10 +187,9 @@ export default function App() {
 
         {/* Desktop Header */}
         <header className="hidden md:flex fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl bg-[#310202]/95 backdrop-blur-xl border border-white/5 z-40 px-8 py-4 rounded-[32px] items-center justify-between shadow-2xl shadow-black/40">
-          <div className="flex items-center gap-4 shrink-0">
-            <AppLogo className="w-10 h-10 text-white/90" />
+          <div className="flex items-center shrink-0">
             <div className="flex flex-col">
-              <span className="font-serif italic font-bold text-[#f9f7f2] tracking-wide text-lg whitespace-nowrap">3alem o t3alem</span>
+              <span className="font-serif italic font-bold text-[#f9f7f2] tracking-wide text-2xl whitespace-nowrap flex items-center gap-2">3alem <AppLogo className="w-14 h-14 object-contain" /> t3alem</span>
             </div>
           </div>
           
@@ -201,6 +197,7 @@ export default function App() {
             {[
               { id: 'feed', icon: LayoutGrid, label: 'Communauté' },
               { id: 'schools', icon: GraduationCap, label: 'Écoles' },
+              { id: 'courses', icon: BookOpen, label: 'Cours' },
               { id: 'profile', icon: User, label: 'Profil' },
               { id: 'messaging', icon: MessageSquare, label: 'Messages' }
             ].map((tab) => (
@@ -241,6 +238,7 @@ export default function App() {
         <main className="container mx-auto px-4 relative z-10 transition-all duration-500 max-w-7xl">
           {activeTab === 'feed' && <Feed onStartChat={(email) => activateChat(email)} onViewProfile={viewUserProfile} />}
           {activeTab === 'schools' && <SchoolDirectory />}
+          {activeTab === 'courses' && <CourseMarketplace />}
           {activeTab === 'profile' && <Profile targetUserId={viewingUserId} onMessage={(uid) => {
             setActiveTab('messaging');
           }} />}

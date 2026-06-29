@@ -55,6 +55,8 @@ service cloud.firestore {
              (!('selectedPack' in data) || isValidString(data.selectedPack, 0, 100)) &&
              (!('createdAt' in data) || isValidString(data.createdAt, 0, 100)) &&
              (!('fcmToken' in data) || isValidString(data.fcmToken, 0, 4096)) &&
+             (!('coursePoints' in data) || data.coursePoints is number) &&
+             (!('unlockedCourses' in data) || data.unlockedCourses is list) &&
              (!('profileViews' in data) || data.profileViews is number);
     }
 
@@ -64,11 +66,19 @@ service cloud.firestore {
       allow update: if (isOwner(userId) && (
         incoming().diff(existing()).affectedKeys().hasOnly(['fcmToken']) ||
         incoming().diff(existing()).affectedKeys().hasOnly([
-          'uid', 'email', 'displayName', 'firstName', 'lastName', 'institution', 'bio', 'photoURL', 'bannerURL', 'major', 'level', 'city', 'updatedAt', 'role', 'selectedPack', 'createdAt', 'fcmToken', 'profileViews'
+          'uid', 'email', 'displayName', 'firstName', 'lastName', 'institution', 'bio', 'photoURL', 'bannerURL', 'major', 'level', 'city', 'updatedAt', 'role', 'selectedPack', 'createdAt', 'fcmToken', 'profileViews', 'coursePoints', 'unlockedCourses'
         ])
       )) || (
         isSignedIn() && incoming().diff(existing()).affectedKeys().hasOnly(['profileViews'])
       );
+    }
+
+    // Courses Rules
+    match /courses/{courseId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && incoming().authorUid == request.auth.uid;
+      allow update: if isSignedIn() && existing().authorUid == request.auth.uid;
+      allow delete: if isSignedIn() && existing().authorUid == request.auth.uid;
     }
 
     // Posts Rules

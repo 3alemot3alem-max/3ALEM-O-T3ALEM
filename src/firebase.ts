@@ -1,11 +1,13 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, initializeAuth, browserLocalPersistence } from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 import firebaseConfig from '../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
+export const storage = getStorage(app);
 
 // Initialize Cloud Messaging and conditionally export it
 import { getMessaging, isSupported } from 'firebase/messaging';

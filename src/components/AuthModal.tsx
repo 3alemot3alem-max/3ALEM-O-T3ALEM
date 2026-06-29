@@ -10,6 +10,7 @@ import {
 import { auth } from '../firebase';
 import { motion } from 'motion/react';
 import { LogIn, UserPlus, Loader2, GraduationCap } from 'lucide-react';
+import authImage from '../assets/images/regenerated_image_1782765941617.png';
 
 export const AuthModal: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -156,19 +157,12 @@ export const AuthModal: React.FC = () => {
       >
         {/* Left Side - Welcome Brand */}
         <div className="w-full md:w-[45%] p-8 md:p-14 flex flex-col justify-center relative bg-slate-50 md:bg-transparent">
-          <div className="relative mb-8 md:mb-16 flex items-center justify-center md:justify-start">
-            <h1 className="text-3xl lg:text-4xl font-serif text-moroccan-red tracking-wide">3alem</h1>
-            <div className="relative mx-3 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center">
-              <div className="absolute w-6 h-6 md:w-8 md:h-8 border-[1.5px] border-moroccan-red"></div>
-              <div className="absolute w-6 h-6 md:w-8 md:h-8 border-[1.5px] border-moroccan-red rotate-45"></div>
-              <GraduationCap 
-                size={28} 
-                className="text-moroccan-green absolute -top-4 -left-3 md:-top-5 md:-left-4 transform -rotate-[20deg] z-10 md:w-[34px] md:h-[34px]" 
-                fill="currentColor" 
-                strokeWidth={1.5}
-              />
-            </div>
-            <h1 className="text-3xl lg:text-4xl font-serif text-moroccan-red tracking-wide">t3alem</h1>
+          <div className="relative mb-8 md:mb-12 flex items-center justify-center md:justify-start -mt-8 md:-mt-12">
+            <img 
+              src={authImage}
+              alt="3alem o t3alem" 
+              className="w-56 md:w-80 h-auto object-contain"
+            />
           </div>
 
           <div className="max-w-xs mx-auto md:mx-0 text-center md:text-left">
