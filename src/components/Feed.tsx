@@ -49,7 +49,7 @@ const compressImage = (file: File, maxWidth: number, maxHeight: number, quality:
 };
 
 // Helper component to display up-to-date user info
-const UserDisplay: React.FC<{ uid: string, fallbackName?: string, fallbackPhoto?: string, size?: 'sm' | 'md' | 'lg', onClick?: () => void }> = ({ uid, fallbackName, fallbackPhoto, size = 'md', onClick }) => {
+const UserDisplay: React.FC<{ uid: string, fallbackName?: string, fallbackPhoto?: string, size?: 'sm' | 'md' | 'lg', onClick?: () => void, hideName?: boolean }> = ({ uid, fallbackName, fallbackPhoto, size = 'md', onClick, hideName = false }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
@@ -92,19 +92,21 @@ const UserDisplay: React.FC<{ uid: string, fallbackName?: string, fallbackPhoto?
         />
         <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald border-2 border-white rounded-full"></div>
       </div>
-      <div>
-        <h3 
-          className={`font-serif italic font-bold text-slate-900 cursor-pointer hover:text-majorelle transition-colors flex items-center gap-1 ${size === 'sm' ? 'text-xs' : 'text-base'}`}
-          onClick={onClick}
-        >
-          {name}
-          {(profile?.isVerified || profile?.role === 'school' || profile?.role === 'admin' || profile?.email === '3alemot3alem@gmail.com' || fallbackName?.includes('Université') || fallbackName?.includes('Ecole') || fallbackName === '3alem o t3alem') && (
-            <svg className="w-4 h-4 text-blue-500 fill-current shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm-1.06 14.86l-4.14-4.13 1.41-1.42 2.73 2.72 6.03-6.02 1.41 1.41-7.44 7.44z" />
-            </svg>
-          )}
-        </h3>
-      </div>
+      {!hideName && (
+        <div>
+          <h3 
+            className={`font-serif italic font-bold text-slate-900 cursor-pointer hover:text-majorelle transition-colors flex items-center gap-1 ${size === 'sm' ? 'text-xs' : 'text-base'}`}
+            onClick={onClick}
+          >
+            {name}
+            {(profile?.isVerified || profile?.role === 'school' || profile?.role === 'admin' || profile?.email === '3alemot3alem@gmail.com' || fallbackName?.includes('Université') || fallbackName?.includes('Ecole') || fallbackName === '3alem o t3alem') && (
+              <svg className="w-4 h-4 text-blue-500 fill-current shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm-1.06 14.86l-4.14-4.13 1.41-1.42 2.73 2.72 6.03-6.02 1.41 1.41-7.44 7.44z" />
+              </svg>
+            )}
+          </h3>
+        </div>
+      )}
     </div>
   );
 };
@@ -385,8 +387,8 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
 
           {/* Main Feed */}
           <div className="flex-1 w-full max-w-full md:max-w-[552px] space-y-4 px-0 sm:px-0 mx-auto order-3 md:order-2">
-            {/* Start a Post Card - Only for verified or admin */}
-            {(profile?.isVerified || profile?.role === 'admin' || user?.email === '3alemot3alem@gmail.com') && (
+            {/* Start a Post Card */}
+            {user && (
               <div className="bg-white rounded-xl shadow-[0_0_0_1px_rgba(0,0,0,0.08)] p-3 sm:p-4 border-y border-slate-200 sm:border-none">
                 <div className="flex gap-2 sm:gap-3 items-center mb-2">
                   <img 
@@ -665,7 +667,7 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
                         <div className="bg-white rounded-xl shadow-[0_0_0_1px_rgba(0,0,0,0.08)] p-4">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-semibold text-slate-900 text-base">Actualités du réseau</h3>
-                {(profile?.isVerified || profile?.role === 'admin' || user?.email === '3alemot3alem@gmail.com') && (
+                {user && (
                   <button 
                     onClick={() => {
                       const input = document.querySelector('textarea[placeholder="Publier une actualité..."]') as HTMLTextAreaElement;
@@ -935,22 +937,23 @@ const CommentSection: React.FC<{ postId: string }> = ({ postId }) => {
       <div className="space-y-4">
         {comments.map((comment) => (
           <div key={comment.id} className="flex gap-3 group">
-            <div className="mt-1">
+            <div className="shrink-0 mt-0.5">
               <UserDisplay 
                 uid={comment.authorUid} 
                 fallbackName={comment.authorName} 
                 fallbackPhoto={comment.authorPhoto}
                 size="sm"
+                hideName={true}
               />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="bg-[#f0f2f5] px-4 py-2.5 rounded-2xl rounded-tl-sm inline-block max-w-full">
-                <p className="font-semibold text-[13px] text-slate-900 leading-tight mb-0.5">{comment.authorName}</p>
-                <p className="text-[14px] text-slate-800 leading-snug break-words">{comment.content}</p>
+              <div className="text-[14px] leading-snug break-words mt-1.5">
+                <span className="font-semibold text-slate-900 mr-2">{comment.authorName}</span>
+                <span className="text-slate-800">{comment.content}</span>
               </div>
-              <div className="flex items-center gap-3 mt-1 ml-2">
-                <span className="text-[11px] text-slate-500 font-medium">{formatDate(comment.createdAt)}</span>
-                <button className="text-[11px] text-slate-500 font-bold hover:text-slate-800 transition-colors opacity-0 group-hover:opacity-100">Répondre</button>
+              <div className="flex items-center gap-4 mt-1.5">
+                <span className="text-[12px] text-slate-500">{formatDate(comment.createdAt)}</span>
+                <button className="text-[12px] text-slate-500 font-semibold hover:text-slate-800 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100">Répondre</button>
               </div>
             </div>
           </div>
