@@ -1,11 +1,52 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, updateDoc, doc, arrayUnion, arrayRemove, increment, getDoc, getDocs, where, deleteDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { Post, UserProfile } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
-import { MessageSquare, Heart, Share2, Send, Image as ImageIcon, Search, BookOpen, GraduationCap, MoreHorizontal, Trash2, Edit2, Check, X, Zap, Crown, Briefcase, ChevronRight, ArrowLeft, Sparkles, Globe } from 'lucide-react';
+import { MessageSquare, Heart, Share2, Send, Image as ImageIcon, Search, BookOpen, GraduationCap, MoreHorizontal, Trash2, Edit2, Check, X, Zap, Crown, Briefcase, ChevronRight, ChevronLeft, ArrowLeft, Sparkles, Globe } from 'lucide-react';
 import { formatDate } from '../lib/utils';
+
+const compressImage = (file: File, maxWidth: number, maxHeight: number, quality: number): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round(height * maxWidth / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round(width * maxHeight / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        } else {
+          reject(new Error("Failed to get canvas context"));
+        }
+      };
+      img.onerror = reject;
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
 
 // Helper component to display up-to-date user info
 const UserDisplay: React.FC<{ uid: string, fallbackName?: string, fallbackPhoto?: string, size?: 'sm' | 'md' | 'lg', onClick?: () => void }> = ({ uid, fallbackName, fallbackPhoto, size = 'md', onClick }) => {
@@ -57,7 +98,7 @@ const UserDisplay: React.FC<{ uid: string, fallbackName?: string, fallbackPhoto?
           onClick={onClick}
         >
           {name}
-          {(profile?.role === 'school' || fallbackName?.includes('Université') || fallbackName?.includes('Ecole')) && (
+          {(profile?.isVerified || profile?.role === 'school' || profile?.role === 'admin' || profile?.email === '3alemot3alem@gmail.com' || fallbackName?.includes('Université') || fallbackName?.includes('Ecole') || fallbackName === '3alem o t3alem') && (
             <svg className="w-4 h-4 text-blue-500 fill-current shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm-1.06 14.86l-4.14-4.13 1.41-1.42 2.73 2.72 6.03-6.02 1.41 1.41-7.44 7.44z" />
             </svg>
@@ -130,26 +171,46 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
   const [newPostContent, setNewPostContent] = useState('');
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState('');
-  const [newPostImage, setNewPostImage] = useState('');
+  const [newPostImages, setNewPostImages] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isPosting, setIsPosting] = useState(false);
   const [expandedComments, setExpandedComments] = useState<string | null>(null);
+  const [expandedTextPosts, setExpandedTextPosts] = useState<Record<string, boolean>>({});
+  const [currentImageIndexes, setCurrentImageIndexes] = useState<Record<string, number>>({});
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [selectedPackId, setSelectedPackId] = useState<string | null>(null);
+  const [fullscreenImageObj, setFullscreenImageObj] = useState<{images: string[], currentIndex: number} | null>(null);
   const postFileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const handlePostFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert("L'image est trop lourde (max 2Mo)");
+  const handlePostFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      if (newPostImages.length + files.length > 10) {
+        alert("Vous pouvez uploader un maximum de 10 images.");
         return;
       }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewPostImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      
+      setIsPosting(true);
+      try {
+        const compressedImages = await Promise.all(
+          files.map(file => compressImage(file, 800, 800, 0.6))
+        );
+        
+        let currentSize = newPostImages.reduce((acc, img) => acc + img.length, 0);
+        let newSize = compressedImages.reduce((acc, img) => acc + img.length, 0);
+        
+        if (currentSize + newSize > 700000) {
+           alert("Les images sont trop lourdes pour Firestore (limite de 1Mo totale). Veuillez sélectionner moins d'images ou des images plus petites.");
+           return;
+        }
+
+        setNewPostImages(prev => [...prev, ...compressedImages]);
+      } catch (error) {
+        console.error("Erreur de compression:", error);
+        alert("Erreur lors de la préparation des images.");
+      } finally {
+        setIsPosting(false);
+      }
     }
   };
 
@@ -169,22 +230,29 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
     if (!user || !newPostContent.trim()) return;
     setIsPosting(true);
     try {
-      await addDoc(collection(db, 'posts'), {
+      const postData: any = {
         authorUid: user.uid,
         authorName: profile ? `${profile.firstName} ${profile.lastName}` : (user.displayName || 'Utilisateur'),
         authorPhoto: profile?.photoURL || user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
         authorRole: profile?.role || 'student',
         content: newPostContent,
-        imageUrl: newPostImage,
         likesCount: 0,
         commentsCount: 0,
         tags: [],
         createdAt: new Date().toISOString()
-      });
+      };
+      
+      if (newPostImages.length > 0) {
+        postData.imageUrl = newPostImages[0];
+        postData.imageUrls = newPostImages;
+      }
+      
+      await addDoc(collection(db, 'posts'), postData);
       setNewPostContent('');
-      setNewPostImage('');
-    } catch (error) {
-      handleFirestoreError(error, OperationType.CREATE, 'posts');
+      setNewPostImages([]);
+    } catch (error: any) {
+      console.error(error);
+      alert("Erreur lors de la publication : " + (error.message || "Permissions insuffisantes."));
     } finally {
       setIsPosting(false);
     }
@@ -283,7 +351,7 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
                 />
                 <h3 onClick={() => onViewProfile?.(user?.uid || '')} className="font-semibold text-slate-900 text-sm hover:underline cursor-pointer leading-tight flex items-center justify-center gap-1">
                   {profile ? `${profile.firstName} ${profile.lastName}` : (user?.displayName || 'Utilisateur')}
-                  {profile?.role === 'school' && (
+                  {(profile?.isVerified || profile?.role === 'school' || profile?.role === 'admin' || user?.email === '3alemot3alem@gmail.com') && (
                     <svg className="w-4 h-4 text-blue-500 fill-current shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <title>Institution Vérifiée</title>
                       <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm-1.06 14.86l-4.14-4.13 1.41-1.42 2.73 2.72 6.03-6.02 1.41 1.41-7.44 7.44z" />
@@ -303,13 +371,6 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
             {/* Actions Card */}
             <div className="bg-white rounded-xl shadow-[0_0_0_1px_rgba(0,0,0,0.08)] p-3 space-y-1">
               <p className="text-xs font-semibold text-slate-900 mb-2 px-1">Accès rapide</p>
-              <button 
-                onClick={() => onStartChat?.('')}
-                className="w-full flex items-center gap-2 px-2 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-md transition-colors"
-              >
-                <BookOpen size={16} className="text-slate-500 shrink-0" />
-                <span className="font-semibold text-left">Poser une question</span>
-              </button>
               {profile?.role === 'student' && (
                 <button 
                   onClick={() => setShowRegisterModal(true)}
@@ -324,63 +385,70 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
 
           {/* Main Feed */}
           <div className="flex-1 w-full max-w-full md:max-w-[552px] space-y-4 px-0 sm:px-0 mx-auto order-3 md:order-2">
-            {/* Start a Post Card */}
-            <div className="bg-white rounded-xl shadow-[0_0_0_1px_rgba(0,0,0,0.08)] p-3 sm:p-4 border-y border-slate-200 sm:border-none">
-              <div className="flex gap-2 sm:gap-3 items-center mb-2">
-                <img 
-                  src={profile?.photoURL || user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid}`} 
-                  className="w-12 h-12 rounded-full object-cover shrink-0 cursor-pointer"
-                  alt="Profile"
-                  onClick={() => onViewProfile?.(user?.uid || '')}
-                />
-                <textarea 
-                  value={newPostContent}
-                  onChange={(e) => setNewPostContent(e.target.value)}
-                  placeholder="Commencer un post"
-                  className="flex-1 bg-white border border-slate-400 hover:bg-slate-100 focus:bg-white rounded-[32px] px-4 py-3 outline-none text-sm text-slate-700 transition-colors cursor-text resize-none min-h-[48px]"
-                  rows={newPostContent ? 3 : 1}
-                />
-              </div>
-
-              {newPostImage && (
-                <div className="ml-0 sm:ml-14 relative rounded-xl overflow-hidden mb-3 border border-slate-200">
-                  <img src={newPostImage} className="w-full max-h-[300px] object-cover" alt="Preview" />
-                  <button 
-                    onClick={() => setNewPostImage('')}
-                    className="absolute top-2 right-2 bg-slate-900/60 hover:bg-slate-900/90 text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              )}
-
-              <div className="flex items-center justify-between ml-0 sm:ml-14">
-                <div className="flex gap-1">
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    className="hidden" 
-                    ref={postFileInputRef}
-                    onChange={handlePostFileChange}
+            {/* Start a Post Card - Only for verified or admin */}
+            {(profile?.isVerified || profile?.role === 'admin' || user?.email === '3alemot3alem@gmail.com') && (
+              <div className="bg-white rounded-xl shadow-[0_0_0_1px_rgba(0,0,0,0.08)] p-3 sm:p-4 border-y border-slate-200 sm:border-none">
+                <div className="flex gap-2 sm:gap-3 items-center mb-2">
+                  <img 
+                    src={profile?.photoURL || user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid}`} 
+                    className="w-12 h-12 rounded-full object-cover shrink-0 cursor-pointer"
+                    alt="Profile"
+                    onClick={() => onViewProfile?.(user?.uid || '')}
                   />
+                  <textarea 
+                    value={newPostContent}
+                    onChange={(e) => setNewPostContent(e.target.value)}
+                    placeholder="Publier une actualité..."
+                    className="flex-1 bg-white border border-slate-400 hover:bg-slate-100 focus:bg-white rounded-[32px] px-4 py-3 outline-none text-sm text-slate-700 transition-colors cursor-text resize-none min-h-[48px]"
+                    rows={newPostContent ? 3 : 1}
+                  />
+                </div>
+
+                {newPostImages.length > 0 && (
+                  <div className="ml-0 sm:ml-14 relative rounded-xl overflow-hidden mb-3 border border-slate-200 flex gap-2 overflow-x-auto p-2 bg-slate-50">
+                    {newPostImages.map((img, index) => (
+                      <div key={index} className="relative shrink-0 w-24 h-24 rounded-lg overflow-hidden border border-slate-300">
+                        <img src={img} className="w-full h-full object-cover" alt="Preview" />
+                        <button 
+                          onClick={() => setNewPostImages(prev => prev.filter((_, i) => i !== index))}
+                          className="absolute top-1 right-1 bg-slate-900/60 hover:bg-slate-900/90 text-white w-6 h-6 rounded-full flex items-center justify-center transition-colors"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between ml-0 sm:ml-14">
+                  <div className="flex gap-1">
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      multiple
+                      className="hidden" 
+                      ref={postFileInputRef}
+                      onChange={handlePostFileChange}
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => postFileInputRef.current?.click()}
+                      className="flex items-center gap-2 px-3 py-3 hover:bg-slate-100 text-slate-600 rounded-md transition-colors text-sm font-semibold"
+                    >
+                      <ImageIcon size={20} className="text-[#1EBA64]" />
+                      <span className="hidden sm:inline">Média</span>
+                    </button>
+                  </div>
                   <button 
-                    type="button"
-                    onClick={() => postFileInputRef.current?.click()}
-                    className="flex items-center gap-2 px-3 py-3 hover:bg-slate-100 text-slate-600 rounded-md transition-colors text-sm font-semibold"
+                    onClick={handleCreatePost}
+                    disabled={isPosting || !newPostContent.trim()}
+                    className="bg-[#1EBA64] hover:bg-[#159c52] text-white px-4 py-1.5 rounded-full font-semibold text-sm disabled:opacity-50 disabled:bg-slate-200 disabled:text-slate-400 transition-colors"
                   >
-                    <ImageIcon size={20} className="text-[#1EBA64]" />
-                    <span className="hidden sm:inline">Média</span>
+                    Publier
                   </button>
                 </div>
-                <button 
-                  onClick={handleCreatePost}
-                  disabled={isPosting || !newPostContent.trim()}
-                  className="bg-[#1EBA64] hover:bg-[#159c52] text-white px-4 py-1.5 rounded-full font-semibold text-sm disabled:opacity-50 disabled:bg-slate-200 disabled:text-slate-400 transition-colors"
-                >
-                  Publier
-                </button>
               </div>
-            </div>
+            )}
 
             {/* Sort Divider */}
             <div className="flex items-center gap-2 px-3 sm:px-1">
@@ -389,138 +457,187 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
             </div>
 
             {/* Posts List */}
-            <div className="space-y-2 sm:space-y-3">
+            <div className="bg-white sm:rounded-xl shadow-[0_0_0_1px_rgba(0,0,0,0.08)] overflow-hidden border-y border-slate-200 sm:border-none divide-y divide-slate-100">
               {filteredPosts.map((post) => (
                 <div 
                   key={post.id}
-                  className="bg-white sm:rounded-xl shadow-[0_0_0_1px_rgba(0,0,0,0.08)] overflow-hidden border-y border-slate-200 sm:border-none"
+                  className="bg-white hover:bg-slate-50/50 transition-colors"
                 >
-                  <div className="p-4 bg-white">
-                    {/* Post Header */}
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex gap-3 items-center">
-                        <img 
-                          src={post.authorPhoto || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorUid}`} 
-                          alt={post.authorName}
-                          className="w-12 h-12 rounded-full object-cover cursor-pointer hover:shadow-sm"
-                          onClick={() => onViewProfile?.(post.authorUid)}
-                        />
-                        <div>
+                  <div className="p-4 flex gap-3 sm:gap-4">
+                    {/* Avatar Col */}
+                    <div className="shrink-0">
+                      <img 
+                        src={post.authorPhoto || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorUid}`} 
+                        alt={post.authorName}
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover cursor-pointer hover:opacity-90 transition-opacity ring-1 ring-slate-100"
+                        onClick={() => onViewProfile?.(post.authorUid)}
+                      />
+                    </div>
+                    
+                    {/* Content Col */}
+                    <div className="flex-1 min-w-0">
+                      {/* Header */}
+                      <div className="flex justify-between items-start mb-1">
+                        <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 leading-tight">
                           <h4 
-                            className="text-sm font-semibold text-slate-900 hover:underline hover:text-[#1EBA64] cursor-pointer flex items-center gap-1"
+                            className="text-[15px] font-bold text-slate-900 hover:underline cursor-pointer flex items-center gap-1"
                             onClick={() => onViewProfile?.(post.authorUid)}
                           >
-                            {post.authorName}
-                            {post.authorRole === 'school' && (
-                              <svg className="w-3.5 h-3.5 text-blue-500 fill-current shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <span className="truncate max-w-[140px] sm:max-w-[200px]">{post.authorName}</span>
+                            {(post.authorRole === 'school' || post.authorRole === 'admin' || post.authorName === '3alem o t3alem' || post.authorName?.includes('Université') || post.authorName?.includes('Ecole')) && (
+                              <svg className="w-[15px] h-[15px] text-[#1EBA64] fill-current shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm-1.06 14.86l-4.14-4.13 1.41-1.42 2.73 2.72 6.03-6.02 1.41 1.41-7.44 7.44z" />
                               </svg>
                             )}
                           </h4>
-                          <p className="text-xs text-slate-500">{post.authorRole === 'school' ? "Institution d'Enseignement Supérieur" : post.authorRole === 'mentor' ? 'Mentor' : 'Étudiant'}</p>
-                          <p className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5">
-                            {formatDate(post.createdAt)} • <Globe className="w-3 h-3" />
-                          </p>
+                          <span className="text-[14px] text-slate-500 truncate max-w-[100px] sm:max-w-[150px]">
+                            @{post.authorName.replace(/\s+/g, '').toLowerCase()}
+                          </span>
+                          <span className="text-slate-500 text-[14px]">·</span>
+                          <span className="text-[14px] text-slate-500 hover:underline cursor-pointer whitespace-nowrap">
+                            {formatDate(post.createdAt)}
+                          </span>
                         </div>
+                        
+                        {user?.uid === post.authorUid && (
+                          <div className="flex items-center gap-1 -mt-1 -mr-2">
+                            <button 
+                              onClick={() => {
+                                setEditingPostId(post.id);
+                                setEditingContent(post.content);
+                              }}
+                              className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-[#1EBA64]/10 hover:text-[#1EBA64] rounded-full transition-colors"
+                            >
+                              <Edit2 size={16} />
+                            </button>
+                            <button 
+                              onClick={() => handleDeletePost(post.id)}
+                              disabled={deletingId === post.id}
+                              className="p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors"
+                            >
+                              {deletingId === post.id ? (
+                                <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                              ) : (
+                                <Trash2 size={16} />
+                              )}
+                            </button>
+                          </div>
+                        )}
                       </div>
-                      {user?.uid === post.authorUid && (
-                        <div className="flex items-center gap-1">
-                          <button 
-                            onClick={() => {
-                              setEditingPostId(post.id);
-                              setEditingContent(post.content);
-                            }}
-                            className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-full transition-colors"
-                          >
-                            <Edit2 size={18} />
-                          </button>
-                          <button 
-                            onClick={() => handleDeletePost(post.id)}
-                            disabled={deletingId === post.id}
-                            className="p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors"
-                          >
-                            {deletingId === post.id ? (
-                              <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-                            ) : (
-                              <Trash2 size={18} />
-                            )}
-                          </button>
+
+                      {/* Body */}
+                      {editingPostId === post.id ? (
+                        <div className="mb-3 mt-2 space-y-3 pr-2">
+                          <textarea
+                            value={editingContent}
+                            onChange={(e) => setEditingContent(e.target.value)}
+                            className="w-full bg-white border border-slate-300 rounded-xl p-3 text-slate-800 outline-none focus:border-[#1EBA64] focus:ring-1 focus:ring-[#1EBA64] min-h-[100px] text-[15px]"
+                            autoFocus
+                          />
+                          <div className="flex justify-end gap-2">
+                            <button 
+                              onClick={() => setEditingPostId(null)}
+                              className="px-4 py-1.5 rounded-full text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+                            >
+                              Annuler
+                            </button>
+                            <button 
+                              onClick={() => handleUpdatePost(post.id)}
+                              className="px-4 py-1.5 rounded-full bg-[#1EBA64] hover:bg-[#159c52] text-white text-sm font-semibold transition-colors"
+                            >
+                              Enregistrer
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="mb-3">
+                          <p className={`text-[15px] text-slate-900 leading-normal whitespace-pre-wrap break-words ${!expandedTextPosts[post.id] && (post.content.split('\n').length > 5 || post.content.length > 250) ? 'line-clamp-5' : ''}`}>
+                            {post.content}
+                          </p>
+                          {(!expandedTextPosts[post.id] && (post.content.split('\n').length > 5 || post.content.length > 250)) && (
+                            <button onClick={() => setExpandedTextPosts(prev => ({...prev, [post.id]: true}))} className="text-sm text-slate-500 hover:text-slate-700 font-semibold mt-1">Lire plus</button>
+                          )}
+                          {(expandedTextPosts[post.id] && (post.content.split('\n').length > 5 || post.content.length > 250)) && (
+                            <button onClick={() => setExpandedTextPosts(prev => ({...prev, [post.id]: false}))} className="text-sm text-slate-500 hover:text-slate-700 font-semibold mt-1">Voir moins</button>
+                          )}
                         </div>
                       )}
-                    </div>
 
-                    {/* Post Content */}
-                    {editingPostId === post.id ? (
-                      <div className="mb-3 space-y-3">
-                        <textarea
-                          value={editingContent}
-                          onChange={(e) => setEditingContent(e.target.value)}
-                          className="w-full bg-white border border-slate-300 rounded-md p-3 text-slate-800 outline-none focus:border-[#1EBA64] min-h-[100px] text-sm"
-                          autoFocus
-                        />
-                        <div className="flex justify-end gap-2">
-                          <button 
-                            onClick={() => setEditingPostId(null)}
-                            className="px-4 py-1.5 rounded-full text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+                      {/* Image */}
+                      {(() => {
+                        const images = post.imageUrls?.length > 0 ? post.imageUrls : (post.imageUrl ? [post.imageUrl] : []);
+                        if (images.length === 0) return null;
+                        const currentIndex = currentImageIndexes[post.id] || 0;
+                        return (
+                          <div 
+                            className="mt-2 mb-3 rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 relative group aspect-[4/3] w-full cursor-pointer"
+                            onClick={() => setFullscreenImageObj({ images, currentIndex })}
                           >
-                            Annuler
-                          </button>
-                          <button 
-                            onClick={() => handleUpdatePost(post.id)}
-                            className="px-4 py-1.5 rounded-full bg-[#1EBA64] hover:bg-[#159c52] text-white text-sm font-semibold transition-colors"
-                          >
-                            Enregistrer
-                          </button>
-                        </div>
+                             {images.map((img, i) => (
+                               <img 
+                                 key={i}
+                                 src={img} 
+                                 className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out ${i === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`} 
+                                 alt={`Post image ${i + 1}`} 
+                               />
+                             ))}
+                             {images.length > 1 && (
+                               <>
+                                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/40 px-2 py-1 rounded-full backdrop-blur-sm z-20">
+                                   {images.map((_, i) => (
+                                     <div key={i} className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${i === currentIndex ? 'bg-white' : 'bg-white/50'}`} />
+                                   ))}
+                                 </div>
+                                 <button 
+                                   onClick={(e) => { e.stopPropagation(); setCurrentImageIndexes(prev => ({...prev, [post.id]: currentIndex === 0 ? images.length - 1 : currentIndex - 1})) }}
+                                   className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm z-20"
+                                 >
+                                   <ChevronLeft size={18} />
+                                 </button>
+                                 <button 
+                                   onClick={(e) => { e.stopPropagation(); setCurrentImageIndexes(prev => ({...prev, [post.id]: (currentIndex + 1) % images.length})) }}
+                                   className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm z-20"
+                                 >
+                                   <ChevronRight size={18} />
+                                 </button>
+                               </>
+                             )}
+                          </div>
+                        );
+                      })()}
+
+                      {/* Action Bar */}
+                      <div className="flex justify-between items-center text-slate-500 mt-1 max-w-[425px] pr-4">
+                        <button 
+                          onClick={() => setExpandedComments(expandedComments === post.id ? null : post.id)}
+                          className={`flex items-center gap-1 group transition-colors ${expandedComments === post.id ? 'text-[#1EBA64]' : ''}`}
+                        >
+                          <div className={`p-2 rounded-full transition-colors ${expandedComments === post.id ? 'bg-[#1EBA64]/10' : 'group-hover:bg-[#1EBA64]/10 group-hover:text-[#1EBA64]'}`}>
+                            <MessageSquare size={18} />
+                          </div>
+                          <span className={`text-[13px] ${expandedComments === post.id ? '' : 'group-hover:text-[#1EBA64]'}`}>{post.commentsCount > 0 ? post.commentsCount : ''}</span>
+                        </button>
+                        
+                        <button 
+                          onClick={() => handleLike(post.id)}
+                          className={`flex items-center gap-1 group transition-colors ${post.likedBy?.includes(user?.uid || '') ? 'text-pink-600' : ''}`}
+                        >
+                          <div className={`p-2 rounded-full transition-colors ${post.likedBy?.includes(user?.uid || '') ? 'hover:bg-pink-50' : 'group-hover:bg-pink-50 group-hover:text-pink-600'}`}>
+                            <Heart size={18} fill={post.likedBy?.includes(user?.uid || '') ? 'currentColor' : 'none'} />
+                          </div>
+                          <span className={`text-[13px] ${post.likedBy?.includes(user?.uid || '') ? '' : 'group-hover:text-pink-600'}`}>{post.likesCount > 0 ? post.likesCount : ''}</span>
+                        </button>
+
+                        <button 
+                          onClick={() => handleShare(post)}
+                          className="flex items-center gap-1 group transition-colors"
+                        >
+                          <div className="p-2 rounded-full group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
+                            <Share2 size={18} />
+                          </div>
+                        </button>
                       </div>
-                    ) : (
-                      <p className="text-sm text-slate-900 leading-normal mb-1 whitespace-pre-wrap">{post.content}</p>
-                    )}
-                  </div>
-
-                  {/* Post Image */}
-                  {post.imageUrl && (
-                    <div className="bg-[#F3F2EF] border-y border-slate-200">
-                      <img src={post.imageUrl} className="w-full max-h-[500px] object-cover" alt="Post content" />
                     </div>
-                  )}
-
-                  {/* Post Stats */}
-                  <div className="px-4 py-2 flex items-center justify-between text-xs text-slate-500 border-b border-slate-100 bg-white">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center"><Heart size={10} className="text-emerald-600 fill-emerald-600" /></div>
-                      <span>{post.likesCount}</span>
-                    </div>
-                    <div>
-                      <span className="hover:text-[#1EBA64] hover:underline cursor-pointer" onClick={() => setExpandedComments(expandedComments === post.id ? null : post.id)}>
-                        {post.commentsCount} commentaires
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Post Actions */}
-                  <div className="px-2 py-1 flex items-center justify-between bg-white sm:px-4">
-                    <button 
-                      onClick={() => handleLike(post.id)}
-                      className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-md hover:bg-slate-100 transition-colors ${post.likedBy?.includes(user?.uid || '') ? 'text-[#1EBA64]' : 'text-slate-600'}`}
-                    >
-                      <Heart size={18} fill={post.likedBy?.includes(user?.uid || '') ? 'currentColor' : 'none'} className="mb-0.5" />
-                      <span className="text-xs sm:text-sm font-semibold hidden sm:inline">J'aime</span>
-                    </button>
-                    <button 
-                      onClick={() => setExpandedComments(expandedComments === post.id ? null : post.id)}
-                      className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-md hover:bg-slate-100 transition-colors ${expandedComments === post.id ? 'text-slate-900' : 'text-slate-600'}`}
-                    >
-                      <MessageSquare size={18} className="mb-0.5" />
-                      <span className="text-xs sm:text-sm font-semibold hidden sm:inline">Commenter</span>
-                    </button>
-                    <button 
-                      onClick={() => handleShare(post)}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-md hover:bg-slate-100 transition-colors text-slate-600"
-                    >
-                      <Share2 size={18} className="mb-0.5" />
-                      <span className="text-xs sm:text-sm font-semibold hidden sm:inline">Partager</span>
-                    </button>
                   </div>
 
                   {/* Comments Section */}
@@ -530,9 +647,9 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden bg-white"
+                        className="overflow-hidden bg-white border-t border-slate-100"
                       >
-                        <div className="p-4 border-t border-slate-100">
+                        <div className="p-4 pl-[3.5rem] sm:pl-[4.5rem]">
                           <CommentSection postId={post.id} />
                         </div>
                       </motion.div>
@@ -548,10 +665,10 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
                         <div className="bg-white rounded-xl shadow-[0_0_0_1px_rgba(0,0,0,0.08)] p-4">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-semibold text-slate-900 text-base">Actualités du réseau</h3>
-                {profile?.role === 'school' && (
+                {(profile?.isVerified || profile?.role === 'admin' || user?.email === '3alemot3alem@gmail.com') && (
                   <button 
                     onClick={() => {
-                      const input = document.querySelector('textarea[placeholder="Commencer un post"]') as HTMLTextAreaElement;
+                      const input = document.querySelector('textarea[placeholder="Publier une actualité..."]') as HTMLTextAreaElement;
                       if (input) {
                         input.focus();
                         input.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -570,7 +687,7 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
                     <div>
                       <p className="text-sm font-semibold text-slate-800 leading-tight cursor-pointer hover:text-[#1EBA64] hover:underline flex items-center gap-1" onClick={() => onViewProfile?.(news.authorUid)}>
                         {news.authorName}
-                        {news.authorRole === 'school' && (
+                        {(news.authorRole === 'school' || news.authorRole === 'admin' || news.authorName === '3alem o t3alem' || news.authorName?.includes('Université') || news.authorName?.includes('Ecole')) && (
                           <svg className="w-3.5 h-3.5 text-blue-500 fill-current shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm-1.06 14.86l-4.14-4.13 1.41-1.42 2.73 2.72 6.03-6.02 1.41 1.41-7.44 7.44z" />
                           </svg>
@@ -719,6 +836,58 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
           </div>
         )}
       </AnimatePresence>
+
+      {/* Fullscreen Image Modal */}
+      {createPortal(
+        <AnimatePresence>
+          {fullscreenImageObj && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center backdrop-blur-md"
+              onClick={() => setFullscreenImageObj(null)}
+            >
+              <button 
+                onClick={(e) => { e.stopPropagation(); setFullscreenImageObj(null); }}
+                className="absolute top-4 right-4 md:top-8 md:right-8 text-white/70 hover:text-white p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all z-[10000] shadow-lg"
+              >
+                <X size={32} />
+              </button>
+              <div className="w-full h-full flex items-center justify-center p-2 sm:p-4 relative" onClick={e => e.stopPropagation()}>
+                <img 
+                  src={fullscreenImageObj.images[fullscreenImageObj.currentIndex]} 
+                  className="max-w-[95vw] max-h-[90vh] object-contain transition-opacity duration-300"
+                  alt="Fullscreen view"
+                />
+                {fullscreenImageObj.images.length > 1 && (
+                  <>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setFullscreenImageObj(prev => prev ? {...prev, currentIndex: prev.currentIndex === 0 ? prev.images.length - 1 : prev.currentIndex - 1} : null) }}
+                      className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-12 h-12 md:w-16 md:h-16 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all backdrop-blur-sm z-[10000]"
+                    >
+                      <ChevronLeft size={36} />
+                    </button>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setFullscreenImageObj(prev => prev ? {...prev, currentIndex: (prev.currentIndex + 1) % prev.images.length} : null) }}
+                      className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-12 h-12 md:w-16 md:h-16 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all backdrop-blur-sm z-[10000]"
+                    >
+                      <ChevronRight size={36} />
+                    </button>
+                    <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex gap-3 bg-black/60 px-4 py-3 rounded-full backdrop-blur-sm z-[10000]">
+                      {fullscreenImageObj.images.map((_, i) => (
+                        <div key={i} className={`w-2.5 h-2.5 rounded-full transition-colors duration-300 ${i === fullscreenImageObj.currentIndex ? 'bg-white' : 'bg-white/30 cursor-pointer hover:bg-white/60'}`} onClick={(e) => { e.stopPropagation(); setFullscreenImageObj(prev => prev ? {...prev, currentIndex: i} : null) }} />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
     </div>
   );
 };
@@ -762,48 +931,54 @@ const CommentSection: React.FC<{ postId: string }> = ({ postId }) => {
   };
 
   return (
-    <div className="space-y-4">
-      <form onSubmit={handleAddComment} className="flex gap-4 mb-8">
-        <img 
-          src={profile?.photoURL || user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid}`} 
-          className="w-10 h-10 rounded-xl object-cover ring-2 ring-majorelle/5"
-          alt=""
-        />
-        <div className="flex-1 flex gap-3">
-          <input 
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Apporter une précision..."
-            className="flex-1 bg-white border border-slate-100 rounded-2xl px-5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-majorelle/10 transition-all"
-          />
-          <button 
-            type="submit"
-            disabled={!newComment.trim()}
-            className="bg-majorelle text-white p-2.5 rounded-xl disabled:opacity-50 shadow-lg shadow-majorelle/10"
-          >
-            <Send size={18} />
-          </button>
-        </div>
-      </form>
-
-      <div className="space-y-6">
+    <div className="space-y-5 px-1 py-2">
+      <div className="space-y-4">
         {comments.map((comment) => (
-          <div key={comment.id} className="flex gap-4">
-            <UserDisplay 
-              uid={comment.authorUid} 
-              fallbackName={comment.authorName} 
-              fallbackPhoto={comment.authorPhoto}
-              size="sm"
-            />
-            <div className="flex-1 bg-white p-5 rounded-3xl shadow-sm border border-slate-50">
-              <p className="text-sm text-slate-700 leading-relaxed italic">{comment.content}</p>
-              <div className="mt-2 flex justify-end">
-                <span className="text-[9px] text-slate-300 font-black uppercase tracking-widest">{formatDate(comment.createdAt)}</span>
+          <div key={comment.id} className="flex gap-3 group">
+            <div className="mt-1">
+              <UserDisplay 
+                uid={comment.authorUid} 
+                fallbackName={comment.authorName} 
+                fallbackPhoto={comment.authorPhoto}
+                size="sm"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="bg-[#f0f2f5] px-4 py-2.5 rounded-2xl rounded-tl-sm inline-block max-w-full">
+                <p className="font-semibold text-[13px] text-slate-900 leading-tight mb-0.5">{comment.authorName}</p>
+                <p className="text-[14px] text-slate-800 leading-snug break-words">{comment.content}</p>
+              </div>
+              <div className="flex items-center gap-3 mt-1 ml-2">
+                <span className="text-[11px] text-slate-500 font-medium">{formatDate(comment.createdAt)}</span>
+                <button className="text-[11px] text-slate-500 font-bold hover:text-slate-800 transition-colors opacity-0 group-hover:opacity-100">Répondre</button>
               </div>
             </div>
           </div>
         ))}
       </div>
+
+      <form onSubmit={handleAddComment} className="flex gap-3 mt-6 pt-4 border-t border-slate-100 relative items-center">
+        <img 
+          src={profile?.photoURL || user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid}`} 
+          className="w-8 h-8 rounded-full object-cover shadow-sm shrink-0"
+          alt=""
+        />
+        <div className="flex-1 relative">
+          <input 
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Écrivez un commentaire..."
+            className="w-full bg-[#f0f2f5] hover:bg-[#e4e6eb] focus:bg-[#e4e6eb] border-none rounded-full px-4 py-2.5 text-[14px] outline-none transition-colors pr-12 text-slate-800 placeholder-slate-500"
+          />
+          <button 
+            type="submit"
+            disabled={!newComment.trim()}
+            className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 text-moroccan-green disabled:text-slate-400 hover:bg-moroccan-green/10 rounded-full transition-colors"
+          >
+            <Send size={18} className="translate-x-[1px]" />
+          </button>
+        </div>
+      </form>
     </div>
   );
 };

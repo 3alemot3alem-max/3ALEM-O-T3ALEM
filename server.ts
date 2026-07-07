@@ -29,11 +29,29 @@ try {
     });
     console.log("Firebase Admin SDK initialized from file");
   } else if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+    let formattedPrivateKey = process.env.FIREBASE_PRIVATE_KEY;
+    if (formattedPrivateKey.startsWith('"') && formattedPrivateKey.endsWith('"')) {
+      formattedPrivateKey = formattedPrivateKey.substring(1, formattedPrivateKey.length - 1);
+    }
+    if (formattedPrivateKey.startsWith("'") && formattedPrivateKey.endsWith("'")) {
+      formattedPrivateKey = formattedPrivateKey.substring(1, formattedPrivateKey.length - 1);
+    }
+    formattedPrivateKey = formattedPrivateKey.replace(/\\n/g, '\n');
+
+    // Handle case where private key is provided as a single line with spaces instead of newlines
+    if (!formattedPrivateKey.includes('\n') && formattedPrivateKey.includes('-----BEGIN PRIVATE KEY-----')) {
+      const match = formattedPrivateKey.match(/-----BEGIN PRIVATE KEY-----(.*)-----END PRIVATE KEY-----/);
+      if (match) {
+        const keyBody = match[1].replace(/\s+/g, '\n').trim();
+        formattedPrivateKey = `-----BEGIN PRIVATE KEY-----\n${keyBody}\n-----END PRIVATE KEY-----\n`;
+      }
+    }
+    
     initializeApp({
       credential: cert({
         projectId: process.env.FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+        privateKey: formattedPrivateKey,
       })
     });
     console.log("Firebase Admin SDK initialized from environment variables");
@@ -133,7 +151,7 @@ async function startServer() {
       console.error('Error in AI chat:', error);
       let errorMessage = 'Une erreur est survenue lors de la communication avec l\'assistant IA.';
       if (error.message?.includes('API_KEY_INVALID') || error.message?.includes('API key not valid')) {
-        errorMessage = 'La clé API Gemini n\'est pas valide. Veuillez vérifier vos paramètres.';
+        errorMessage = 'La clé API Gemini n\'est pas configurée ou est invalide. Veuillez ouvrir les paramètres ("Settings") de AI Studio et ajouter votre GEMINI_API_KEY.';
       }
       res.status(500).json({ error: errorMessage });
     }

@@ -67,19 +67,22 @@ export const AuthModal: React.FC = () => {
     }
 
     try {
-      const isSchoolPassword = password.trim() === '123456789!@#$';
+      const isSchoolPassword = password.trim() === '3ALEMOT3ALEM!@#$%^&*(';
 
       if (isSchoolPassword) {
         localStorage.setItem('is_school_auth', 'true');
         try {
+          // First try to sign in
           await signInWithEmailAndPassword(auth, email.trim(), password.trim());
         } catch (err: any) {
           if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found') {
             try {
+              // If sign in fails because account doesn't exist, try to create it
               await createUserWithEmailAndPassword(auth, email.trim(), password.trim());
             } catch (createErr: any) {
               if (createErr.code === 'auth/email-already-in-use') {
-                throw err;
+                // If it already exists but invalid-credential was thrown, it means wrong password
+                throw new Error("Ce compte existe déjà avec un mot de passe différent ou via Google/Apple.");
               }
               throw createErr;
             }
@@ -90,9 +93,13 @@ export const AuthModal: React.FC = () => {
       } else {
         localStorage.removeItem('is_school_auth');
         if (isLogin) {
-          const result = await signInWithEmailAndPassword(auth, email.trim(), password.trim());
-          if (!result.user.emailVerified) {
-            await sendEmailVerification(result.user);
+          try {
+            const result = await signInWithEmailAndPassword(auth, email.trim(), password.trim());
+            if (!result.user.emailVerified) {
+              await sendEmailVerification(result.user);
+            }
+          } catch (err: any) {
+             throw err;
           }
         } else {
           try {

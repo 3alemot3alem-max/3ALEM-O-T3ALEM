@@ -3,19 +3,21 @@ import { useAuth } from './AuthContext';
 import { AuthModal } from './components/AuthModal';
 import { Feed } from './components/Feed';
 import { SchoolDirectory } from './components/SchoolDirectory';
-import { CourseMarketplace } from './components/CourseMarketplace';
 import { Profile } from './components/Profile';
-import { Messaging } from './components/Messaging';
 import { EducationalAI } from './components/EducationalAI';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { LayoutGrid, GraduationCap, User, LogOut, MessageSquare, Bot, WifiOff, Loader2, Menu, X, BookOpen } from 'lucide-react';
+import { LayoutGrid, GraduationCap, User, LogOut, Bot, WifiOff, Loader2, Menu, X } from 'lucide-react';
 import { auth } from './firebase';
 import { motion, AnimatePresence } from 'motion/react';
 import { EmailVerification } from './components/EmailVerification';
 import { CompleteProfile } from './components/CompleteProfile';
 
+import authImage from './assets/images/logo.png';
+
 const AppLogo = ({ className = "h-8 w-8" }: { className?: string }) => (
-  <img src="/logo.png" alt="3alem o t3alem Logo" className={`object-contain ${className}`} />
+  <div className={`relative flex items-center justify-center ${className}`}>
+    <img src={authImage} alt="3alem o t3alem Logo" className="object-contain w-full h-full" />
+  </div>
 );
 
 const OfflineIndicator = () => {
@@ -51,15 +53,9 @@ const OfflineIndicator = () => {
 
 export default function App() {
   const { user, profile, loading } = useAuth();
-  const [activeTab, setActiveTab] = useState<'feed' | 'schools' | 'profile' | 'messaging' | 'courses' | 'ai'>('feed');
-  const [chatTargetEmail, setChatTargetEmail] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'feed' | 'schools' | 'profile' | 'ai'>('feed');
   const [viewingUserId, setViewingUserId] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const activateChat = (email: string) => {
-    setChatTargetEmail(email);
-    setActiveTab('messaging');
-  };
 
   const viewUserProfile = (userId: string) => {
     setViewingUserId(userId);
@@ -153,19 +149,20 @@ export default function App() {
                   {[
                     { id: 'feed', icon: LayoutGrid, label: 'Fil d\'actualité' },
                     { id: 'schools', icon: GraduationCap, label: 'Annuaire des Écoles' },
-                    { id: 'courses', icon: BookOpen, label: 'Place de Cours' },
                     { id: 'ai', icon: Bot, label: 'Assistant IA' },
-                    { id: 'profile', icon: User, label: 'Mon Profil' },
-                    { id: 'messaging', icon: MessageSquare, label: 'Messages' }
+                    { id: 'profile', icon: User, label: 'Mon Profil' }
                   ].map((tab) => (
                     <button 
                       key={tab.id}
                       onClick={() => {
-                        if (tab.id === 'profile') setViewingUserId(null);
                         setActiveTab(tab.id as any);
                         setIsMenuOpen(false);
                       }}
-                      className={`px-4 py-4 rounded-2xl text-sm font-bold transition-all flex items-center gap-4 ${activeTab === tab.id ? 'bg-[#1EBA64] text-white shadow-lg shadow-black/20' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+                      className={`flex items-center gap-3 p-4 rounded-xl transition-all font-semibold ${
+                        activeTab === tab.id 
+                          ? 'bg-moroccan-green text-white shadow-lg shadow-emerald-900/20' 
+                          : 'hover:bg-black/5'
+                      }`}
                     >
                       <tab.icon size={20} />
                       {tab.label}
@@ -173,10 +170,10 @@ export default function App() {
                   ))}
                 </nav>
 
-                <div className="pt-6 border-t border-white/10">
+                <div className="pt-6 border-t border-black/10 mt-auto">
                   <button 
                     onClick={() => auth.signOut()}
-                    className="w-full bg-white/10 text-white p-4 rounded-2xl font-bold flex items-center gap-3 transition-all hover:bg-white/20 border border-white/10"
+                    className="flex items-center gap-3 p-4 rounded-xl transition-all font-semibold text-red-600 hover:bg-red-50 w-full"
                   >
                     <LogOut size={20} />
                     Déconnexion
@@ -188,68 +185,95 @@ export default function App() {
         </AnimatePresence>
 
         {/* Desktop Header */}
-        <header className="hidden md:flex fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl bg-[#310202]/95 backdrop-blur-xl border border-white/5 z-40 px-8 py-4 rounded-[32px] items-center justify-between shadow-2xl shadow-black/40">
-          <div className="flex items-center shrink-0">
-            <div className="flex flex-col">
-              <span className="font-serif italic font-bold text-[#f9f7f2] tracking-wide text-2xl whitespace-nowrap flex items-center gap-2">3alem <AppLogo className="w-14 h-14 object-contain" /> t3alem</span>
-            </div>
+        <header className="hidden md:flex fixed top-0 left-0 right-0 backdrop-blur-xl border-b border-black/5 px-6 items-center justify-between z-50 h-20 shadow-sm transition-colors duration-500 bg-[#e1d4d4]/90 text-slate-900">
+          <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setActiveTab('feed')}>
+            <AppLogo className="w-12 h-12 text-moroccan-red object-contain" />
+            <span className="font-serif italic font-bold text-2xl text-moroccan-red ml-1">3alem o t3alem</span>
           </div>
           
-          <nav className="flex items-center gap-2 bg-white/5 p-1.5 rounded-[24px] border border-white/10">
+          <nav className="flex items-center gap-2">
             {[
-              { id: 'feed', icon: LayoutGrid, label: 'Communauté' },
-              { id: 'schools', icon: GraduationCap, label: 'Écoles' },
-              { id: 'courses', icon: BookOpen, label: 'Cours' },
+              { id: 'feed', icon: LayoutGrid, label: 'Fil d\'actualité' },
+              { id: 'schools', icon: GraduationCap, label: 'Annuaire' },
               { id: 'ai', icon: Bot, label: 'Assistant IA' },
-              { id: 'profile', icon: User, label: 'Profil' },
-              { id: 'messaging', icon: MessageSquare, label: 'Messages' }
+              { id: 'profile', icon: User, label: 'Profil' }
             ].map((tab) => (
               <button 
                 key={tab.id}
-                onClick={() => {
-                  if (tab.id === 'profile') setViewingUserId(null);
-                  setActiveTab(tab.id as any);
-                }}
-                className={`px-5 py-2.5 rounded-[20px] text-sm font-medium transition-all duration-300 flex items-center gap-2.5 ${activeTab === tab.id ? 'bg-[#1EBA64] text-white shadow-lg' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-full transition-all font-semibold ${
+                  activeTab === tab.id 
+                    ? 'bg-moroccan-green text-white shadow-lg shadow-emerald-900/20' 
+                    : 'hover:bg-black/5'
+                }`}
               >
-                <tab.icon size={16} />
-                <span dangerouslySetInnerHTML={{ __html: tab.label }} />
+                <tab.icon size={18} />
+                {tab.label}
               </button>
             ))}
-          </nav>
-
-          <div className="flex items-center gap-5">
-            <div className="text-right hidden lg:block">
-              <p className="text-sm font-serif italic font-bold text-white leading-none">{user.displayName || 'Utilisateur'}</p>
-              <div className="flex items-center justify-end gap-1.5 mt-1">
-                <div className="w-1.5 h-1.5 bg-[#1EBA64] rounded-full"></div>
-                <span className="text-[9px] text-white/50 font-black uppercase tracking-[0.1em]">En ligne</span>
-              </div>
-            </div>
+            
+            <div className="w-px h-8 bg-black/10 mx-2"></div>
+            
             <button 
               onClick={() => auth.signOut()}
-              className="bg-white/5 border border-white/20 text-white/90 px-4 py-2 md:py-2.5 rounded-[20px] hover:bg-white/10 hover:text-white transition-all flex items-center gap-2 group"
-              title="Quitter"
+              className="text-slate-600 hover:text-red-600 hover:bg-red-50 p-2.5 rounded-full transition-all"
+              title="Se déconnecter"
             >
-              <LogOut size={16} className="group-hover:translate-x-1 transition-transform duration-300" />
-              <span className="hidden lg:block text-[11px] font-black uppercase tracking-widest mt-0.5">Quitter</span>
+              <LogOut size={20} />
             </button>
-          </div>
+          </nav>
         </header>
 
         {/* Main Content */}
-        <main className="container mx-auto px-4 relative z-10 transition-all duration-500 max-w-7xl">
-          {activeTab === 'feed' && <Feed onStartChat={(email) => activateChat(email)} onViewProfile={viewUserProfile} />}
-          {activeTab === 'schools' && <SchoolDirectory />}
-          {activeTab === 'courses' && <CourseMarketplace />}
-          {activeTab === 'ai' && <EducationalAI />}
-          {activeTab === 'profile' && <Profile targetUserId={viewingUserId} onMessage={(uid) => {
-            setActiveTab('messaging');
-          }} />}
-          {activeTab === 'messaging' && <Messaging targetEmail={chatTargetEmail} onClearTarget={() => setChatTargetEmail(null)} onViewProfile={viewUserProfile} />}
+        <main className="w-full relative z-10 px-4 md:px-6">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="max-w-7xl mx-auto"
+            >
+              {activeTab === 'feed' && <Feed onViewProfile={viewUserProfile} />}
+              {activeTab === 'schools' && <SchoolDirectory />}
+              {activeTab === 'profile' && <Profile targetUserId={viewingUserId || undefined} />}
+              {activeTab === 'ai' && <EducationalAI />}
+            </motion.div>
+          </AnimatePresence>
         </main>
 
-        {/* Removed Mobile bottom nav to use burger menu instead as requested */}
+        {/* Mobile Bottom Navigation */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 backdrop-blur-xl border-t border-black/5 z-50 pb-safe transition-colors duration-500 bg-[#e1d4d4]/90 text-slate-900 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+          <div className="flex justify-around items-center h-16 px-2">
+            {[
+              { id: 'feed', icon: LayoutGrid, label: 'Accueil' },
+              { id: 'schools', icon: GraduationCap, label: 'Écoles' },
+              { id: 'ai', icon: Bot, label: 'IA' },
+              { id: 'profile', icon: User, label: 'Profil' }
+            ].map((tab) => (
+              <button 
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex flex-col items-center justify-center w-full h-full space-y-1 relative ${
+                  activeTab === tab.id ? 'text-moroccan-green' : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                {activeTab === 'ai' && tab.id === 'ai' && (
+                  <div className="absolute top-1 right-3 w-2 h-2 bg-moroccan-green rounded-full animate-ping"></div>
+                )}
+                <tab.icon size={22} className={activeTab === tab.id ? 'fill-current' : ''} />
+                <span className="text-[10px] font-semibold">{tab.label}</span>
+                {activeTab === tab.id && (
+                  <motion.div 
+                    layoutId="active-nav"
+                    className="absolute -top-[1px] left-1/2 -translate-x-1/2 w-8 h-1 bg-moroccan-green rounded-b-full"
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+        </nav>
       </div>
     </ErrorBoundary>
   );

@@ -336,15 +336,7 @@ export const Profile: React.FC<ProfileProps> = ({ targetUserId, onMessage }) => 
                     <LogOut size={20} />
                   </button>
                 </>
-              ) : (
-                <button 
-                  onClick={() => onMessage?.(profile.uid)}
-                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-full font-semibold shadow-md transition-all flex items-center justify-center gap-2 active:scale-95 text-sm"
-                >
-                  <Mail size={16} />
-                  Message
-                </button>
-              )}
+              ) : null}
             </div>
           </div>
 

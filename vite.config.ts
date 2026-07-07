@@ -13,6 +13,9 @@ export default defineConfig(({mode}) => {
       VitePWA({
         registerType: 'autoUpdate',
         includeAssets: ['icon.svg'],
+        workbox: {
+          navigateFallbackDenylist: [/^\/api/],
+        },
         manifest: {
           name: '3alem o t3alem',
           short_name: '3alem o t3alem',

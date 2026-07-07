@@ -17,6 +17,8 @@ export interface UserProfile {
   coursePoints?: number;
   unlockedCourses?: string[];
   createdAt: string;
+  isVerified?: boolean;
+  fcmToken?: string;
 }
 
 export interface Post {
@@ -79,6 +81,7 @@ export interface School {
   type: string;
   city: string;
   description?: string;
+  details?: string;
   logoUrl: string;
   duration?: string;
   diploma?: string;

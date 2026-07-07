@@ -20,6 +20,8 @@ export const CompleteProfile: React.FC = () => {
 
   // School fields
   const isSchool = localStorage.getItem('is_school_auth') === 'true';
+  const [schoolStep, setSchoolStep] = useState(1);
+  const [schoolCode, setSchoolCode] = useState('');
   const [schoolName, setSchoolName] = useState('');
   const [schoolCity, setSchoolCity] = useState('');
   const [schoolMajors, setSchoolMajors] = useState('');
@@ -104,6 +106,7 @@ export const CompleteProfile: React.FC = () => {
           uid: user.uid,
           email: user.email,
           role: 'school',
+          isVerified: true,
           displayName: schoolName,
           firstName: 'Université',
           lastName: schoolName,
@@ -179,97 +182,133 @@ export const CompleteProfile: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <AnimatePresence mode="wait">
               {isSchool ? (
-                <motion.div 
-                  key="school-form"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="space-y-5"
-                >
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-0.5">Nom de l'établissement</label>
-                    <input 
-                      type="text" 
-                      placeholder="Ex: EMI, ENSIAS"
-                      value={schoolName}
-                      onChange={(e) => setSchoolName(e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:border-moroccan-green focus:ring-2 focus:ring-moroccan-green/20 outline-none transition-all placeholder-gray-400 text-gray-900"
-                      required
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-0.5">Ville</label>
-                      <input 
-                        type="text" 
-                        placeholder="Ex: Rabat"
-                        value={schoolCity}
-                        onChange={(e) => setSchoolCity(e.target.value)}
-                        className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:border-moroccan-green focus:ring-2 focus:ring-moroccan-green/20 outline-none transition-all placeholder-gray-400 text-gray-900"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-0.5">Filières</label>
-                      <input 
-                        type="text" 
-                        placeholder="Ex: Ingénierie, Commerce"
-                        value={schoolMajors}
-                        onChange={(e) => setSchoolMajors(e.target.value)}
-                        className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:border-moroccan-green focus:ring-2 focus:ring-moroccan-green/20 outline-none transition-all placeholder-gray-400 text-gray-900"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-0.5">À propos</label>
-                    <textarea 
-                      placeholder="Description, spécialités, mots du directeur..."
-                      value={schoolBio}
-                      onChange={(e) => setSchoolBio(e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:border-moroccan-green focus:ring-2 focus:ring-moroccan-green/20 outline-none transition-all placeholder-gray-400 text-gray-900 resize-none h-28"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-0.5">Logo Officiel</label>
-                    <div 
-                      className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300 hover:border-moroccan-green/40 transition-all cursor-pointer group" 
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        className="hidden" 
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                      />
-                      <div className="w-14 h-14 bg-white rounded-md flex items-center justify-center text-gray-400 border border-gray-200 overflow-hidden">
-                        {photoURL ? (
-                          <img src={photoURL} className="w-full h-full object-cover" alt="Profile preview" />
-                        ) : (
-                          <Camera size={24} />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <span className="text-sm font-medium text-gray-700 block">
-                          {photoURL ? "Logo ajouté ! ✓" : "Ajouter le logo"}
-                        </span>
-                        <span className="text-xs text-gray-500">Format JPG/PNG • Max 1Mo</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <button 
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-moroccan-green text-white py-3.5 rounded-lg font-medium hover:bg-moroccan-green/90 transition-colors flex items-center justify-center gap-2 mt-4 disabled:opacity-70 shadow-sm shadow-emerald-900/20 active:scale-[0.99]"
+                schoolStep === 1 ? (
+                  <motion.div 
+                    key="school-code"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="space-y-5"
                   >
-                    {loading ? <Loader2 className="animate-spin" size={20} /> : "Créer le compte officiel"}
-                  </button>
-                </motion.div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-0.5">Code de vérification final</label>
+                      <input 
+                        type="password" 
+                        placeholder="Saisissez le second code secret"
+                        value={schoolCode}
+                        onChange={(e) => setSchoolCode(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:border-moroccan-green focus:ring-2 focus:ring-moroccan-green/20 outline-none transition-all placeholder-gray-400 text-gray-900"
+                        required
+                      />
+                    </div>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        if (schoolCode.trim() === '3alemot3alem2025bts') {
+                          setSchoolStep(2);
+                          setError('');
+                        } else {
+                          setError('Code invalide. Vérifiez auprès de l\'administrateur.');
+                        }
+                      }}
+                      className="w-full bg-moroccan-green text-white py-3.5 rounded-lg font-medium hover:bg-moroccan-green/90 transition-colors flex items-center justify-center gap-2 mt-4 shadow-sm shadow-emerald-900/20 active:scale-[0.99]"
+                    >
+                      Vérifier
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.div 
+                    key="school-form"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="space-y-5"
+                  >
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-0.5">Nom de l'établissement</label>
+                      <input 
+                        type="text" 
+                        placeholder="Ex: EMI, ENSIAS"
+                        value={schoolName}
+                        onChange={(e) => setSchoolName(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:border-moroccan-green focus:ring-2 focus:ring-moroccan-green/20 outline-none transition-all placeholder-gray-400 text-gray-900"
+                        required
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-0.5">Lieu / Ville</label>
+                        <input 
+                          type="text" 
+                          placeholder="Ex: Rabat"
+                          value={schoolCity}
+                          onChange={(e) => setSchoolCity(e.target.value)}
+                          className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:border-moroccan-green focus:ring-2 focus:ring-moroccan-green/20 outline-none transition-all placeholder-gray-400 text-gray-900"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-0.5">Lien (Site web)</label>
+                        <input 
+                          type="url" 
+                          placeholder="Ex: https://www.ecole.ma"
+                          value={schoolMajors}
+                          onChange={(e) => setSchoolMajors(e.target.value)}
+                          className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:border-moroccan-green focus:ring-2 focus:ring-moroccan-green/20 outline-none transition-all placeholder-gray-400 text-gray-900"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-0.5">Description de l'école</label>
+                      <textarea 
+                        placeholder="Description, spécialités, mots du directeur..."
+                        value={schoolBio}
+                        onChange={(e) => setSchoolBio(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:border-moroccan-green focus:ring-2 focus:ring-moroccan-green/20 outline-none transition-all placeholder-gray-400 text-gray-900 resize-none h-28"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-0.5">Logo Officiel</label>
+                      <div 
+                        className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300 hover:border-moroccan-green/40 transition-all cursor-pointer group" 
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="hidden" 
+                          ref={fileInputRef}
+                          onChange={handleFileChange}
+                        />
+                        <div className="w-14 h-14 bg-white rounded-md flex items-center justify-center text-gray-400 border border-gray-200 overflow-hidden">
+                          {photoURL ? (
+                            <img src={photoURL} className="w-full h-full object-cover" alt="Profile preview" />
+                          ) : (
+                            <Camera size={24} />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <span className="text-sm font-medium text-gray-700 block">
+                            {photoURL ? "Logo ajouté ! ✓" : "Ajouter le logo"}
+                          </span>
+                          <span className="text-xs text-gray-500">Format JPG/PNG • Max 1Mo</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button 
+                      type="submit"
+                      disabled={loading}
+                      className="w-full bg-moroccan-green text-white py-3.5 rounded-lg font-medium hover:bg-moroccan-green/90 transition-colors flex items-center justify-center gap-2 mt-4 disabled:opacity-70 shadow-sm shadow-emerald-900/20 active:scale-[0.99]"
+                    >
+                      {loading ? <Loader2 className="animate-spin" size={20} /> : "Créer le compte officiel"}
+                    </button>
+                  </motion.div>
+                )
               ) : step === 1 ? (
                 <motion.div 
                   key="step1"
