@@ -29,30 +29,39 @@ try {
     });
     console.log("Firebase Admin SDK initialized from file");
   } else if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
-    let formattedPrivateKey = process.env.FIREBASE_PRIVATE_KEY;
-    if (formattedPrivateKey.startsWith('"') && formattedPrivateKey.endsWith('"')) {
-      formattedPrivateKey = formattedPrivateKey.substring(1, formattedPrivateKey.length - 1);
-    }
-    if (formattedPrivateKey.startsWith("'") && formattedPrivateKey.endsWith("'")) {
-      formattedPrivateKey = formattedPrivateKey.substring(1, formattedPrivateKey.length - 1);
-    }
-    formattedPrivateKey = formattedPrivateKey.replace(/\\n/g, '\n');
+    let serviceAccountObj;
+    try {
+      // Sometimes the entire service account JSON is stored in FIREBASE_PRIVATE_KEY
+      serviceAccountObj = JSON.parse(process.env.FIREBASE_PRIVATE_KEY);
+    } catch (e) {
+      // It's not a JSON object, proceed with parsing as a string
+      let formattedPrivateKey = process.env.FIREBASE_PRIVATE_KEY;
+      
+      // Strip surrounding quotes if present
+      formattedPrivateKey = formattedPrivateKey.replace(/^["']|["']$/g, '');
+      
+      // Replace literal '\n' with actual newlines
+      formattedPrivateKey = formattedPrivateKey.replace(/\\n/g, '\n');
 
-    // Handle case where private key is provided as a single line with spaces instead of newlines
-    if (!formattedPrivateKey.includes('\n') && formattedPrivateKey.includes('-----BEGIN PRIVATE KEY-----')) {
-      const match = formattedPrivateKey.match(/-----BEGIN PRIVATE KEY-----(.*)-----END PRIVATE KEY-----/);
-      if (match) {
-        const keyBody = match[1].replace(/\s+/g, '\n').trim();
-        formattedPrivateKey = `-----BEGIN PRIVATE KEY-----\n${keyBody}\n-----END PRIVATE KEY-----\n`;
+      // Handle case where private key is provided as a single line with spaces instead of newlines
+      if (!formattedPrivateKey.includes('\n') && formattedPrivateKey.includes('-----BEGIN PRIVATE KEY-----')) {
+        const keyBody = formattedPrivateKey
+          .replace('-----BEGIN PRIVATE KEY-----', '')
+          .replace('-----END PRIVATE KEY-----', '')
+          .replace(/\s+/g, ''); // remove all whitespace
+        const chunks = keyBody.match(/.{1,64}/g) || [];
+        formattedPrivateKey = `-----BEGIN PRIVATE KEY-----\n${chunks.join('\n')}\n-----END PRIVATE KEY-----\n`;
       }
-    }
-    
-    initializeApp({
-      credential: cert({
+      
+      serviceAccountObj = {
         projectId: process.env.FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
         privateKey: formattedPrivateKey,
-      })
+      };
+    }
+    
+    initializeApp({
+      credential: cert(serviceAccountObj)
     });
     console.log("Firebase Admin SDK initialized from environment variables");
   } else {
