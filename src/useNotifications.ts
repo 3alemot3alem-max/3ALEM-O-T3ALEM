@@ -41,12 +41,25 @@ export function useNotifications() {
                 icon: '🔔',
               });
 
+
               // Notification API (Browser)
               if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification('3alem o t3alem', {
-                  body: "Vérifiez votre boîte de notifications, quelqu'un a réagi à votre activité.",
-                  icon: '/favicon.png'
-                });
+                if (navigator.serviceWorker) {
+                  navigator.serviceWorker.ready.then((registration) => {
+                    registration.showNotification('3alem o t3alem', {
+                      body: "Vérifiez votre boîte de notifications, quelqu'un a réagi à votre activité.",
+                      icon: '/favicon.png',
+                      vibrate: [200, 100, 200, 100, 200, 100, 200],
+                      tag: 'interaction',
+                      data: { url: window.location.origin }
+                    } as any);
+                  });
+                } else {
+                  new Notification('3alem o t3alem', {
+                    body: "Vérifiez votre boîte de notifications, quelqu'un a réagi à votre activité.",
+                    icon: '/favicon.png'
+                  });
+                }
               }
 
               // Jouer un son simple
