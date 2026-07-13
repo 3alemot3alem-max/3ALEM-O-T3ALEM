@@ -956,6 +956,20 @@ const CommentSection: React.FC<{ postId: string, postAuthorUid: string }> = ({ p
     return () => unsubscribe();
   }, [postId]);
 
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!user) return;
+    try {
+      
+      await deleteDoc(doc(db, `posts/${postId}/comments`, commentId));
+      await updateDoc(doc(db, 'posts', postId), {
+        commentsCount: increment(-1)
+      });
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+    }
+  };
+
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !newComment.trim()) return;
@@ -1013,6 +1027,14 @@ const CommentSection: React.FC<{ postId: string, postAuthorUid: string }> = ({ p
               <div className="flex items-center gap-4 mt-1.5">
                 <span className="text-[12px] text-slate-500">{formatDate(comment.createdAt)}</span>
                 <button className="text-[12px] text-slate-500 font-semibold hover:text-slate-800 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100">Répondre</button>
+                {user?.uid === comment.authorUid && (
+                  <button 
+                    onClick={() => handleDeleteComment(comment.id)}
+                    className="text-[12px] text-red-500 font-semibold hover:text-red-600 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 flex items-center gap-1"
+                  >
+                    Supprimer
+                  </button>
+                )}
               </div>
             </div>
           </div>

@@ -29,6 +29,7 @@ export interface Post {
   authorRole?: string;
   content: string;
   imageUrl?: string;
+  imageUrls?: string[];
   likesCount: number;
   likedBy?: string[];
   commentsCount: number;

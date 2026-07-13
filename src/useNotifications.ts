@@ -3,6 +3,7 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from './firebase';
 import { AppNotification } from './types';
 import { useAuth } from './AuthContext';
+import toast from 'react-hot-toast';
 
 export function useNotifications() {
   const { user } = useAuth();
@@ -35,20 +36,40 @@ export function useNotifications() {
           if (change.type === 'added') {
             const notif = change.doc.data() as AppNotification;
             if (notif.senderId !== user.uid) {
+              // In-app toast
+              toast("Vérifiez votre boîte de notifications, quelqu'un a réagi à votre activité !", {
+                icon: '🔔',
+              });
+
+              // Notification API (Browser)
               if ('Notification' in window && Notification.permission === 'granted') {
                 new Notification('3alem o t3alem', {
-                  body: 'Vérifiez votre boîte de notifications, quelqu\'un a réagi à votre activité.',
+                  body: "Vérifiez votre boîte de notifications, quelqu'un a réagi à votre activité.",
                   icon: '/favicon.png'
                 });
-              } else if ('Notification' in window && Notification.permission !== 'denied') {
-                Notification.requestPermission().then(permission => {
-                  if (permission === 'granted') {
-                    new Notification('3alem o t3alem', {
-                      body: 'Vérifiez votre boîte de notifications, quelqu\'un a réagi à votre activité.',
-                      icon: '/favicon.png'
-                    });
-                  }
-                });
+              }
+
+              // Jouer un son simple
+              try {
+                const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+                oscillator.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1); // A5
+                
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.05);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.3);
+              } catch (e) {
+                console.error("Audio error", e);
               }
             }
           }

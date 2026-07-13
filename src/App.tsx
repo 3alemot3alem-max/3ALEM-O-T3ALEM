@@ -53,6 +53,7 @@ const OfflineIndicator = () => {
 };
 
 import { useNotifications } from './useNotifications';
+import { Toaster } from 'react-hot-toast';
 
 export default function App() {
   const { user, profile, loading } = useAuth();
@@ -85,6 +86,7 @@ export default function App() {
   if (!user.emailVerified && localStorage.getItem('is_school_auth') !== 'true') {
     return (
       <ErrorBoundary>
+      <Toaster position="top-center" toastOptions={{ duration: 4000, style: { background: '#1EBA64', color: '#fff', fontWeight: 'bold' } }} />
         <EmailVerification />
       </ErrorBoundary>
     );
