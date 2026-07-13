@@ -139,6 +139,24 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Notifications Rules
+    function isValidNotification(data) {
+      return data.keys().hasAll(['recipientId', 'senderId', 'senderName', 'type', 'content', 'read', 'createdAt']) &&
+             data.senderId == request.auth.uid &&
+             isValidString(data.senderName, 0, 100) &&
+             data.type in ['like', 'comment', 'share', 'news'] &&
+             isValidString(data.content, 0, 1000) &&
+             data.read is bool;
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && (existing().recipientId == request.auth.uid || existing().recipientId == 'all');
+      allow create: if isSignedIn() && isValidNotification(incoming());
+      allow update: if isSignedIn() && existing().recipientId == request.auth.uid && 
+                    incoming().diff(existing()).affectedKeys().hasOnly(['read']);
+      allow delete: if isSignedIn() && existing().recipientId == request.auth.uid;
+    }
+
     // AI Assistant rules
     match /ai_sessions/{sessionId} {
       allow read: if isSignedIn() && existing().userId == request.auth.uid;

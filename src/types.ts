@@ -96,3 +96,16 @@ export interface School {
   sector?: string;
   whatsappNumber?: string;
 }
+
+export interface AppNotification {
+  id: string;
+  recipientId: string;
+  senderId: string;
+  senderName: string;
+  senderPhoto: string;
+  type: 'like' | 'comment' | 'share' | 'news';
+  postId?: string;
+  content: string;
+  read: boolean;
+  createdAt: string;
+}

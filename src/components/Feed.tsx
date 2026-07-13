@@ -249,7 +249,23 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
         postData.imageUrls = newPostImages;
       }
       
-      await addDoc(collection(db, 'posts'), postData);
+      const docRef = await addDoc(collection(db, 'posts'), postData);
+      
+      // Si l'utilisateur est admin, créer une notification d'actualité pour tout le monde
+      if (profile?.role === 'admin') {
+        await addDoc(collection(db, 'notifications'), {
+          recipientId: 'all',
+          senderId: user.uid,
+          senderName: profile ? `${profile.firstName} ${profile.lastName}` : (user.displayName || 'Utilisateur'),
+          senderPhoto: profile?.photoURL || user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
+          type: 'news',
+          postId: docRef.id,
+          content: newPostContent.substring(0, 50) + (newPostContent.length > 50 ? '...' : ''),
+          read: false,
+          createdAt: new Date().toISOString()
+        });
+      }
+
       setNewPostContent('');
       setNewPostImages([]);
     } catch (error: any) {
@@ -272,6 +288,20 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
         likesCount: increment(hasLiked ? -1 : 1),
         likedBy: hasLiked ? arrayRemove(user.uid) : arrayUnion(user.uid)
       });
+      
+      if (!hasLiked && post.authorUid !== user.uid) {
+        await addDoc(collection(db, 'notifications'), {
+          recipientId: post.authorUid,
+          senderId: user.uid,
+          senderName: profile ? `${profile.firstName} ${profile.lastName}` : (user.displayName || 'Utilisateur'),
+          senderPhoto: profile?.photoURL || user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
+          type: 'like',
+          postId: post.id,
+          content: post.content.substring(0, 50),
+          read: false,
+          createdAt: new Date().toISOString()
+        });
+      }
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, `posts/${postId}`);
     }
@@ -288,6 +318,20 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
       } else {
         await navigator.clipboard.writeText(`${window.location.href}\n\n${post.authorName} dit : ${post.content}`);
         alert("Lien copié dans le presse-papier !");
+      }
+      
+      if (user && post.authorUid !== user.uid) {
+        await addDoc(collection(db, 'notifications'), {
+          recipientId: post.authorUid,
+          senderId: user.uid,
+          senderName: profile ? `${profile.firstName} ${profile.lastName}` : (user.displayName || 'Utilisateur'),
+          senderPhoto: profile?.photoURL || user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
+          type: 'share',
+          postId: post.id,
+          content: post.content.substring(0, 50),
+          read: false,
+          createdAt: new Date().toISOString()
+        });
       }
     } catch (error) {
       console.error("Error sharing:", error);
@@ -652,7 +696,7 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
                         className="overflow-hidden bg-white border-t border-slate-100"
                       >
                         <div className="p-4 pl-[3.5rem] sm:pl-[4.5rem]">
-                          <CommentSection postId={post.id} />
+                          <CommentSection postId={post.id} postAuthorUid={post.authorUid} />
                         </div>
                       </motion.div>
                     )}
@@ -894,7 +938,7 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
   );
 };
 
-const CommentSection: React.FC<{ postId: string }> = ({ postId }) => {
+const CommentSection: React.FC<{ postId: string, postAuthorUid: string }> = ({ postId, postAuthorUid }) => {
   const { user, profile } = useAuth();
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState('');
@@ -926,6 +970,21 @@ const CommentSection: React.FC<{ postId: string }> = ({ postId }) => {
       await updateDoc(doc(db, 'posts', postId), {
         commentsCount: increment(1)
       });
+      
+      if (postAuthorUid !== user.uid) {
+        await addDoc(collection(db, 'notifications'), {
+          recipientId: postAuthorUid,
+          senderId: user.uid,
+          senderName: profile ? `${profile.firstName} ${profile.lastName}` : (user.displayName || 'Utilisateur'),
+          senderPhoto: profile?.photoURL || user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
+          type: 'comment',
+          postId: postId,
+          content: newComment.substring(0, 50),
+          read: false,
+          createdAt: new Date().toISOString()
+        });
+      }
+      
       setNewComment('');
     } catch (error) {
       console.error("Comment error:", error);

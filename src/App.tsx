@@ -5,8 +5,9 @@ import { Feed } from './components/Feed';
 import { SchoolDirectory } from './components/SchoolDirectory';
 import { Profile } from './components/Profile';
 import { EducationalAI } from './components/EducationalAI';
+import { Notifications } from './components/Notifications';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { LayoutGrid, GraduationCap, User, LogOut, Bot, WifiOff, Loader2, Menu, X } from 'lucide-react';
+import { LayoutGrid, GraduationCap, User, LogOut, Bot, WifiOff, Loader2, Menu, X, Bell } from 'lucide-react';
 import { auth } from './firebase';
 import { motion, AnimatePresence } from 'motion/react';
 import { EmailVerification } from './components/EmailVerification';
@@ -150,6 +151,7 @@ export default function App() {
                     { id: 'feed', icon: LayoutGrid, label: 'Fil d\'actualité' },
                     { id: 'schools', icon: GraduationCap, label: 'Annuaire des Écoles' },
                     { id: 'ai', icon: Bot, label: 'Assistant IA' },
+                    { id: 'notifications', icon: Bell, label: 'Notifications' },
                     { id: 'profile', icon: User, label: 'Mon Profil' }
                   ].map((tab) => (
                     <button 
@@ -196,6 +198,7 @@ export default function App() {
               { id: 'feed', icon: LayoutGrid, label: 'Fil d\'actualité' },
               { id: 'schools', icon: GraduationCap, label: 'Annuaire' },
               { id: 'ai', icon: Bot, label: 'Assistant IA' },
+              { id: 'notifications', icon: Bell, label: 'Notifications' },
               { id: 'profile', icon: User, label: 'Profil' }
             ].map((tab) => (
               <button 
@@ -239,6 +242,7 @@ export default function App() {
               {activeTab === 'schools' && <SchoolDirectory />}
               {activeTab === 'profile' && <Profile targetUserId={viewingUserId || undefined} />}
               {activeTab === 'ai' && <EducationalAI />}
+              {activeTab === 'notifications' && <Notifications />}
             </motion.div>
           </AnimatePresence>
         </main>
@@ -250,6 +254,7 @@ export default function App() {
               { id: 'feed', icon: LayoutGrid, label: 'Accueil' },
               { id: 'schools', icon: GraduationCap, label: 'Écoles' },
               { id: 'ai', icon: Bot, label: 'IA' },
+              { id: 'notifications', icon: Bell, label: 'Notifs' },
               { id: 'profile', icon: User, label: 'Profil' }
             ].map((tab) => (
               <button 
