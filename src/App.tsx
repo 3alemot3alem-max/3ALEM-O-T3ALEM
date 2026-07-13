@@ -52,9 +52,12 @@ const OfflineIndicator = () => {
   );
 };
 
+import { useNotifications } from './useNotifications';
+
 export default function App() {
   const { user, profile, loading } = useAuth();
-  const [activeTab, setActiveTab] = useState<'feed' | 'schools' | 'profile' | 'ai'>('feed');
+  const { unreadCount } = useNotifications();
+  const [activeTab, setActiveTab] = useState<'feed' | 'schools' | 'profile' | 'ai' | 'notifications'>('feed');
   const [viewingUserId, setViewingUserId] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -166,7 +169,14 @@ export default function App() {
                           : 'hover:bg-black/5'
                       }`}
                     >
-                      <tab.icon size={20} />
+                      <div className="relative">
+                        <tab.icon size={20} />
+                        {tab.id === 'notifications' && unreadCount > 0 && (
+                          <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-moroccan-red text-[8px] font-bold text-white">
+                            {unreadCount}
+                          </span>
+                        )}
+                      </div>
                       {tab.label}
                     </button>
                   ))}
@@ -210,7 +220,14 @@ export default function App() {
                     : 'hover:bg-black/5'
                 }`}
               >
-                <tab.icon size={18} />
+                <div className="relative flex items-center justify-center">
+                  <tab.icon size={18} />
+                  {tab.id === 'notifications' && unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-moroccan-red text-[8px] font-bold text-white">
+                      {unreadCount}
+                    </span>
+                  )}
+                </div>
                 {tab.label}
               </button>
             ))}
@@ -267,7 +284,14 @@ export default function App() {
                 {activeTab === 'ai' && tab.id === 'ai' && (
                   <div className="absolute top-1 right-3 w-2 h-2 bg-moroccan-green rounded-full animate-ping"></div>
                 )}
-                <tab.icon size={22} className={activeTab === tab.id ? 'fill-current' : ''} />
+                <div className="relative flex items-center justify-center">
+                  <tab.icon size={22} className={activeTab === tab.id ? 'fill-current' : ''} />
+                  {tab.id === 'notifications' && unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-moroccan-red border-2 border-[#e1d4d4] text-[8px] font-bold text-white shadow-sm">
+                      {unreadCount}
+                    </span>
+                  )}
+                </div>
                 <span className="text-[10px] font-semibold">{tab.label}</span>
                 {activeTab === tab.id && (
                   <motion.div 
