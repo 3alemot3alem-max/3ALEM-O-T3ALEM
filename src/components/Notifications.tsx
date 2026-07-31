@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, orderBy, onSnapshot, doc, updateDoc, writeBatch } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, doc, updateDoc, writeBatch, arrayUnion } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { AppNotification } from '../types';
@@ -8,8 +8,9 @@ import { motion } from 'motion/react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
-export const Notifications: React.FC = () => {
+export const Notifications: React.FC<{ onViewProfile?: (uid: string) => void }> = ({ onViewProfile }) => {
   const { user } = useAuth();
+  const isRead = (notification: AppNotification) => notification.recipientId === 'all' ? (notification.readBy || []).includes(user?.uid || '') : notification.read;
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -64,11 +65,17 @@ export const Notifications: React.FC = () => {
   }, [user]);
 
   const markAsRead = async (notificationId: string, recipientId: string) => {
-    if (recipientId === 'all') return;
+    if (!user) return;
     try {
-      await updateDoc(doc(db, 'notifications', notificationId), {
-        read: true
-      });
+      if (recipientId === 'all') {
+        await updateDoc(doc(db, 'notifications', notificationId), {
+          readBy: arrayUnion(user.uid)
+        });
+      } else {
+        await updateDoc(doc(db, 'notifications', notificationId), {
+          read: true
+        });
+      }
     } catch (error) {
       console.error("Error marking notification as read:", error);
     }
@@ -78,8 +85,12 @@ export const Notifications: React.FC = () => {
     if (!user) return;
     try {
       const batch = writeBatch(db);
-      notifications.filter(n => !n.read && n.recipientId !== 'all').forEach(n => {
-        batch.update(doc(db, 'notifications', n.id), { read: true });
+      notifications.filter(n => !isRead(n)).forEach(n => {
+        if (n.recipientId === 'all') {
+          batch.update(doc(db, 'notifications', n.id), { readBy: arrayUnion(user.uid) });
+        } else {
+          batch.update(doc(db, 'notifications', n.id), { read: true });
+        }
       });
       await batch.commit();
     } catch (error) {
@@ -115,7 +126,7 @@ export const Notifications: React.FC = () => {
     );
   }
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter(n => !isRead(n)).length;
 
   return (
     <div className="p-4 md:p-8 max-w-3xl mx-auto pb-24">
@@ -159,16 +170,17 @@ export const Notifications: React.FC = () => {
                   ? 'bg-white border-slate-100' 
                   : 'bg-green-50/50 border-moroccan-green/20 shadow-sm'
               }`}
-              onClick={() => !notification.read && markAsRead(notification.id, notification.recipientId)}
+              onClick={() => !isRead(notification) && markAsRead(notification.id, notification.recipientId)}
             >
               <img 
-                src={notification.senderPhoto} 
-                alt={notification.senderName} 
-                className="w-12 h-12 rounded-full object-cover border border-slate-200 bg-white"
+                src={notification.senderPhoto}
+                alt={notification.senderName}
+                className="w-12 h-12 rounded-full object-cover border border-slate-200 bg-white cursor-pointer hover:opacity-90"
+                onClick={(e) => { e.stopPropagation(); onViewProfile?.(notification.senderId); }}
               />
               <div className="flex-grow">
                 <p className="text-slate-800">
-                  <span className="font-semibold text-slate-900">{notification.senderName}</span>
+                  <span className="font-semibold text-slate-900 cursor-pointer hover:underline" onClick={(e) => { e.stopPropagation(); onViewProfile?.(notification.senderId); }}>{notification.senderName}</span>
                   {' '}
                   {getMessage(notification)}
                 </p>
@@ -179,7 +191,7 @@ export const Notifications: React.FC = () => {
                   </span>
                 </div>
               </div>
-              {!notification.read && (
+              {!isRead(notification) && (
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();

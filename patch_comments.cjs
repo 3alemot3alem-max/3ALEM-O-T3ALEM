@@ -1,37 +1,28 @@
 const fs = require('fs');
 let code = fs.readFileSync('src/components/Feed.tsx', 'utf8');
 
-const deleteCommentFunc = `
-  const handleDeleteComment = async (commentId: string) => {
-    if (!user) return;
-    try {
-      const { deleteDoc, doc } = await import('firebase/firestore');
-      await deleteDoc(doc(db, \`posts/\${postId}/comments\`, commentId));
-      await updateDoc(doc(db, 'posts', postId), {
-        commentsCount: increment(-1)
-      });
-    } catch (error) {
-      console.error("Error deleting comment:", error);
-    }
-  };
-`;
+const oldComment = `<UserDisplay 
+                uid={comment.authorUid} 
+                fallbackName={comment.authorName} 
+                fallbackPhoto={comment.authorPhoto}
+                size="sm"
+                hideName={true}
+              />`;
 
-code = code.replace(
-  `  const handleAddComment = async (e: React.FormEvent) => {`,
-  deleteCommentFunc + `\n  const handleAddComment = async (e: React.FormEvent) => {`
-);
+const newComment = `<UserDisplay 
+                uid={comment.authorUid} 
+                fallbackName={comment.authorName} 
+                fallbackPhoto={comment.authorPhoto}
+                size="sm"
+                hideName={true}
+                onClick={() => onViewProfile?.(comment.authorUid)}
+              />`;
 
-code = code.replace(
-  `<button className="text-[12px] text-slate-500 font-semibold hover:text-slate-800 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100">Répondre</button>`,
-  `<button className="text-[12px] text-slate-500 font-semibold hover:text-slate-800 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100">Répondre</button>
-                {user?.uid === comment.authorUid && (
-                  <button 
-                    onClick={() => handleDeleteComment(comment.id)}
-                    className="text-[12px] text-red-500 font-semibold hover:text-red-600 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 flex items-center gap-1"
-                  >
-                    Supprimer
-                  </button>
-                )}`
-);
+code = code.replace(oldComment, newComment);
+
+const oldName = '<span className="font-semibold text-slate-900 mr-2">{comment.authorName}</span>';
+const newName = '<span className="font-semibold text-slate-900 mr-2 cursor-pointer hover:underline" onClick={() => onViewProfile?.(comment.authorUid)}>{comment.authorName}</span>';
+
+code = code.replace(oldName, newName);
 
 fs.writeFileSync('src/components/Feed.tsx', code);

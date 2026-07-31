@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { AuthModal } from './components/AuthModal';
+import { OnboardingTour } from './components/OnboardingTour';
 import { Feed } from './components/Feed';
 import { SchoolDirectory } from './components/SchoolDirectory';
+import { NetworkNews } from './components/NetworkNews';
 import { Profile } from './components/Profile';
 import { EducationalAI } from './components/EducationalAI';
 import { Notifications } from './components/Notifications';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { LayoutGrid, GraduationCap, User, LogOut, Bot, WifiOff, Loader2, Menu, X, Bell } from 'lucide-react';
+import { LayoutGrid, GraduationCap, User, LogOut, Bot, WifiOff, Loader2, Menu, X, Bell, Newspaper } from 'lucide-react';
 import { auth } from './firebase';
 import { motion, AnimatePresence } from 'motion/react';
 import { EmailVerification } from './components/EmailVerification';
@@ -58,7 +60,10 @@ import { Toaster } from 'react-hot-toast';
 export default function App() {
   const { user, profile, loading } = useAuth();
   const { unreadCount } = useNotifications();
-  const [activeTab, setActiveTab] = useState<'feed' | 'schools' | 'profile' | 'ai' | 'notifications'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'schools' | 'profile' | 'ai' | 'notifications'>(() => {
+    const params = new URLSearchParams(window.location.search);
+    return (params.get('tab') as any) || 'feed';
+  });
   const [viewingUserId, setViewingUserId] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -116,15 +121,15 @@ export default function App() {
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
-            <span className="font-serif italic font-bold ml-2 text-moroccan-red flex items-center gap-1">3alem <AppLogo className="w-10 h-10 text-moroccan-red object-contain" /> t3alem</span>
+            <span className="font-serif italic font-bold ml-1 text-xl text-moroccan-red flex items-center gap-1">3alem <AppLogo className="w-8 h-8 text-moroccan-red object-contain" /> t3alem</span>
           </div>
           
           <div className="flex items-center gap-2">
             <button 
               onClick={() => auth.signOut()}
-              className="text-white/80 hover:text-white hover:bg-white/10 p-2 rounded-xl transition-all"
+              className="text-slate-700 hover:text-moroccan-red hover:bg-black/5 p-2 rounded-xl transition-all"
             >
-              <LogOut size={20} />
+              <LogOut size={22} />
             </button>
           </div>
         </header>
@@ -148,12 +153,13 @@ export default function App() {
                 className="fixed top-0 left-0 bottom-0 w-[80%] max-w-[300px] bg-[#e1d4d4] z-[60] md:hidden shadow-2xl flex flex-col p-6 text-slate-900"
               >
                 <div className="flex items-center justify-center mb-10 pb-6 border-b border-black/10">
-                  <span className="font-serif italic font-bold text-xl text-moroccan-red flex items-center gap-2">3alem <AppLogo className="w-12 h-12 text-moroccan-red object-contain" /> t3alem</span>
+                  <span className="font-serif italic font-bold text-xl text-moroccan-red flex items-center gap-2">3alem <AppLogo className="w-10 h-10 text-moroccan-red object-contain" /> t3alem</span>
                 </div>
 
                 <nav className="flex flex-col gap-2 flex-grow">
                   {[
                     { id: 'feed', icon: LayoutGrid, label: 'Fil d\'actualité' },
+                    { id: 'news', icon: Newspaper, label: 'Actualités' },
                     { id: 'schools', icon: GraduationCap, label: 'Annuaire des Écoles' },
                     { id: 'ai', icon: Bot, label: 'Assistant IA' },
                     { id: 'notifications', icon: Bell, label: 'Notifications' },
@@ -201,7 +207,7 @@ export default function App() {
         {/* Desktop Header */}
         <header className="hidden md:flex fixed top-0 left-0 right-0 backdrop-blur-xl border-b border-black/5 px-6 items-center justify-between z-50 h-20 shadow-sm transition-colors duration-500 bg-[#e1d4d4]/90 text-slate-900">
           <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setActiveTab('feed')}>
-            <AppLogo className="w-12 h-12 text-moroccan-red object-contain" />
+            <AppLogo className="w-10 h-10 text-moroccan-red object-contain" />
             <span className="font-serif italic font-bold text-2xl text-moroccan-red ml-1">3alem o t3alem</span>
           </div>
           
@@ -216,7 +222,7 @@ export default function App() {
               <button 
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-full transition-all font-semibold ${
+                className={`desktop-tour-nav-${tab.id} flex items-center gap-2 px-5 py-2.5 rounded-full transition-all font-semibold ${
                   activeTab === tab.id 
                     ? 'bg-moroccan-green text-white shadow-lg shadow-emerald-900/20' 
                     : 'hover:bg-black/5'
@@ -248,6 +254,7 @@ export default function App() {
 
         {/* Main Content */}
         <main className="w-full relative z-10 px-4 md:px-6">
+          <OnboardingTour />
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -261,7 +268,8 @@ export default function App() {
               {activeTab === 'schools' && <SchoolDirectory />}
               {activeTab === 'profile' && <Profile targetUserId={viewingUserId || undefined} />}
               {activeTab === 'ai' && <EducationalAI />}
-              {activeTab === 'notifications' && <Notifications />}
+              {activeTab === 'notifications' && <Notifications onViewProfile={viewUserProfile} />}
+              {activeTab === 'news' && <NetworkNews onViewProfile={viewUserProfile} />}
             </motion.div>
           </AnimatePresence>
         </main>
@@ -271,6 +279,7 @@ export default function App() {
           <div className="flex justify-around items-center h-16 px-2">
             {[
               { id: 'feed', icon: LayoutGrid, label: 'Accueil' },
+              { id: 'news', icon: Newspaper, label: 'Actualités' },
               { id: 'schools', icon: GraduationCap, label: 'Écoles' },
               { id: 'ai', icon: Bot, label: 'IA' },
               { id: 'notifications', icon: Bell, label: 'Notifs' },
@@ -279,7 +288,7 @@ export default function App() {
               <button 
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex flex-col items-center justify-center w-full h-full space-y-1 relative ${
+                className={`mobile-tour-nav-${tab.id} flex flex-col items-center justify-center w-full h-full space-y-1 relative ${
                   activeTab === tab.id ? 'text-moroccan-green' : 'text-slate-500 hover:text-slate-900'
                 }`}
               >

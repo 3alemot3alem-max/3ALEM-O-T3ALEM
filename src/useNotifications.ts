@@ -17,7 +17,7 @@ export function useNotifications() {
     }
 
     const qUser = query(collection(db, 'notifications'), where('recipientId', '==', user.uid), where('read', '==', false));
-    const qAll = query(collection(db, 'notifications'), where('recipientId', '==', 'all'), where('read', '==', false));
+    const qAll = query(collection(db, 'notifications'), where('recipientId', '==', 'all'));
 
     let userUnread = 0;
     let allUnread = 0;
@@ -51,7 +51,7 @@ export function useNotifications() {
                       icon: '/favicon.png',
                       vibrate: [200, 100, 200, 100, 200, 100, 200],
                       tag: 'interaction',
-                      data: { url: window.location.origin }
+                      data: { url: window.location.origin + '?tab=notifications' }
                     } as any);
                   });
                 } else {
@@ -90,7 +90,7 @@ export function useNotifications() {
       }
 
       if (isAll) {
-        allUnread = snapshot.docs.length;
+        allUnread = snapshot.docs.filter((d: any) => !(d.data().readBy || []).includes(user.uid)).length;
         allInitialized = true;
       } else {
         userUnread = snapshot.docs.length;

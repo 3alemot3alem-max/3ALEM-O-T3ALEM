@@ -408,7 +408,7 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
               </div>
               <div className="border-t border-[#E0DFDC] px-4 py-3 bg-white hover:bg-slate-50 cursor-pointer transition-colors" onClick={() => onViewProfile?.(user?.uid || '')}>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-semibold text-slate-500 line-clamp-1">Vues de votre profil</span>
+                  <span className="tour-profile-views text-xs font-semibold text-slate-500 line-clamp-1">Vues de votre profil</span>
                   <span className="text-xs font-semibold text-[#1EBA64]">{profile?.profileViews || 0}</span>
                 </div>
               </div>
@@ -444,8 +444,8 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
                   <textarea 
                     value={newPostContent}
                     onChange={(e) => setNewPostContent(e.target.value)}
-                    placeholder="Publier une actualité..."
-                    className="flex-1 bg-white border border-slate-400 hover:bg-slate-100 focus:bg-white rounded-[32px] px-4 py-3 outline-none text-sm text-slate-700 transition-colors cursor-text resize-none min-h-[48px]"
+                    placeholder="Partager un article..."
+                    className="tour-share-post flex-1 bg-white border border-slate-400 hover:bg-slate-100 focus:bg-white rounded-[32px] px-4 py-3 outline-none text-sm text-slate-700 transition-colors cursor-text resize-none min-h-[48px]"
                     rows={newPostContent ? 3 : 1}
                   />
                 </div>
@@ -503,11 +503,11 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
             </div>
 
             {/* Posts List */}
-            <div className="bg-white sm:rounded-xl shadow-[0_0_0_1px_rgba(0,0,0,0.08)] overflow-hidden border-y border-slate-200 sm:border-none divide-y divide-slate-100">
-              {filteredPosts.map((post) => (
+            <div className="space-y-4">
+              {filteredPosts.map((post, index) => (
                 <div 
                   key={post.id}
-                  className="bg-white hover:bg-slate-50/50 transition-colors"
+                  className={`bg-white sm:rounded-xl shadow-[0_0_0_1px_rgba(0,0,0,0.08)] overflow-hidden border-y border-slate-200 sm:border-none hover:bg-slate-50/50 transition-colors ${index === 0 ? 'tour-first-post' : ''}`}
                 >
                   <div className="p-4 flex gap-3 sm:gap-4">
                     {/* Avatar Col */}
@@ -545,8 +545,16 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
                           </span>
                         </div>
                         
-                        {user?.uid === post.authorUid && (
-                          <div className="flex items-center gap-1 -mt-1 -mr-2">
+                        <div className="flex items-center gap-2">
+                          <button 
+                            onClick={() => setExpandedComments(expandedComments === post.id ? null : post.id)}
+                            className="tour-post-questions flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-bold transition-colors bg-[#1EBA64] text-white hover:bg-emerald-600 shadow-sm shrink-0 whitespace-nowrap"
+                          >
+                            <MessageSquare size={13} />
+                            Questions {post.commentsCount > 0 ? `(${post.commentsCount})` : ''}
+                          </button>
+                          {user?.uid === post.authorUid && (
+                            <div className="flex items-center gap-1 -mt-1 -mr-2">
                             <button 
                               onClick={() => {
                                 setEditingPostId(post.id);
@@ -569,6 +577,7 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
                             </button>
                           </div>
                         )}
+                      </div>
                       </div>
 
                       {/* Body */}
@@ -655,16 +664,6 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
                       {/* Action Bar */}
                       <div className="flex justify-between items-center text-slate-500 mt-1 max-w-[425px] pr-4">
                         <button 
-                          onClick={() => setExpandedComments(expandedComments === post.id ? null : post.id)}
-                          className={`flex items-center gap-1 group transition-colors ${expandedComments === post.id ? 'text-[#1EBA64]' : ''}`}
-                        >
-                          <div className={`p-2 rounded-full transition-colors ${expandedComments === post.id ? 'bg-[#1EBA64]/10' : 'group-hover:bg-[#1EBA64]/10 group-hover:text-[#1EBA64]'}`}>
-                            <MessageSquare size={18} />
-                          </div>
-                          <span className={`text-[13px] ${expandedComments === post.id ? '' : 'group-hover:text-[#1EBA64]'}`}>{post.commentsCount > 0 ? post.commentsCount : ''}</span>
-                        </button>
-                        
-                        <button 
                           onClick={() => handleLike(post.id)}
                           className={`flex items-center gap-1 group transition-colors ${post.likedBy?.includes(user?.uid || '') ? 'text-pink-600' : ''}`}
                         >
@@ -686,35 +685,21 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
                     </div>
                   </div>
 
-                  {/* Comments Section */}
-                  <AnimatePresence>
-                    {expandedComments === post.id && (
-                      <motion.div 
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden bg-white border-t border-slate-100"
-                      >
-                        <div className="p-4 pl-[3.5rem] sm:pl-[4.5rem]">
-                          <CommentSection postId={post.id} postAuthorUid={post.authorUid} />
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+
                 </div>
               ))}
             </div>
           </div>
 
           {/* Right Sidebar */}
-          <div className="w-full lg:w-[300px] shrink-0 space-y-4 order-2 md:order-3">
+          <div className="hidden lg:block w-full lg:w-[300px] shrink-0 space-y-4 order-2 md:order-3">
                         <div className="bg-white rounded-xl shadow-[0_0_0_1px_rgba(0,0,0,0.08)] p-4">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold text-slate-900 text-base">Actualités du réseau</h3>
+                <h3 className="tour-news-sidebar font-semibold text-slate-900 text-base">Actualités du réseau</h3>
                 {user && (
                   <button 
                     onClick={() => {
-                      const input = document.querySelector('textarea[placeholder="Publier une actualité..."]') as HTMLTextAreaElement;
+                      const input = document.querySelector(".tour-share-post") as HTMLTextAreaElement;
                       if (input) {
                         input.focus();
                         input.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -755,7 +740,7 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
             </div>
 
             {profile?.role !== 'school' && (
-              <div className="sticky top-24 overflow-hidden rounded-xl shadow-[0_0_0_1px_rgba(0,0,0,0.08)] text-center text-slate-500 bg-white relative">
+              <div className="tour-offers-sidebar sticky top-24 overflow-hidden rounded-xl shadow-[0_0_0_1px_rgba(0,0,0,0.08)] text-center text-slate-500 bg-white relative">
                  <div className="p-6">
                    <div className="absolute top-2 right-4 text-[10px] text-slate-500">Ad</div>
                    <p className="text-xs text-slate-600 mb-4">{profile?.firstName ? `${profile.firstName}, mettez` : 'Mettez'} toutes les chances de votre côté.</p>
@@ -776,9 +761,114 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
         </div>
       </div>
 
+      {/* Post Modal (Questions) */}
+      {createPortal(
+        <AnimatePresence>
+          {expandedComments && posts.find(p => p.id === expandedComments) && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-0 md:p-4 lg:p-8">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setExpandedComments(null)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.2 }}
+              className="bg-white md:rounded-2xl w-full h-full md:max-h-[90vh] lg:max-w-6xl relative z-10 shadow-2xl overflow-hidden flex flex-col lg:flex-row"
+            >
+              {/* Close Button Mobile */}
+              <button 
+                onClick={() => setExpandedComments(null)}
+                className="lg:hidden absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-black/40 text-white rounded-full backdrop-blur-sm"
+              >
+                <X size={20} />
+              </button>
+
+              {/* Left Side: Post Content */}
+              <div className="w-full lg:w-[55%] flex-1 overflow-y-auto bg-slate-50 relative border-b lg:border-b-0 lg:border-r border-slate-200 custom-scrollbar">
+                {(() => {
+                  const post = posts.find(p => p.id === expandedComments)!;
+                  return (
+                    <div className="p-4 sm:p-6 lg:p-8">
+                      {/* Avatar & Author info duplicated for modal display */}
+                      <div className="flex gap-4 mb-4">
+                        <img 
+                          src={post.authorPhoto || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorUid}`} 
+                          className="w-12 h-12 rounded-full object-cover shadow-sm"
+                        />
+                        <div>
+                          <h4 className="font-bold text-slate-900 flex items-center gap-1 text-[15px]">
+                            {post.authorName}
+                            {(post.authorRole === 'school' || post.authorRole === 'admin') && (
+                              <svg className="w-[15px] h-[15px] text-[#1EBA64] fill-current shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm-1.06 14.86l-4.14-4.13 1.41-1.42 2.73 2.72 6.03-6.02 1.41 1.41-7.44 7.44z" />
+                              </svg>
+                            )}
+                          </h4>
+                          <div className="flex items-center gap-1.5 text-slate-500 text-[13px]">
+                            <span>@{post.authorName.replace(/\s+/g, '').toLowerCase()}</span>
+                            <span>·</span>
+                            <span>{new Date(post.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Post Text */}
+                      <p className="text-slate-800 text-[15px] leading-relaxed whitespace-pre-wrap mb-4">
+                        {post.content}
+                      </p>
+
+                      {/* Post Images */}
+                      {post.images && post.images.length > 0 && (
+                        <div className="w-full bg-slate-100 rounded-xl overflow-hidden mt-4">
+                          <img 
+                            src={post.images[0]} 
+                            className="w-full h-auto max-h-[70vh] object-contain"
+                            alt="Post attached image"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Right Side: Comments (Questions) */}
+              <div className="w-full lg:w-[45%] flex flex-col flex-1 lg:h-full bg-white relative">
+                {/* Header */}
+                <div className="hidden lg:flex items-center justify-between p-4 border-b border-slate-100 shrink-0">
+                  <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                    <MessageSquare size={20} className="text-[#1EBA64]" />
+                    Questions
+                  </h3>
+                  <button 
+                    onClick={() => setExpandedComments(null)}
+                    className="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-full transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+                
+                {/* Comments Container */}
+                <div className="flex-1 flex flex-col p-4 overflow-hidden">
+                  <CommentSection postId={expandedComments} postAuthorUid={posts.find(p => p.id === expandedComments)?.authorUid || ''} />
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+        </AnimatePresence>,
+        document.body
+      )}
+
       {/* Registration Modal */}
-      <AnimatePresence>
-        {showRegisterModal && (
+      {createPortal(
+        <AnimatePresence>
+          {showRegisterModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div 
               initial={{ opacity: 0 }}
@@ -881,7 +971,9 @@ export const Feed: React.FC<{ onStartChat?: (email: string) => void, onViewProfi
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* Fullscreen Image Modal */}
       {createPortal(
@@ -942,6 +1034,15 @@ const CommentSection: React.FC<{ postId: string, postAuthorUid: string }> = ({ p
   const { user, profile } = useAuth();
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState('');
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleReplyClick = (authorName: string) => {
+    const mention = `@${authorName.replace(/\s+/g, '')} `;
+    setNewComment(mention);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+  };
 
   useEffect(() => {
     const q = query(
@@ -1006,8 +1107,8 @@ const CommentSection: React.FC<{ postId: string, postAuthorUid: string }> = ({ p
   };
 
   return (
-    <div className="space-y-5 px-1 py-2">
-      <div className="space-y-4">
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto space-y-4 px-1 py-2 custom-scrollbar">
         {comments.map((comment) => (
           <div key={comment.id} className="flex gap-3 group">
             <div className="shrink-0 mt-0.5">
@@ -1017,16 +1118,22 @@ const CommentSection: React.FC<{ postId: string, postAuthorUid: string }> = ({ p
                 fallbackPhoto={comment.authorPhoto}
                 size="sm"
                 hideName={true}
+                onClick={() => onViewProfile?.(comment.authorUid)}
               />
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-[14px] leading-snug break-words mt-1.5">
-                <span className="font-semibold text-slate-900 mr-2">{comment.authorName}</span>
+                <span className="font-semibold text-slate-900 mr-2 cursor-pointer hover:underline" onClick={() => onViewProfile?.(comment.authorUid)}>{comment.authorName}</span>
                 <span className="text-slate-800">{comment.content}</span>
               </div>
               <div className="flex items-center gap-4 mt-1.5">
                 <span className="text-[12px] text-slate-500">{formatDate(comment.createdAt)}</span>
-                <button className="text-[12px] text-slate-500 font-semibold hover:text-slate-800 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100">Répondre</button>
+                <button 
+                  onClick={() => handleReplyClick(comment.authorName)}
+                  className="text-[12px] text-slate-500 font-semibold hover:text-slate-800 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                >
+                  Répondre
+                </button>
                 {user?.uid === comment.authorUid && (
                   <button 
                     onClick={() => handleDeleteComment(comment.id)}
@@ -1041,7 +1148,8 @@ const CommentSection: React.FC<{ postId: string, postAuthorUid: string }> = ({ p
         ))}
       </div>
 
-      <form onSubmit={handleAddComment} className="flex gap-3 mt-6 pt-4 border-t border-slate-100 relative items-center">
+      <div className="shrink-0 pt-4 pb-2 px-1 bg-white border-t border-slate-100 mt-auto">
+        <form onSubmit={handleAddComment} className="flex gap-3 relative items-center">
         <img 
           src={profile?.photoURL || user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid}`} 
           className="w-8 h-8 rounded-full object-cover shadow-sm shrink-0"
@@ -1049,9 +1157,10 @@ const CommentSection: React.FC<{ postId: string, postAuthorUid: string }> = ({ p
         />
         <div className="flex-1 relative">
           <input 
+            ref={inputRef}
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Écrivez un commentaire..."
+            placeholder="Posez une question..."
             className="w-full bg-[#f0f2f5] hover:bg-[#e4e6eb] focus:bg-[#e4e6eb] border-none rounded-full px-4 py-2.5 text-[14px] outline-none transition-colors pr-12 text-slate-800 placeholder-slate-500"
           />
           <button 
@@ -1062,7 +1171,8 @@ const CommentSection: React.FC<{ postId: string, postAuthorUid: string }> = ({ p
             <Send size={18} className="translate-x-[1px]" />
           </button>
         </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 };

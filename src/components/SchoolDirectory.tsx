@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import { db } from '../firebase';
 import { School } from '../types';
@@ -115,9 +116,10 @@ export const SchoolDirectory: React.FC = () => {
       </div>
 
       {/* School Detail Modal */}
-      <AnimatePresence>
-        {selectedSchool && (
-          <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center p-0 md:p-8">
+      {createPortal(
+        <AnimatePresence>
+          {selectedSchool && (
+            <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-8">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -253,8 +255,10 @@ export const SchoolDirectory: React.FC = () => {
               </div>
             </motion.div>
           </div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 };

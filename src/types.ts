@@ -108,5 +108,6 @@ export interface AppNotification {
   postId?: string;
   content: string;
   read: boolean;
+  readBy?: string[];
   createdAt: string;
 }
